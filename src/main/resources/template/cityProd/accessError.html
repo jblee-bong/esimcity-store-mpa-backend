@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eSIM CITY - 접근 오류</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --gold: #D4AF37;
+      --gold-light: #F5E6C8;
+      --gold-dark: #B8941F;
+      --cream: #FAF8F3;
+      --beige: #F5F1EB;
+      --white: #FFFFFF;
+      --text-dark: #2C2C2C;
+      --text-medium: #666666;
+      --text-light: #999999;
+      --border-light: #E8E5DF;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+      --error: #EF4444;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #FFFFFF 0%, var(--cream) 100%);
+      color: var(--text-dark);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* Header */
+    .top-header {
+      background: var(--white);
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .brand-logo {
+      height: 50px;
+      width: auto;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      padding: 64px 0 48px;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--text-medium);
+      font-weight: 400;
+    }
+
+    /* Error Card */
+    .error-card-wrapper {
+      margin-bottom: 40px;
+    }
+
+    .error-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 64px 56px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-light);
+      text-align: center;
+    }
+
+    .error-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 50%;
+      color: var(--error);
+    }
+
+    .error-icon svg {
+      width: 60px;
+      height: 60px;
+    }
+
+    .error-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--error);
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+    }
+
+    .error-content {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+
+    .error-subcontent {
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--text-medium);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .error-detail {
+      font-size: 16px;
+      color: var(--text-light);
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+
+    /* CTA Section */
+    .cta-wrapper {
+      margin: 48px 0;
+    }
+
+    .cta-button {
+      display: block;
+      background: var(--gold);
+      color: var(--white);
+      text-align: center;
+      padding: 20px 40px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .cta-button:hover {
+      background: var(--gold-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(212, 175, 55, 0.4);
+    }
+
+    .cta-button-secondary {
+      display: block;
+      background: var(--white);
+      color: var(--text-dark);
+      text-align: center;
+      padding: 18px 40px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      border: 2px solid var(--border-light);
+      transition: all 0.3s ease;
+      margin-top: 16px;
+    }
+
+    .cta-button-secondary:hover {
+      border-color: var(--gold);
+      color: var(--gold-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Footer */
+    .main-footer {
+      background: var(--beige);
+      padding: 56px 0 40px;
+      margin-top: 80px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .footer-inner {
+      text-align: center;
+    }
+
+    .footer-logo {
+      height: 45px;
+      width: auto;
+      margin-bottom: 24px;
+      opacity: 0.9;
+    }
+
+    .footer-tagline {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-medium);
+      margin-bottom: 32px;
+      letter-spacing: 1px;
+    }
+
+    .footer-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border-light);
+      margin: 32px 0;
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-light);
+    }
+
+    .footer-copyright {
+      font-weight: 400;
+    }
+
+    .footer-version {
+      font-weight: 300;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .hero-section {
+        padding: 40px 0 32px;
+      }
+
+      .hero-title {
+        font-size: 32px;
+      }
+
+      .hero-subtitle {
+        font-size: 16px;
+      }
+
+      .error-card {
+        padding: 48px 32px;
+        border-radius: 16px;
+      }
+
+      .error-icon {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 32px;
+      }
+
+      .error-icon svg {
+        width: 50px;
+        height: 50px;
+      }
+
+      .error-title {
+        font-size: 28px;
+        margin-bottom: 20px;
+      }
+
+      .error-content {
+        font-size: 20px;
+      }
+
+      .error-subcontent {
+        font-size: 16px;
+      }
+
+      .cta-button {
+        font-size: 16px;
+        padding: 18px 32px;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .top-header {
+        padding: 20px 0;
+      }
+
+      .brand-logo {
+        height: 40px;
+      }
+
+      .hero-title {
+        font-size: 28px;
+      }
+
+      .error-card {
+        padding: 40px 24px;
+      }
+
+      .error-icon {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 24px;
+      }
+
+      .error-icon svg {
+        width: 40px;
+        height: 40px;
+      }
+
+      .error-title {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-header">
+    <div class="container">
+      <div class="header-inner">
+        <a th:href="${esimLogoLink}" class="logo-link">
+          <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="brand-logo">
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <section class="hero-section">
+        <h1 class="hero-title">접근 오류</h1>
+        <p class="hero-subtitle">잘못된 접근입니다</p>
+      </section>
+
+      <section class="error-card-wrapper">
+        <div class="error-card">
+          <div class="error-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 class="error-title">잘못된 접근</h2>
+          <p class="error-content" th:text="${errorMessage ?: '올바른 경로로 접근해주세요.'}">
+            올바른 경로로 접근해주세요.
+          </p>
+          <p class="error-subcontent" th:if="${errorDetail}" th:text="${errorDetail}">
+            요청하신 페이지에 접근할 수 없습니다.
+          </p>
+          <p class="error-detail">
+            잘못된 링크이거나 만료된 페이지일 수 있습니다.<br>
+            문제가 지속되면 고객센터로 문의해주세요.
+          </p>
+        </div>
+      </section>
+
+      <section class="cta-wrapper">
+        <a th:href="${esimQuestLink}" class="cta-button">고객 지원 문의하기</a>
+      </section>
+    </div>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="footer-logo">
+        <p class="footer-tagline">Connect Anywhere, Anytime</p>
+        <div class="footer-divider"></div>
+        <div class="footer-bottom">
+          <p class="footer-copyright" th:text="${esimCopyWrite}"></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+

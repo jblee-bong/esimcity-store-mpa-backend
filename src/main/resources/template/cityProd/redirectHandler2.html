@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Processing...</title>
+</head>
+<body style="background-color: #ffffff;">
+
+<div style="text-align: center; margin-top: 100px; font-family: sans-serif;">
+  <p>결제 처리를 완료하고 있습니다.</p>
+  <p>잠시만 기다려 주세요...</p>
+</div>
+
+<script th:inline="javascript">
+  var token = [[${token}]];
+
+
+  // 1️⃣ 히스토리에 명시적으로 기록
+  history.pushState({ page: "redirectHandler2" }, "", location.href);
+
+  // 2️⃣ 그 다음 이동
+  setTimeout(function () {
+    location.href = "/external/order/complete?token=" + token;
+  }, 300);
+
+</script>
+
+</body>
+</html>

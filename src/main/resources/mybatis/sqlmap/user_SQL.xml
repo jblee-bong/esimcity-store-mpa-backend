@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.UserMapper">
+
+    <insert id="createUser" parameterType="userDto" >
+        insert into TB_USER (password, name, email, phone, regist_dt, modify_dt, del_yn,
+                             user_authority)
+        values (#{password}, #{name}, #{email}, #{phone}, now(), null, 'N', #{userAuthority});
+    </insert>
+
+    <update id="updateUser" parameterType="userDto" >
+        UPDATE TB_USER
+        <trim prefix="SET" prefixOverrides=",">
+            <if test="password != null and password != ''">
+                , password = #{password}
+            </if>
+            <if test="name != null and name != ''">
+                , name = #{name}
+            </if>
+            <if test="phone != null and phone != ''">
+                , phone = #{phone}
+            </if>
+                , modify_dt = now()
+        </trim>
+        WHERE email = #{email}
+    </update>
+
+
+
+
+    <insert id="deleteUserStoreMapp" parameterType="string" >
+        DELETE FROM TB_USER_STORE_MAPP
+        WHERE email = #{email};
+    </insert>
+
+    <insert id="createUserStoreMapp" parameterType="userStoreMappDto" >
+        insert into TB_USER_STORE_MAPP (id, email)
+        values (#{storeDto.id},#{userDto.email});
+    </insert>
+
+    <insert id="deleteUser" parameterType="userDto">
+     DELETE FROM TB_USER WHERE email = #{email};
+    </insert>
+
+
+    <select id="selectUserList" parameterType="map" resultType="userDto">
+        select * from TB_USER
+        <include refid="common.pagingFooter"></include>
+    </select>
+
+
+    <select id="findUserStoreMappByEmail" parameterType="string" resultType="map">
+        select * from TB_USER_STORE_MAPP
+        where email = #{email}
+    </select>
+
+    <select id="selectUserListCnt" parameterType="map" resultType="int">
+        select count(1) from TB_USER
+    </select>
+
+</mapper>

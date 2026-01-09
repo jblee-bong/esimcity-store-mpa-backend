@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.ProductMapper">
+
+
+
+    <resultMap id="productWithStore" type="productDto">
+        <id property="originProductNo" column="origin_product_no"></id>
+        <association property="storeDto" column="store_id" select="com.naver.naverspabackend.mybatis.mapper.StoreMapper.selectStoreDetail" />
+    </resultMap>
+
+    <select id="fetchProduct" parameterType="map" resultMap="productWithStore">
+        select * from (<include refid="common.existTbProduct"></include>) p where origin_product_no = #{id}
+    </select>
+
+    <select id="selectProductList" resultType="productDto" parameterType="storeDto">
+        select * from (<include refid="common.existTbProduct"></include>) p where store_id = #{id} and del_yn = 'N'
+
+    </select>
+
+
+    <select id="adSelectProductList" resultType="productDto" parameterType="map">
+        select *, (select count(1) from TB_PRODUCT_OPTION where del_yn = 'N' and origin_product_no = A.origin_product_no) as relationProductOptionCnt from (<include refid="common.existTbProduct"></include>) A
+        where  del_yn = 'N'
+            <if test='id != null and id != "all"'>
+                and store_id = #{id}
+            </if>
+            <if test="userAuthority != 'ROLE_ADMIN'">
+                AND store_id in (<include refid="common.emailStoreMappItemList"></include>)
+            </if>
+        <include refid="common.pagingFooter"></include>
+    </select>
+
+    <select id="adSelectProductListCnt" resultType="int" parameterType="map">
+        select count(1) from (<include refid="common.existTbProduct"></include>) p where del_yn = 'N'
+        <if test='id != null and id != "all"'>
+            and store_id = #{id}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+    </select>
+
+    <insert id="insertProduct" parameterType="productDto" >
+        insert into TB_PRODUCT(
+            origin_product_no,
+            origin_product_seller_management_code,
+            store_id,
+            product_name,
+            status_type,
+            representative_image_url,
+            sale_price,
+            option_group_name1,
+            option_group_name2,
+            option_group_name3,
+            option_group_name4,
+            discounted_price
+        ) values (
+            #{originProductNo},
+            #{originProductSellerManagementCode},
+            #{storeId},
+            #{productName},
+            #{statusType},
+            #{representativeImageUrl},
+            #{salePrice},
+            #{optionGroupName1},
+            #{optionGroupName2},
+            #{optionGroupName3},
+            #{optionGroupName4},
+            #{discountedPrice}
+        )
+    </insert>
+
+    <update id="updateProduct" parameterType="productDto">
+        update TB_PRODUCT set
+            product_name = #{productName},
+            origin_product_seller_management_code = #{originProductSellerManagementCode},
+            status_type = #{statusType},
+            representative_image_url = #{representativeImageUrl},
+            sale_price = #{salePrice},
+            discounted_price = #{discountedPrice}
+        where origin_product_no = #{originProductNo} and store_id = #{storeId}
+    </update>
+
+    <delete id="deleteProduct" parameterType="productDto">
+        delete from TB_PRODUCT where origin_product_no = #{originProductNo} and store_id = #{storeId}
+    </delete>
+
+</mapper>

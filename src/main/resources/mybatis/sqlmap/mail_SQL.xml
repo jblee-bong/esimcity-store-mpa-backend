@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.MailMapper">
+
+
+    <!--  Mail insert -->
+    <insert id="insertMailResponse" parameterType="map">
+        insert into MAIL_RES (
+            seq,
+            subject,
+            contents,
+            to_email,
+            from_email,
+            store_id,
+            origin_product_no,
+            option_id,
+            regist_dt,
+            modify_dt
+        ) values (
+             null,
+             #{subject},
+             #{contents},
+             #{toEmail},
+             #{fromEmail},
+             #{storeId},
+             #{originProductNo},
+             #{optionId},
+             now(),
+             now()
+         )
+    </insert>
+
+    <select id="adSelectMailList" parameterType="map" resultType="mailDto">
+        select *
+        from MAIL_RES
+        where 1=1
+        <if test='storeId != null and storeId != "all"'>
+            and store_id = #{storeId}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+        order by seq desc
+        <include refid="common.pagingFooter"></include>
+    </select>
+
+    <select id="adSelectMailListCnt" parameterType="map" resultType="int">
+        select count(1)
+        from MAIL_RES
+        where 1=1
+        <if test='storeId != null and storeId != "all"'>
+            and store_id = #{storeId}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+    </select>
+
+
+
+    <insert id="insertMailContents" parameterType="map">
+        insert into TB_MAIL_CONTENTS (
+            email_contents,
+            email_subject,
+            store_id,
+            origin_product_no,
+            option_id,
+            order_id,
+            esim_yn
+        ) values (
+                     #{emailContents},
+                     #{emailSubject},
+                     #{storeId},
+                     #{originProductNo},
+                     #{optionId},
+                     #{orderId},
+                     #{esimYn}
+                 )
+    </insert>
+
+
+    <select id="selectMailContentsList" parameterType="mailContentsDto" resultType="mailContentsDto">
+        select *
+        from TB_MAIL_CONTENTS
+        where 1=1 and order_id = #{orderId}
+    </select>
+</mapper>

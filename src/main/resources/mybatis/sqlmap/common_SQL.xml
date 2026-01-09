@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="common">
+
+    <sql id="pagingFooter">
+        <if test="recordCountPerPage != null">
+            limit #{recordCountPerPage} offset #{firstIndex}
+        </if>
+    </sql>
+
+
+    <sql id="emailStoreMappItemList">
+        SELECT id FROM TB_USER_STORE_MAPP  WHERE email = #{email}
+    </sql>
+
+
+    <sql id="existTbProduct">
+        SELECT p.* FROM TB_PRODUCT p
+                            INNER JOIN TB_STORE s on p.store_id = s.id
+        WHERE s.del_yn = 'N'
+    </sql>
+
+
+    <sql id="existTbProductOption">
+        SELECT po.* FROM TB_PRODUCT_OPTION po
+                            INNER JOIN TB_STORE s on po.store_id = s.id
+        WHERE s.del_yn = 'N'
+    </sql>
+
+
+    <sql id="existTbOrder">
+        SELECT o.* FROM TB_ORDER o
+                             INNER JOIN TB_STORE s on o.store_id = s.id
+        WHERE s.del_yn = 'N'
+    </sql>
+
+
+    <!-- n분 전 시간 조회 -->
+    <sql id="thirtyMinutesAgo">
+        INTERVAL -60 MINUTE
+    </sql>
+</mapper>

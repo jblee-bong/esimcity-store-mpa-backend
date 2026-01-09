@@ -1,0 +1,75 @@
+spring:
+  profiles:
+    active: cityProd
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  # JVM 인코딩 설정
+  jvm:
+    args: -Dfile.encoding=UTF-8 -Duser.language=ko -Duser.country=KR
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      table-prefix: TB_SYS_BATCH_
+      initialize-schema: always
+      isolation-level-for-create: default
+      schema: 'classpath:batch/init_table.sql'
+
+  quartz:
+    auto-startup: false
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
+      schema: 'classpath:quartz/init_table.sql'
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+  thymeleaf:
+    cache: false
+    prefix: classpath:/template/
+    suffix: .html
+    mode: HTML5
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: fkdl3919@gmail.com
+    password: wnrv vbxk sghf ledy
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.mime.charset: UTF-8
+  mvc:
+    static-path-pattern: /assets/**
+  web:
+    resources:
+      static-locations: classpath:/assets/
+server:
+  port: 8080
+  servlet:
+    encoding:
+      force: true
+      charset: UTF-8
+  # 서버 인코딩 설정
+  http:
+    encoding:
+      charset: UTF-8
+      force: true
+
+mybatis:
+  mapper-locations: classpath:/mybatis/**/*_SQL.xml
+  config-location: classpath:/mybatis/config.xml
+
+
+
+
+# 관리자 페이지 jwt token
+naver:
+  clientId: naver
+  clientSecret: naver
+  jwtKey: 068b9a38f763eafe19e2389c7fc2436d5e0bd83526d476969b5ae9e8c1b3d6979e13be889f00af01c0015436c669da9a95cfc31a04dc66ab8eb5b7e8413bc4b8
+  encodingType: UTF-8

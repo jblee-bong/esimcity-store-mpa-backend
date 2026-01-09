@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eSIM CITY - 사용량 조회</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/esimcity/favicon.svg">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --gold: #D4AF37;
+      --gold-light: #F5E6C8;
+      --gold-dark: #B8941F;
+      --cream: #FAF8F3;
+      --beige: #F5F1EB;
+      --white: #FFFFFF;
+      --text-dark: #2C2C2C;
+      --text-medium: #666666;
+      --text-light: #999999;
+      --border-light: #E8E5DF;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #FFFFFF 0%, var(--cream) 100%);
+      color: var(--text-dark);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* Header */
+    .top-header {
+      background: var(--white);
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .brand-logo {
+      height: 50px;
+      width: auto;
+    }
+
+    /* Status Alert */
+    .status-alert {
+      background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+      padding: 16px 0;
+      text-align: center;
+    }
+
+    .status-alert-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--white);
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+    }
+
+    .status-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      padding: 64px 0 48px;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--text-medium);
+      font-weight: 400;
+    }
+
+    /* Usage Card */
+    .usage-card-wrapper {
+      margin-bottom: 40px;
+    }
+
+    .usage-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 48px 56px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-light);
+    }
+
+    .usage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .usage-header-reset{
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid var(--gold-light);
+    }
+
+    .usage-label {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-medium);
+    }
+    .usage-charge{
+      font-size: 13px;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+
+    .usage-total {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--gold-dark);
+      background: var(--gold-light);
+      padding: 8px 16px;
+      border-radius: 12px;
+    }
+
+    .usage-visual {
+      margin: 48px 0;
+    }
+
+    .usage-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 32px;
+    }
+
+    .usage-current {
+      text-align: left;
+    }
+
+    .usage-current-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-medium);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .usage-current-value {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--gold);
+      line-height: 1;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .usage-remaining {
+      text-align: right;
+    }
+
+    .usage-remaining-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-medium);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .usage-remaining-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1;
+    }
+
+    .usage-bar-container {
+      position: relative;
+      background: var(--gold-light);
+      border-radius: 16px;
+      height: 32px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .usage-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-light) 100%);
+      border-radius: 16px;
+      transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      box-shadow: 0 2px 12px rgba(212, 175, 55, 0.4);
+      overflow: hidden;
+    }
+
+    .usage-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 2.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    .usage-percentage-text {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-medium);
+      margin-top: 12px;
+    }
+
+    .usage-percentage-value {
+      color: var(--gold-dark);
+      font-weight: 700;
+    }
+
+    /* Info Cards Grid */
+    .info-section {
+      margin-bottom: 40px;
+    }
+
+    .info-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .info-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+      border-color: var(--gold-light);
+    }
+
+    .info-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold-dark);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .info-card-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    .info-card-note {
+      font-size: 13px;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+
+    .info-card-full {
+      grid-column: 1 / -1;
+    }
+
+    /* CTA Section */
+    .cta-wrapper {
+      margin: 48px 0;
+    }
+
+    .cta-button {
+      display: block;
+      background: var(--gold);
+      color: var(--white);
+      text-align: center;
+      padding: 20px 40px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .cta-button:hover {
+      background: var(--gold-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(212, 175, 55, 0.4);
+    }
+
+    /* Footer */
+    .main-footer {
+      background: var(--beige);
+      padding: 56px 0 40px;
+      margin-top: 80px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .footer-inner {
+      text-align: center;
+    }
+
+    .footer-logo {
+      height: 45px;
+      width: auto;
+      margin-bottom: 24px;
+      opacity: 0.9;
+    }
+
+    .footer-tagline {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-medium);
+      margin-bottom: 32px;
+      letter-spacing: 1px;
+    }
+
+    .footer-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border-light);
+      margin: 32px 0;
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-light);
+    }
+
+    .footer-copyright {
+      font-weight: 400;
+    }
+
+    .footer-version {
+      font-weight: 300;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .hero-section {
+        padding: 40px 0 32px;
+      }
+
+      .hero-title {
+        font-size: 32px;
+      }
+
+      .hero-subtitle {
+        font-size: 16px;
+      }
+
+      .usage-card {
+        padding: 32px 24px;
+        border-radius: 16px;
+      }
+
+      .usage-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .usage-header-reset{
+        margin-bottom: 32px;
+      }
+
+      .usage-current-value {
+        font-size: 36px;
+      }
+
+      .usage-remaining-value {
+        font-size: 24px;
+      }
+
+      .usage-bar-container {
+        height: 28px;
+      }
+
+      .info-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .info-card {
+        padding: 24px;
+      }
+
+      .info-card-value {
+        font-size: 20px;
+      }
+
+      .cta-button {
+        font-size: 16px;
+        padding: 18px 32px;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .top-header {
+        padding: 20px 0;
+      }
+
+      .brand-logo {
+        height: 40px;
+      }
+
+      .hero-title {
+        font-size: 28px;
+      }
+
+      .usage-card {
+        padding: 24px 20px;
+      }
+
+      .usage-current-value {
+        font-size: 32px;
+      }
+
+      .usage-remaining-value {
+        font-size: 20px;
+      }
+
+      .usage-bar-container {
+        height: 24px;
+      }
+
+      .info-card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-header">
+    <div class="container">
+      <div class="header-inner">
+        <a th:href="${esimLogoLink}" class="logo-link">
+          <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="brand-logo">
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <section class="status-alert" th:if="${end}">
+    <div class="container">
+      <div class="status-alert-content">
+        <svg class="status-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        <span>서비스가 만료되었습니다</span>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <div class="container">
+      <section class="hero-section">
+        <h1 class="hero-title">데이터 사용량</h1>
+        <p class="hero-subtitle">현재 eSIM 사용 현황을 확인하세요</p>
+      </section>
+
+      <section class="usage-card-wrapper">
+        <div class="usage-card">
+          <div class="usage-header">
+            <span class="usage-label">데이터</span>
+            <span class="usage-total" th:text="${totalUsageTxt}"></span>
+          </div>
+          <div class="usage-header-reset">
+            <span class="usage-charge" th:if="${esimType}" th:utext="${resetTxt}"></span>
+          </div>
+          
+          <div class="usage-visual">
+            <div class="usage-stats">
+              <div class="usage-current">
+                <div class="usage-current-label">사용량</div>
+                <div class="usage-current-value" id="usage-amount" th:text="${usageTxt}">0 MB</div>
+              </div>
+              <div class="usage-remaining">
+                <div class="usage-remaining-label">남은 용량</div>
+                <div class="usage-remaining-value" id="remaining-amount">-</div>
+              </div>
+            </div>
+            <div class="usage-bar-container">
+              <div class="usage-bar" id="usage-bar" style="width: 0%"></div>
+            </div>
+            <div class="usage-percentage-text">
+              사용률: <span class="usage-percentage-value" id="usage-percentage">0%</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="info-section">
+        <div class="info-cards-grid">
+          <div class="info-card info-card-full">
+            <div class="info-card-title">구매상품</div>
+            <div class="info-card-value" th:text="${title}"></div>
+          </div>
+          <div class="info-card info-card-full">
+            <div class="info-card-title">사용기간(한국시간)</div>
+            <div class="info-card-value" th:if="${useStartDate != null && !#strings.isEmpty(useStartDate)}"
+                 th:text="${useStartDate + ' ~ ' + useEndDate}"></div>
+            <div class="info-card-value" th:unless="${useStartDate != null && !#strings.isEmpty(useStartDate)}">
+              활성화 전
+            </div>
+          </div>
+
+          <div class="info-card info-card-full">
+            <div class="info-card-title">ICCID 번호</div>
+            <div class="info-card-value" th:text="${iccid}"></div>
+            <div class="info-card-note" th:if="${false}">고객센터로 문의 시 해당 번호 확인 부탁드립니다</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-wrapper">
+        <a th:href="${esimQuestLink}" class="cta-button">고객 지원 문의하기</a>
+      </section>
+    </div>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="footer-logo">
+        <p class="footer-tagline">Connect Anywhere, Anytime</p>
+        <div class="footer-divider"></div>
+        <div class="footer-bottom">
+          <p class="footer-copyright" th:text="${esimCopyWrite}"></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    var totalUsage = '[[${totalUsage}]]';
+    var usage = '[[${usage}]]';
+
+    const usageBar = document.getElementById('usage-bar');
+    const usagePercentage = document.getElementById('usage-percentage');
+    const remainingAmount = document.getElementById('remaining-amount');
+
+    function updateProgress() {
+      let percentage = 0;
+      let remaining = 0;
+      
+      if (totalUsage == 'unlimited') {
+        percentage = 100;
+        remainingAmount.textContent = '무제한';
+      } else if (totalUsage && totalUsage != '0' && totalUsage != '0.0') {
+        percentage = Math.min((Number(usage) / Number(totalUsage)) * 100, 100);
+        remaining = Math.max(Number(totalUsage) - Number(usage), 0);
+        
+        // 남은 용량 표시 (GB 단위로 변환)
+        if (remaining >= 1024) {
+          remainingAmount.textContent = (remaining / 1024).toFixed(2) + ' GB';
+        } else {
+          remainingAmount.textContent = remaining.toFixed(2) + ' MB';
+        }
+      } else {
+        remainingAmount.textContent = '-';
+      }
+      
+      usageBar.style.width = percentage + '%';
+      usagePercentage.textContent = Math.round(percentage) + '%';
+    }
+
+    setTimeout(updateProgress, 300);
+  </script>
+</body>
+</html>

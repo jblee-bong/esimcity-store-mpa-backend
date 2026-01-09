@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.ProductOptionMapper">
+
+    <resultMap type="productOptionDto" id="productOptionDtoWithProduct">
+        <id property="optionId" column="option_id" />
+        <result property="originProductNo" column="origin_product_no" />
+        <association property="productDto" column="origin_product_no" select="com.naver.naverspabackend.mybatis.mapper.ProductMapper.fetchProduct"/>
+    </resultMap>
+
+    <select id="fetchProductOption" parameterType="map" resultMap="productOptionDtoWithProduct">
+        select * from (<include refid="common.existTbProductOption"></include>) po where option_id = #{id}
+    </select>
+
+    <select id="selectProductOptionList" resultType="productOptionDto" parameterType="storeDto">
+        select * from (<include refid="common.existTbProductOption"></include>) po where store_id = #{id}
+    </select>
+
+    <insert id="insertProductOption" parameterType="productOptionDto" >
+        insert into TB_PRODUCT_OPTION(
+            option_id,
+            store_id,
+            origin_product_no,
+            option_name1,
+            option_name2,
+            option_name3,
+            option_name4,
+            price,
+            usable
+        ) values (
+            #{optionId},
+            #{storeId},
+            #{originProductNo},
+            #{optionName1},
+            #{optionName2},
+            #{optionName3},
+            #{optionName4},
+            #{price},
+            #{usable}
+        )
+    </insert>
+
+    <update id="updateProductOption" parameterType="productOptionDto" >
+        update TB_PRODUCT_OPTION set
+            option_name1 = #{optionName1},
+            option_name2 = #{optionName2},
+            option_name3 = #{optionName3},
+            price = #{price},
+            usable = #{usable}
+        where option_id = #{optionId} and origin_product_no = #{originProductNo}
+    </update>
+
+    <delete id="deleteProductOption" parameterType="productOptionDto">
+        delete from TB_PRODUCT_OPTION where option_id = #{optionId} and origin_product_no = #{originProductNo}
+    </delete>
+
+    <select id="adSelectProductOptionList" resultMap="productOptionDtoWithProduct" parameterType="map">
+        select * from (<include refid="common.existTbProductOption"></include>) po
+                 where del_yn = 'N'
+        <if test='id != null and id != "all"'>
+            and origin_product_no = #{id}
+        </if>
+        <include refid="common.pagingFooter"></include>
+    </select>
+    <select id="adSelectProductOptionListForExcel" resultMap="productOptionDtoWithProduct" parameterType="map">
+        select po.*,p.origin_product_seller_management_code from (<include refid="common.existTbProductOption"></include>) po
+        INNER JOIN TB_PRODUCT p ON po.origin_product_no = p.origin_product_no
+        where po.del_yn = 'N'
+        <if test='id != null and id != "all"'>
+            and po.origin_product_no = #{id}
+        </if>
+    </select>
+
+
+    <select id="adSelectProductOptionListCnt" resultType="int" parameterType="map">
+        select count(1) from (<include refid="common.existTbProductOption"></include>) po
+                    where del_yn = 'N'
+        <if test='id != null and id != "all"'>
+            and origin_product_no = #{id}
+        </if>
+    </select>
+
+</mapper>

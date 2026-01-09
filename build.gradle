@@ -1,0 +1,123 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.14-SNAPSHOT'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'war'
+}
+
+group = 'com.naver'
+version = '0.0.1-SNAPSHOT'
+
+bootWar {
+    archiveBaseName = '-'
+    archiveFileName = '-.war'
+    archiveVersion = '0.0.0'
+}
+bootWar.enabled = false
+war.enabled = true
+
+war {
+    archiveBaseName = 'ROOT'
+    archiveFileName = 'ROOT.war'
+    archiveVersion = '0.0.0'
+}
+
+java {
+    sourceCompatibility = '1.8'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/snapshot' }
+}
+
+dependencies {
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.1'
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.12.1'
+
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+
+/**jwt */
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+
+/**spring security*/
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.7.5'
+
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
+    implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.1.4'
+
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-aop
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '2.7.13'
+
+
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.3.1'
+
+    implementation group: 'org.springframework.batch', name: 'spring-batch-core', version: '4.2.8.RELEASE'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-quartz
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-quartz', version: '2.7.10'
+
+    // https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
+
+// https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
+
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat:2.7.14-SNAPSHOT'
+
+    implementation group: 'org.bgee.log4jdbc-log4j2', name: 'log4jdbc-log4j2-jdbc4.1', version: '1.16'
+
+    // https://mvnrepository.com/artifact/org.mindrot/jbcrypt
+    implementation group: 'org.mindrot', name: 'jbcrypt', version: '0.4'
+
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.12.0'
+
+
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    implementation 'it.ozimov:embedded-redis:0.7.2'
+
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+// https://mvnrepository.com/artifact/com.google.zxing/javase
+    implementation group: 'com.google.zxing', name: 'javase', version: '3.5.2'
+
+
+    //excel write jxls
+    // https://mvnrepository.com/artifact/net.sf.jxls/jxls-core
+    implementation group: 'net.sf.jxls', name: 'jxls-core', version: '1.0.6'
+    // https://mvnrepository.com/artifact/org.jxls/jxls-poi
+    implementation group: 'org.jxls', name: 'jxls-poi', version: '2.12.0'
+    // https://mvnrepository.com/artifact/org.jxls/jxls
+    implementation group: 'org.jxls', name: 'jxls', version: '2.12.0'
+    // https://mvnrepository.com/artifact/org.apache.poi/poi
+    implementation group: 'org.apache.poi', name: 'poi', version: '5.2.3'
+    // https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '5.2.3'
+    // https://mvnrepository.com/artifact/org.jxls/jxls-jexcel
+    implementation group: 'org.jxls', name: 'jxls-jexcel', version: '1.0.9'
+
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

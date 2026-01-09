@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.StoreMapper">
+
+    <insert id="insertStore" parameterType="map">
+        insert into TB_STORE (
+            client_id,
+            client_secret,
+            vendor_id,
+            platform,
+            store_name,
+            send_email,
+            send_email_pw,
+            send_email_username,
+            send_email_smtp_url,
+            send_email_smtp_port,
+            send_phone,
+            nhn_sms_app_key,
+            nhn_sms_secret_key,
+            nhn_kakao_app_key,
+            nhn_kakao_secret_key,
+            nhn_kakao_sender_key,
+            sms_template,
+            mms_title_template,
+            mms_body_template,
+            kakao_body_template,
+            email_title_template,
+            email_body_template,
+            comfirm_flag,
+            comfirm_sms_template,
+            comfirm_mms_title_template,
+            comfirm_mms_body_template,
+            comfirm_kakao_body_template,
+            comfirm_email_title_template,
+            comfirm_email_body_template,
+            esim_mail_template,
+            esim_mail_title_template,
+            esim_kakao_template,
+            esim_kakao_resend_flag_template,
+            esim_title_template,
+            esim_body_template,
+            esim_sms_template,
+            ordering_use_yn,
+            trans_use_yn,
+            use_yn,
+            send_method,
+            esim_flag,
+
+            esim_copy_write,
+            esim_quest_link,
+            esim_logo_link,
+            esim_logo_type,
+
+
+            esim_code,
+            esim_type,
+            esim_product_id,
+            esim_product_days,
+            esim_description,
+
+            esim_api_tsim_account,
+            esim_api_tsim_secret,
+            esim_api_tuge_account,
+            esim_api_tuge_secret,
+            esim_api_tuge_sign,
+            esim_api_tuge_vector,
+            esim_api_world_move_merchant_id,
+            esim_api_world_move_dept_id,
+            esim_api_world_move_token,
+            esim_api_niz_id,
+            esim_api_niz_pass,
+            esim_api_niz_partner_code,
+            esim_api_airalo_client_id,
+            esim_api_airalo_client_secret
+        ) values (
+            #{clientId},
+            #{clientSecret},
+            #{vendorId},
+            #{platform},
+            #{storeName},
+            #{sendEmail},
+            #{sendEmailPw},
+            #{sendEmailUsername},
+            #{sendEmailSmtpUrl},
+            #{sendEmailSmtpPort},
+            #{sendPhone},
+            #{nhnSmsAppKey},
+            #{nhnSmsSecretKey},
+            #{nhnKakaoAppKey},
+            #{nhnKakaoSecretKey},
+            #{nhnKakaoSenderKey},
+            #{smsTemplate},
+            #{mmsTitleTemplate},
+            #{mmsBodyTemplate},
+            #{kakaoBodyTemplate},
+            #{emailTitleTemplate},
+            #{emailBodyTemplate},
+            #{comfirmFlag},
+            #{comfirmSmsTemplate},
+            #{comfirmMmsTitleTemplate},
+            #{comfirmMmsBodyTemplate},
+            #{comfirmKakaoBodyTemplate},
+            #{comfirmEmailTitleTemplate},
+            #{comfirmEmailBodyTemplate},
+            #{esimMailTemplate},
+            #{esimMailTitleTemplate},
+            #{esimKakaoTemplate},
+            #{esimKakaoResendFlagTemplate},
+            #{esimTitleTemplate},
+            #{esimBodyTemplate},
+            #{esimSmsTemplate},
+            #{orderingUseYn},
+            #{transUseYn},
+            #{useYn},
+            #{sendMethod},
+            #{esimFlag},
+            #{esimCopyWrite},
+            #{esimQuestLink},
+            #{esimLogoLink},
+            #{esimLogoType},
+
+            #{esimCode},
+            #{esimType},
+            #{esimProductId},
+            #{esimProductDays},
+            #{esimDescription},
+
+            #{esimApiTsimAccount},
+            #{esimApiTsimSecret},
+            #{esimApiTugeAccount},
+            #{esimApiTugeSecret},
+            #{esimApiTugeSign},
+            #{esimApiTugeVector},
+            #{esimApiWorldMoveMerchantId},
+            #{esimApiWorldMoveDeptId},
+            #{esimApiWorldMoveToken},
+            #{esimApiNizId},
+            #{esimApiNizPass},
+            #{esimApiNizPartnerCode},
+            #{esimApiAiraloClientId},
+            #{esimApiAiraloClientSecret}
+        )
+    </insert>
+
+    <select id="selectStoreList" resultType="storeDto" parameterType="map">
+        select *, (select count(origin_product_no) from TB_PRODUCT where store_id = A.id) as relationProductCnt from TB_STORE A where del_yn = 'N'
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND A.id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+
+        <include refid="common.pagingFooter"></include>
+    </select>
+    <select id="selectStoreListAll" resultType="storeDto" parameterType="map">
+        select * from TB_STORE A where del_yn = 'N'
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND A.id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+    </select>
+
+    <select id="selectStoreListCnt" parameterType="map" resultType="int">
+        select count(1) from TB_STORE where del_yn = 'N'
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+    </select>
+
+    <select id="selectStoreDetail" parameterType="map" resultType="storeDto">
+        select * from TB_STORE where
+        1=1
+
+        <if test='id != null and id != ""'>
+            AND id = #{id}
+        </if>
+        <if test='clientId != null and clientId != ""'>
+            AND client_id = #{clientId}
+        </if>
+        <if test='clientSecret != null and clientSecret != ""'>
+            AND client_secret = #{clientSecret}
+        </if>
+
+    </select>
+
+    <update id="updateStore" parameterType="map">
+        update TB_STORE set
+            client_id = #{clientId},
+            client_secret = #{clientSecret},
+            vendor_id = #{vendorId},
+            platform = #{platform},
+            store_name = #{storeName},
+            send_email = #{sendEmail},
+            send_email_pw = #{sendEmailPw},
+            send_email_username = #{sendEmailUsername},
+            send_email_smtp_url = #{sendEmailSmtpUrl},
+            send_email_smtp_port = #{sendEmailSmtpPort},
+            send_phone = #{sendPhone},
+            nhn_sms_app_key = #{nhnSmsAppKey},
+            nhn_sms_secret_key = #{nhnSmsSecretKey},
+            nhn_kakao_app_key = #{nhnKakaoAppKey},
+            nhn_kakao_secret_key = #{nhnKakaoSecretKey},
+            nhn_kakao_sender_key = #{nhnKakaoSenderKey},
+            sms_template = #{smsTemplate},
+            mms_title_template = #{mmsTitleTemplate},
+            mms_body_template = #{mmsBodyTemplate},
+            kakao_body_template = #{kakaoBodyTemplate},
+            email_title_template = #{emailTitleTemplate},
+            email_body_template = #{emailBodyTemplate},
+
+            comfirm_flag = #{comfirmFlag},
+            comfirm_sms_template = #{comfirmSmsTemplate},
+            comfirm_mms_title_template = #{comfirmMmsTitleTemplate},
+            comfirm_mms_body_template = #{comfirmMmsBodyTemplate},
+            comfirm_kakao_body_template = #{comfirmKakaoBodyTemplate},
+            comfirm_email_title_template = #{comfirmEmailTitleTemplate},
+            comfirm_email_body_template = #{comfirmEmailBodyTemplate},
+
+            esim_mail_template = #{esimMailTemplate},
+            esim_mail_title_template = #{esimMailTitleTemplate},
+            esim_kakao_template = #{esimKakaoTemplate},
+            esim_kakao_resend_flag_template = #{esimKakaoResendFlagTemplate},
+            esim_title_template = #{esimTitleTemplate},
+            esim_body_template = #{esimBodyTemplate},
+            esim_sms_template = #{esimSmsTemplate},
+
+            ordering_use_yn = #{orderingUseYn},
+            trans_use_yn = #{transUseYn},
+            use_yn = #{useYn},
+            send_method = #{sendMethod},
+            esim_flag = #{esimFlag},
+            esim_code = #{esimCode},
+            esim_type = #{esimType},
+            esim_product_id =  #{esimProductId},
+            esim_product_days = #{esimProductDays},
+            esim_description = #{esimDescription},
+
+            esim_copy_write = #{esimCopyWrite},
+            esim_quest_link = #{esimQuestLink},
+            esim_logo_link = #{esimLogoLink},
+            esim_logo_type = #{esimLogoType},
+            del_yn = 'N',
+            esim_api_tsim_account =#{esimApiTsimAccount},
+            esim_api_tsim_secret =            #{esimApiTsimSecret},
+            esim_api_tuge_account =            #{esimApiTugeAccount},
+            esim_api_tuge_secret =            #{esimApiTugeSecret},
+            esim_api_tuge_sign =            #{esimApiTugeSign},
+            esim_api_tuge_vector =            #{esimApiTugeVector},
+            esim_api_world_move_merchant_id =            #{esimApiWorldMoveMerchantId},
+            esim_api_world_move_dept_id =            #{esimApiWorldMoveDeptId},
+            esim_api_world_move_token =            #{esimApiWorldMoveToken},
+            esim_api_niz_id =            #{esimApiNizId},
+            esim_api_niz_pass =            #{esimApiNizPass},
+            esim_api_niz_partner_code =            #{esimApiNizPartnerCode},
+            esim_api_airalo_client_id =            #{esimApiAiraloClientId},
+            esim_api_airalo_client_secret =            #{esimApiAiraloClientSecret}
+        where id = #{id}
+    </update>
+
+    <update id="deleteStore" parameterType="map">
+        update TB_STORE set
+            del_yn = 'Y'
+        where id = #{id}
+    </update>
+
+</mapper>

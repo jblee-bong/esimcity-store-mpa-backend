@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds" >
+
+    <property name="LOGS_ABSOLUTE_PATH" value="logs"/>
+
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+
+    <!-- 콘솔로 로그를 남김 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <!-- 로그 메시지 패턴 -->
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}:%-3relative]  %clr(%-5level) %clr(${PID:-}){magenta} %clr(---){faint} %clr([%15.15thread]){faint} %clr(%-40.40logger{36}){cyan} %clr(:){faint} %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 파일로 로그를 남김 -->
+    <appender name="ROLLFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_ABSOLUTE_PATH}/logback.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_ABSOLUTE_PATH}/logback.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- or whenever the file size reaches 100MB -->
+                <!-- kb, mb, gb -->
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+
+            <!-- 30일 -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 에러 일 경우 파일에 로그를 남김 -->
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${LOG_DIR}/naver-error.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_ABSOLUTE_PATH}/logback.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Database Section -->
+    <logger name="org.apache.commons.dbcp2" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+        <appender-ref ref="ERROR"/>
+    </logger>
+    <logger name="java.sql" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="jdbc" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+        <appender-ref ref="ERROR"/>
+    </logger>
+    <!-- SQL문과 해당 SQL을 실행시키는데 수행된 시간 정보(milliseconds)를 포함 -->
+    <logger name="jdbc.sqltiming" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="jdbc.resultsettable" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <!-- netflix -->
+    <logger name="com.netflix.discovery" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+        <appender-ref ref="ERROR"/>
+    </logger>
+    <!-- Hikari CP -->
+    <logger name="com.zaxxer.hikari.pool.HikariPool" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+
+    <!-- Application Section -->
+    <logger name="pbb" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+
+    <!-- Framework Section -->
+    <logger name="egovframework" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="org.springframework" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="org.springframework.scheduling" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="org.springframework.web" level="error" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+
+    <!-- root는 글로벌 로거를 의미하며, 위의 logger에 해당하지 않으면 root 로거가 실행 -->
+    <root level="error">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </root>
+
+</configuration>

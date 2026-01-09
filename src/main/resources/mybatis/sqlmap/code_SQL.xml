@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.CodeMapper">
+
+    <insert id="insertCode" parameterType="map">
+        insert into TB_CODE (
+            code_cd, code_group, code_prefix, code_name, code_sub_name, code_order, regist_dt, modify_dt, del_yn, use_yn, code_value
+        ) values (
+                  #{codeCd},
+                  #{codeGroup},
+                  #{codePrefix},
+                  #{codeName},
+                  #{codeSubName},
+                  #{codeOrder},
+                  now(),
+                  now(),
+                  'N',
+                  'Y',
+                  #{codeValue}
+                         )
+    </insert>
+
+    <update id="updateCode" parameterType="map">
+        update TB_CODE set
+            code_cd = #{codeCd},
+            code_name = #{codeName},
+            code_sub_name = #{codeSubName},
+            code_order = #{codeOrder},
+            modify_dt = now(),
+            code_value =  #{codeValue}
+        where code_cd = #{codeCd} and code_group = #{codeGroup}
+    </update>
+
+    <update id="deleteCode" parameterType="map">
+        delete from TB_CODE where
+        <if test='codeCd != null and codeCd == "00"'>
+            code_group = #{codeGroup}
+        </if>
+        <if test='codeCd != null and codeCd != "00"'>
+            code_cd = #{codeCd} and code_group = #{codeGroup}
+        </if>
+
+    </update>
+
+    <select id="fetchList" parameterType="map" resultType="codeDto">
+        select * from TB_CODE where
+        <if test='codeGroup != null and codeGroup != ""'>
+            code_group = #{codeGroup} and code_cd != '00'
+        </if>
+        <if test='codeCd != null and codeCd != ""'>
+             code_cd = #{codeCd}
+        </if>
+    </select>
+
+    <select id="fetch" parameterType="map" resultType="codeDto">
+        select * from TB_CODE where code_group = #{codeGroup} and code_cd = #{codeCd}
+    </select>
+
+    <select id="getSellerCodeAll" parameterType="map" resultType="productDto">
+
+        SELECT mi.match_info_name as origin_product_seller_management_code, p.store_id FROM TB_MATCH_INFO mi
+        INNER JOIN TB_PRODUCT_OPTION po ON mi.option_id = po.option_id
+        INNER JOIN TB_PRODUCT p ON mi.origin_product_no = p.origin_product_no
+        where 1=1
+        AND mi.del_yn = 'N'
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND p.store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+        GROUP BY mi.match_info_name
+
+    </select>
+
+</mapper>

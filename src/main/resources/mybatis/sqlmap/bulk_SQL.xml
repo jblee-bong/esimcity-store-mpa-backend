@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.BulkMapper">
+
+
+
+    <select id="selectNotUseBulkWithTitle" parameterType="bulkDto" resultType="bulkDto">
+        select * FROM TB_BULK
+        where bulk_title = #{bulkTitle} AND use_yn = 'N'
+        ORDER BY id asc
+        limit 1
+    </select>
+
+    <select id="selectNotUseBulkWithOrderId" parameterType="orderDto" resultType="bulkDto">
+        select * FROM TB_BULK
+        where order_id = #{id}
+        ORDER BY id asc
+    </select>
+
+
+    <select id="selectBulkList" parameterType="map" resultType="bulkDto">
+        select * FROM TB_BULK
+        where 1=1
+        <if test='searchText != null and searchText != ""'>
+            AND bulk_title =#{searchText}
+        </if>
+        <if test='bulkIccid != null and bulkIccid != ""'>
+            AND bulk_iccid LIKE CONCAT('%',#{bulkIccid},'%')
+        </if>
+        order by id desc
+
+        <include refid="common.pagingFooter"></include>
+    </select>
+    <select id="selectBulkListCnt" parameterType="map" resultType="int">
+        select count(1) FROM TB_BULK
+        where 1=1
+        <if test='searchText != null and searchText != ""'>
+            AND bulk_title =#{searchText}
+        </if>
+        <if test='bulkIccid != null and bulkIccid != ""'>
+            AND bulk_iccid LIKE CONCAT('%',#{bulkIccid},'%')
+        </if>
+    </select>
+
+
+    <select id="selectBulkListForExcel" parameterType="map" resultType="bulkDto">
+        select * FROM TB_BULK
+        where 1=1
+        <if test='searchText != null and searchText != ""'>
+            AND bulk_title =#{searchText}
+        </if>
+        <if test='bulkIccid != null and bulkIccid != ""'>
+            AND bulk_iccid LIKE CONCAT('%',#{bulkIccid},'%')
+        </if>
+        order by id desc
+
+    </select>
+
+    <select id="selectBulkListWithGroupByTitle" parameterType="map" resultType="map">
+        select bulk_title as bulkTitle, COUNT(bulk_title) as bulkCnt FROM TB_BULK
+        where 1=1 AND use_yn = 'N'
+        GROUP BY bulk_title
+
+    </select>
+
+
+    <insert id="insertBulk" parameterType="bulkDto" >
+        insert into TB_BULK(
+            rental_no,
+            bulk_smdp,
+            bulk_active_code,
+            bulk_iccid,
+            bulk_title,
+            bulk_open_dt,
+            bulk_expired_day,
+            bulk_expired_dt
+        ) values (
+             #{rentalNo},
+             #{bulkSmdp},
+             #{bulkActiveCode},
+             #{bulkIccid},
+             #{bulkTitle},
+             #{bulkOpenDt},
+             #{bulkExpiredDay},
+             #{bulkExpiredDt}
+        ) on duplicate key update
+            rental_no = #{rentalNo},
+            bulk_smdp = #{bulkSmdp},
+            bulk_active_code = #{bulkActiveCode},
+            bulk_iccid = #{bulkIccid},
+            bulk_title = #{bulkTitle},
+            bulk_open_dt = #{bulkOpenDt},
+            bulk_expired_day = #{bulkExpiredDay},
+            bulk_expired_dt = #{bulkExpiredDt}
+    </insert>
+
+
+    <update id="updateBulkOrder" parameterType="bulkDto">
+        update TB_BULK set
+            order_id = #{orderId},
+            use_yn = 'Y'
+        where id = #{id}
+    </update>
+
+
+    <update id="updateCancel" parameterType="map">
+        update TB_BULK set
+                           order_id = null,
+                           use_yn = 'N'
+        where id = #{id}
+    </update>
+
+    <update id="updateComfirm" parameterType="map">
+        update TB_BULK set
+                           use_yn = 'Y'
+        where id = #{id}
+    </update>
+
+    <delete id="bulkDelete" parameterType="map">
+        delete from TB_BULK
+        where id = #{id}
+    </delete>
+
+
+    <select id="adSelectCanUseStatic" parameterType="map" resultType="map">
+        select COUNT(1) as cnt
+        from TB_BULK
+        where use_yn = 'N'
+        <if test='searchText != null and searchText != ""'>
+            AND bulk_title =#{searchText}
+        </if>
+        <if test='bulkIccid != null and bulkIccid != ""'>
+            AND bulk_iccid LIKE CONCAT('%',#{bulkIccid},'%')
+        </if>
+    </select>
+
+
+    <select id="adSelectTitleGroupList" parameterType="map" resultType="map">
+        select bulk_title
+        from TB_BULK
+        group by bulk_title
+        order by bulk_title asc
+    </select>
+
+
+
+</mapper>

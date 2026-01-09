@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.MatchInfoMapper">
+
+    <resultMap id="adMatchInfo" type="matchInfoDto">
+        <id column="id" property="id" />
+        <result column="origin_product_no" property="originProductNo" />
+        <result column="option_id" property="optionId" />
+
+        <result column="origin_product_seller_management_code" property="originProductSellerManagementCode" />
+
+        <association property="productDto" column="origin_product_no" select="com.naver.naverspabackend.mybatis.mapper.ProductMapper.fetchProduct"/>
+        <association property="productOptionDto" column="option_id" select="com.naver.naverspabackend.mybatis.mapper.ProductOptionMapper.fetchProductOption"/>
+    </resultMap>
+
+    <select id="selectMatchInfoByOrder" parameterType="orderDto" resultType="matchInfoDto">
+        select * from TB_MATCH_INFO where origin_product_no = #{originProductNo} and
+            option_id = #{optionId} and (use_yn = 'Y' or esimFlag = 'Y') and del_yn = 'N'
+    </select>
+
+    <insert id="inserMatchInfo" parameterType="map">
+        insert into TB_MATCH_INFO (id,
+                                   match_info_name,
+                                   origin_product_no,
+                                   option_id,
+                                   send_method,
+                                   kakao_template_key,
+                                   comfirm_kakao_template_key,
+                                   title,
+                                   body,
+                                   mail_contents,
+                                   comfirm_mail_title,
+                                   comfirm_mail_contents,
+                                   mail_title,
+                                   regist_dt,
+                                   modify_dt,
+                                   del_yn,
+                                   use_yn,
+                                   comfirm_flag,
+                                   ordering_use_yn,
+                                   trans_use_yn,
+                                   sms_body,
+                                   main_id,
+                                   esim_code,
+                                   e_kakao_template_key,
+                                   e_kakao_resend_flag,
+                                   e_title,
+                                    e_body,
+                                    e_sms_body,
+                                    e_mail_contents,
+                                    e_mail_title,
+                                   comfirm_sms_body,
+
+                                   comfirm_title,
+                                   comfirm_body,
+                                    esimFlag,
+                                   esim_product_id,
+                                   esim_description,
+                                   esim_type,
+                                   esim_product_days
+        )
+        values (null,
+                #{matchInfoName},
+                (select A.origin_product_no from TB_PRODUCT_OPTION A where A.option_id = #{optionId} limit 1),
+                #{optionId},
+                #{sendMethod},
+                #{kakaoTemplateKey},
+                #{comfirmKakaoTemplateKey},
+                #{title},
+                #{body},
+                #{mailContents},
+                #{comfirmMailTitle},
+                #{comfirmMailContents},
+                #{mailTitle},
+                now(),
+                now(),
+                'N',
+                #{useYn},
+                #{comfirmFlag},
+                #{orderingUseYn},
+                #{transUseYn},
+                #{smsBody},
+                #{timeStamp},
+                #{esimCode},
+                #{eKakaoTemplateKey},
+                #{eKakaoResendFlag},
+                #{eTitle},
+                #{eBody},
+                #{eSmsBody},
+                #{eMailContents},
+                #{eMailTitle},
+                #{comfirmSmsBody},
+                #{comfirmTitle},
+                #{comfirmBody},
+                #{esimFlag},
+                #{esimProductId},
+               #{esimDescription},
+               #{esimType},
+               #{esimProductDays}
+
+                )
+    </insert>
+
+    <select id="adSelectMatchInfoList" resultMap="adMatchInfo" parameterType="map">
+        select mi.id,mi.main_id,mi.match_info_name, mi.origin_product_no,mi.send_method, mi.option_id,mi.regist_dt,p.origin_product_seller_management_code from TB_MATCH_INFO mi
+        INNER JOIN TB_PRODUCT_OPTION po ON mi.option_id = po.option_id
+        INNER JOIN TB_PRODUCT p ON mi.origin_product_no = p.origin_product_no
+        where mi.del_yn = 'N'
+
+        <if test='storeId != null and storeId != "all"'>
+            and po.store_id = #{storeId}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND po.store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+        <if test='originProductSellerManagementCode != null and originProductSellerManagementCode != ""'>
+            and mi.match_info_name = #{originProductSellerManagementCode}
+        </if>
+
+
+        <if test='searchText != null and searchText != ""'>
+            AND
+            (
+                po.option_name1 LIKE CONCAT('%',#{searchText},'%')
+                OR po.option_name2 LIKE CONCAT('%',#{searchText},'%')
+                OR po.option_name3 LIKE CONCAT('%',#{searchText},'%')
+                OR po.option_name4 LIKE CONCAT('%',#{searchText},'%')
+            )
+        </if>
+        order by ${orderby}
+
+        <include refid="common.pagingFooter"></include>
+    </select>
+
+    <select id="adSelectMatchInfoListCnt" resultType="int" parameterType="map">
+        select count(1) from TB_MATCH_INFO mi
+        INNER JOIN TB_PRODUCT_OPTION po ON mi.option_id = po.option_id
+        INNER JOIN TB_PRODUCT p ON mi.origin_product_no = p.origin_product_no
+
+        where mi.del_yn = 'N'
+
+        <if test='storeId != null and storeId != "all"'>
+            and po.store_id = #{storeId}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND po.store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+
+        <if test='originProductSellerManagementCode != null and originProductSellerManagementCode != ""'>
+            and mi.match_info_name = #{originProductSellerManagementCode}
+        </if>
+
+
+        <if test='searchText != null and searchText != ""'>
+            AND
+            (
+            po.option_name1 LIKE CONCAT('%',#{searchText},'%')
+            OR po.option_name2 LIKE CONCAT('%',#{searchText},'%')
+            OR po.option_name3 LIKE CONCAT('%',#{searchText},'%')
+            OR po.option_name4 LIKE CONCAT('%',#{searchText},'%')
+            )
+        </if>
+    </select>
+
+
+    <select id="adSelectMatchInfoListForExcel" resultType="matchInfoDto" parameterType="map">
+        select mi.regist_dt as create_dt, mi.*,p.origin_product_seller_management_code, p.product_name, po.option_name1,po.option_name2,po.option_name3,po.option_name4 from TB_MATCH_INFO mi
+        INNER JOIN TB_PRODUCT_OPTION po ON mi.option_id = po.option_id
+        INNER JOIN TB_PRODUCT p ON mi.origin_product_no = p.origin_product_no
+        where mi.del_yn = 'N'
+
+        <if test='storeId != null and storeId != "all"'>
+            and po.store_id = #{storeId}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND po.store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+        <if test='originProductSellerManagementCode != null and originProductSellerManagementCode != ""'>
+            and mi.match_info_name = #{originProductSellerManagementCode}
+        </if>
+
+
+        <if test='searchText != null and searchText != ""'>
+            AND
+            (
+            po.option_name1 LIKE CONCAT('%',#{searchText},'%')
+            OR po.option_name2 LIKE CONCAT('%',#{searchText},'%')
+            OR po.option_name3 LIKE CONCAT('%',#{searchText},'%')
+            OR po.option_name4 LIKE CONCAT('%',#{searchText},'%')
+            )
+        </if>
+        order by ${orderby}
+    </select>
+
+    <select id="adSelectMatchInfoListWithMainIdForExcel" resultMap="adMatchInfo" parameterType="map">
+        select mi.*,p.origin_product_seller_management_code from TB_MATCH_INFO mi
+        INNER JOIN TB_PRODUCT_OPTION po ON mi.option_id = po.option_id
+        INNER JOIN TB_PRODUCT p ON mi.origin_product_no = p.origin_product_no
+        where mi.del_yn = 'N'
+        and mi.main_id = #{mainId}
+    </select>
+
+
+    <select id="fetchMatchInfo" parameterType="map" resultMap="adMatchInfo">
+        select mi.*,p.origin_product_seller_management_code from TB_MATCH_INFO mi
+        LEFT OUTER JOIN TB_PRODUCT p ON mi.origin_product_no = p.origin_product_no
+
+        where mi.del_yn = 'N' and mi.id = #{id}
+    </select>
+
+    <select id="fetchMatchInfoListMainId" parameterType="map" resultMap="adMatchInfo">
+        select mi.*,p.origin_product_seller_management_code from TB_MATCH_INFO mi
+        LEFT OUTER JOIN TB_PRODUCT p ON mi.origin_product_no = p.origin_product_no
+
+        where mi.del_yn = 'N' and  mi.main_id = #{mainId}
+    </select>
+
+
+
+    <update id="updateMatchInfoForUpload" parameterType="matchInfoDto">
+        update TB_MATCH_INFO set
+                                 match_info_name = #{matchInfoName},
+                                 e_kakao_template_key = #{eKakaoTemplateKey},
+                                 e_kakao_resend_flag = #{eKakaoResendFlag},
+                                 mail_title = #{mailTitle},
+                                 mail_contents = #{mailContents},
+                                 comfirm_mail_title = #{comfirmMailTitle},
+                                 comfirm_mail_contents = #{comfirmMailContents},
+
+
+                                 e_sms_body = #{eSmsBody},
+                                 e_mail_contents = #{eMailContents},
+                                 e_body = #{eBody},
+                                 esim_product_id = #{esimProductId},
+                                 title = #{title},
+                                 body = #{body},
+                                 esim_code = #{esimCode},
+                                 ordering_use_yn = #{orderingUseYn},
+                                 trans_use_yn = #{transUseYn},
+                                 origin_product_no = (select A.origin_product_no from TB_PRODUCT_OPTION A where A.option_id = #{optionId} limit 1),
+                                 send_method = #{sendMethod},
+                                 esim_type = #{esimType},
+                                 e_mail_title = #{eMailTitle},
+                                 esim_description = #{esimDescription},
+                                 e_title = #{eTitle},
+                                 esim_product_days = #{esimProductDays},
+                                 option_id = #{optionId},
+                                 sms_body = #{smsBody},
+                                comfirm_sms_body = #{comfirmSmsBody},
+                                comfirm_body = #{comfirmBody},
+                                comfirm_title = #{comfirmTitle},
+                                 kakao_template_key = #{kakaoTemplateKey},
+                                comfirm_kakao_template_key = #{comfirmKakaoTemplateKey},
+
+                                 match_info_name = #{matchInfoName},
+                                 modify_dt = now()
+        where id = #{id}
+    </update>
+
+    <update id="updateMatchInfo" parameterType="map">
+        update TB_MATCH_INFO set
+             match_info_name = #{matchInfoName},
+             origin_product_no = (select A.origin_product_no from TB_PRODUCT_OPTION A where A.option_id = #{optionId} limit 1),
+             option_id = #{optionId},
+             send_method = #{sendMethod},
+             kakao_template_key = #{kakaoTemplateKey},
+            comfirm_kakao_template_key = #{comfirmKakaoTemplateKey},
+             title = #{title},
+             body = #{body},
+             sms_body = #{smsBody},
+            comfirm_sms_body = #{comfirmSmsBody},
+            comfirm_body = #{comfirmBody},
+            comfirm_title = #{comfirmTitle},
+            comfirm_mail_title = #{comfirmMailTitle},
+            comfirm_mail_contents = #{comfirmMailContents},
+             mail_contents = #{mailContents},
+             mail_title = #{mailTitle},
+             modify_dt = now(),
+             use_yn = #{useYn},
+            comfirm_flag = #{comfirmFlag},
+            ordering_use_yn = #{orderingUseYn},
+             trans_use_yn = #{transUseYn},
+             esim_code = #{esimCode},
+             e_kakao_template_key = #{eKakaoTemplateKey},
+             e_kakao_resend_flag = #{eKakaoResendFlag},
+             e_title = #{eTitle},
+             e_body = #{eBody},
+             e_sms_body = #{eSmsBody},
+             e_mail_contents = #{eMailContents},
+             e_mail_title = #{eMailTitle},
+             esimFlag = #{esimFlag},
+             esim_product_id = #{esimProductId},
+             esim_description = #{esimDescription},
+             esim_type = #{esimType},
+             esim_product_days = #{esimProductDays},
+             modify_dt = now()
+        where option_id = #{optionId}
+    </update>
+
+    <update id="deleteMatchInfo" parameterType="map">
+        delete from TB_MATCH_INFO where option_id = #{optionId}
+    </update>
+
+    <update id="deleteMatchInfoByMainId" parameterType="map">
+        delete from TB_MATCH_INFO where main_id = #{mainId}
+    </update>
+
+    <select id="disableOptionList" parameterType="map" resultType="long">
+        select option_id from TB_MATCH_INFO where main_id != #{mainId}
+    </select>
+
+
+    <select id="selectMatchInfoListAll" parameterType="matchInfoDto" resultMap="adMatchInfo">
+        select mi.*
+        from TB_MATCH_INFO mi
+        where mi.del_yn = 'N' and origin_product_no = #{originProductNo}
+
+    </select>
+
+</mapper>

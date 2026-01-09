@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사용량조회</title>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>사용량 조회</title>
+  <style id="sections-styles">
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #ffffff;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* CSS for section section:header */
+.site-header {
+      background-color: #ffffff;
+    padding: 32px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .header-container {
+    display: flex;
+      background-color: #ffffff !important;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .site-header .logo img {
+    width: 200px;
+    height: auto;
+    display: block;
+  }
+
+
+  @media (max-width: 768px) {
+    .site-header {
+      padding: 20px 0;
+    }
+
+    .site-header .logo img {
+      width: 100px;
+      height: auto;
+    }
+
+  }
+
+/* CSS for section section:country-info */
+.country-info-section {
+    padding: 1rem 0 1rem;
+    background-color: #f8fafc;
+  }
+
+  .container{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .container.usage-container {
+    background-color: #f8fafc;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .container.info-container {
+    background-color: #f8fafc;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .container.cta-container {
+    background-color: #f8fafc;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .footer-container{
+    background-color: #ffffff;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  .country-info-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .country-details {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .country-flag {
+    width: 92px;
+    height: 61px;
+  }
+
+  .country-name {
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.2;
+    color: var(--text-dark);
+    margin: 0;
+  }
+
+  .country-name-en {
+    font-weight: 400;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    border-radius: 8px;
+    padding: 12px 20px;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    border: 2px solid #ffffff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .status-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shine 3s infinite;
+  }
+
+  @keyframes shine {
+    0% { left: -100%; }
+    50%, 100% { left: 100%; }
+  }
+
+  .status-icon {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+    z-index: 1;
+  }
+
+  .status-text {
+    font-weight: 700;
+    font-size: 28px;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    position: relative;
+  }
+
+  @media (max-width: 768px) {
+    .country-info-container {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .country-name {
+      font-size: 24px;
+    }
+
+    .status-badge {
+      padding: 10px 16px;
+      border-radius: 6px;
+    }
+
+    .status-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .status-text {
+      font-size: 20px;
+    }
+  }
+
+/* CSS for section section:usage-details */
+#usage-details {
+      padding-top: 0;
+    }
+
+    .usage-section-title {
+      font-weight: 700;
+      font-size: 2rem;
+      color: #1e293b;
+      letter-spacing: -0.5px;
+      margin: 0 0 2rem 0;
+      text-align: center;
+    }
+
+    .usage-charts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .usage-card {
+      padding: 0;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border-radius: 20px;
+      border: 2px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .usage-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: linear-gradient(180deg, #2563eb 0%, #7c3aed 100%);
+      transition: width 0.3s ease;
+    }
+
+    .usage-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 28px rgba(37, 99, 235, 0.15);
+      border-color: #2563eb;
+    }
+
+    .usage-card:hover::before {
+      width: 6px;
+    }
+
+    .usage-card.data-card::before {
+      background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
+    }
+
+    .usage-card-content {
+      padding: 2rem;
+    }
+
+    .chart {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .chart-icon {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .chart-icon.data-icon {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    }
+
+    .chart-label {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #1e293b;
+      line-height: 1.5;
+      margin: 0;
+      flex: 1;
+    }
+
+    .chart-label strong {
+      font-weight: 700;
+      color: #2563eb;
+      display: inline;
+      font-size: 1.15rem;
+    }
+
+    .chart-visual {
+      position: relative;
+      width: 100%;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      margin: 0;
+    }
+
+    .progress-bar-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: #e2e8f0;
+      border-radius: 24px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+
+    .progress-bar-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+      border-radius: 24px;
+      transition: width 0.6s ease-out;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding-left: 12px;
+      min-width: 60px;
+    }
+
+    .progress-bar-fill.data {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    }
+
+    .progress-bar-fill.voice {
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    }
+
+    .progress-bar-fill.text {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+
+    .progress-percentage {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #ffffff;
+      white-space: nowrap;
+      z-index: 2;
+    }
+
+    .progress-value {
+      position: absolute;
+      right: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #1e293b;
+      z-index: 1;
+    }
+
+    @media (max-width: 968px) {
+      .usage-charts {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .usage-section-title {
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .usage-card-content {
+        padding: 1.75rem;
+      }
+
+      .chart-visual {
+        height: 44px;
+      }
+
+      .progress-bar-fill {
+        padding-left: 10px;
+        min-width: 50px;
+      }
+
+      .progress-percentage {
+        font-size: 0.85rem;
+      }
+
+      .progress-value {
+        font-size: 0.9rem;
+        right: 10px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .usage-section-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .usage-charts {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .usage-card-content {
+        padding: 1.5rem;
+      }
+
+      .chart-icon {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        font-size: 1.25rem;
+      }
+
+      .chart-visual {
+        height: 40px;
+      }
+
+      .chart-label {
+        font-size: 1rem;
+      }
+
+      .chart-label strong {
+        font-size: 1.05rem;
+      }
+
+      .progress-percentage {
+        font-size: 0.8rem;
+      }
+
+      .progress-value {
+        font-size: 0.85rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .usage-card-content {
+        padding: 1.25rem;
+      }
+
+      .chart-icon {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        font-size: 1.1rem;
+      }
+
+      .chart-visual {
+        height: 36px;
+      }
+
+      .progress-bar-fill {
+        padding-left: 8px;
+        min-width: 45px;
+      }
+
+      .progress-percentage {
+        font-size: 0.75rem;
+      }
+
+      .progress-value {
+        font-size: 0.8rem;
+        right: 8px;
+      }
+    }
+
+/* CSS for section section:info-cards */
+#info-cards {
+    padding-top: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .info-card {
+    padding: 0;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 20px;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(180deg, #2563eb 0%, #7c3aed 100%);
+    transition: width 0.3s ease;
+  }
+
+  .info-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.15);
+    border-color: #2563eb;
+  }
+
+  .info-card:hover::before {
+    width: 6px;
+  }
+
+  .info-card-content {
+    padding: 2rem;
+  }
+
+  .info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .info-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .info-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  }
+
+  .info-icon.package {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  }
+
+  .info-icon.validity {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+  }
+
+  .info-icon.reset {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  }
+
+  .info-icon.iccid {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  }
+
+  .info-text {
+    flex: 1;
+  }
+
+  .info-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .info-title.validity-title {
+    font-weight: 800;
+    color: #2563eb;
+  }
+
+  .info-content {
+    font-weight: 500;
+    font-size: 1.05rem;
+    color: #334155;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .info-content.hint {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+    font-weight: 400;
+  }
+
+  @media (max-width: 768px) {
+    #info-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .info-card-content {
+      padding: 1.5rem;
+    }
+
+    .info-icon {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      font-size: 1.25rem;
+    }
+
+    .info-item {
+      gap: 0.875rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .info-title {
+      font-size: 1rem;
+    }
+
+    .info-content {
+      font-size: 0.95rem;
+      word-break: break-word;
+    }
+  }
+
+/* CSS for section section:cta */
+#cta {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .cta-button {
+    display: block;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    border-radius: 50px;
+    padding: 1.2rem 2.5rem;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #ffffff;
+    line-height: 1.2;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  }
+
+  @media (max-width: 768px) {
+    .cta-button {
+      font-size: 1rem;
+      padding: 1rem 2rem;
+    }
+  }
+
+/* CSS for section section:footer */
+  .site-footer {
+    color: white;
+    padding: 0rem 0 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .footer-logo {
+    width: 200px;
+    height: auto;
+    margin-bottom: 16px;
+  }
+
+
+  .footer-promo {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #60a5fa;
+    margin: 0;
+    padding-top: 0.5rem;
+  }
+
+  .footer-divider {
+    border: none;
+    border-top: 1px solid #334155;
+    margin: 2rem 0 1.5rem;
+  }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .copyright {
+    font-weight: 400;
+    color: #94a3b8;
+    letter-spacing: -0.3px;
+    margin: 0;
+  }
+
+
+  @media (max-width: 968px) {
+    .footer-top,
+    .footer-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.5rem;
+    }
+
+    .footer-promo {
+      padding-top: 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .site-footer {
+      padding: 0rem 0 1rem;
+    }
+
+    .footer-logo {
+      width: 100px;
+      height: auto;
+    }
+
+    .copyright{
+      font-size: 0.85rem;
+    }
+
+    .footer-promo {
+      font-size: 1rem;
+    }
+  }
+  </style>
+  <script src="global.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-container">
+    <a th:href="${esimLogoLink}" class="logo">
+      <img th:src="${'/assets/img/esimcity/' + esimLogoType + '.png'}" alt="Sim Village Logo">
+    </a>
+  </div>
+</header>
+<section id="country-info" class="country-info-section">
+  <div class="container country-info-container">
+    <div class="status-badge" th:if="${end}">
+      <img src="/assets/img/esimcity/1_519.svg" alt="" class="status-icon">
+      <span class="status-text" >만료</span>
+    </div>
+  </div>
+</section>
+  <section id="usage-details" class="container usage-container">
+    <h2 class="usage-section-title">사용량 세부정보</h2>
+    <div class="usage-charts">
+      <div class="usage-card data-card">
+        <div class="usage-card-content">
+          <div class="chart">
+            <div class="chart-header">
+              <div class="chart-icon data-icon">📊</div>
+              <p class="chart-label">데이터 <strong th:if="${esimType}" th:text="${totalUsageTxt + '/일'}"></strong><strong th:unless="${esimType}" th:text="${totalUsageTxt}"></strong></p>
+            </div>
+            <div class="chart-visual">
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill data" id="progress-bar1" style="width: 0%;">
+                  <span class="progress-percentage" id="progress-percentage1">0%</span>
+                </div>
+                <span class="progress-value" id="progress-value1" th:text="${usageTxt}">0MB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+<section id="info-cards" class="container info-container">
+  <div class="info-card">
+    <div class="info-card-content">
+      <div class="info-item">
+        <div class="info-icon package">📦</div>
+        <div class="info-text">
+          <h3 class="info-title package-title">이용 중인 상품</h3>
+          <p class="info-content" th:text="${title}"></p>
+        </div>
+      </div>
+      <div class="info-item" th:if="${esimType}">
+        <div class="info-icon reset">🔄</div>
+        <div class="info-text">
+          <h3 class="info-title">리셋시간</h3>
+          <p class="info-content">KST 기준 매일 01시에 1일 단위로 갱신됩니다</p>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon validity">⏰</div>
+        <div class="info-text">
+          <h3 class="info-title validity-title">사용 종료일</h3>
+          <p class="info-content" th:text="${expiredAt}"></p>
+          <p class="info-content hint">KST 기준</p>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon iccid">🔢</div>
+        <div class="info-text">
+          <h3 class="info-title">SIM 카드 번호</h3>
+          <p class="info-content" th:text="${iccid}"></p>
+          <p class="info-content hint">문의 시 이 번호를 알려주시면 빠른 상담이 가능합니다</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+<section id="cta" class="container cta-container">
+  <a th:href="${esimQuestLink}" class="cta-button">문의하기</a>
+</section>
+<footer class="site-footer">
+  <div class="container footer-container">
+    <div class="footer-top">
+      <div class="footer-logo-group">
+        <img th:src="${'/assets/img/esimcity/' + esimLogoType + '.png'}" alt="Sim Village Logo" class="footer-logo">
+      </div>
+
+    </div>
+    <hr class="footer-divider">
+    <div class="footer-bottom">
+      <p class="copyright" th:text="${esimCopyWrite}"></p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
+
+<script>
+  var totalUsage = '[[${totalUsage}]]';
+  var usage = '[[${usage}]]';
+
+  const progressBar1 = document.getElementById('progress-bar1');
+  const progressPercentage1 = document.getElementById('progress-percentage1');
+  let percentage1 = 0;
+  
+  if(totalUsage=='unlimited') {
+    percentage1 = 100;
+  } else if(totalUsage=='0.0') {
+    percentage1 = 100;
+  } else {
+    percentage1 = Math.min(100, Math.max(0, (Number(usage)/Number(totalUsage)*100)));
+  }
+  
+  progressBar1.style.width = percentage1 + '%';
+  progressPercentage1.textContent = Math.round(percentage1) + '%';
+</script>

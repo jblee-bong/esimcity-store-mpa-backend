@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.TopupOrderMapper">
+
+    <insert id="insert" parameterType="topupOrderDto" >
+        insert into TB_TOPUP_ORDER (
+            store_id,
+            order_id,
+            topup_status,
+            payment_status,
+            esim_corp,
+            esim_iccid,
+            shipping_tel,
+            shipping_name,
+            send_date_time ,
+            shipping_mail ,
+            topup_usd_price,
+            topup_krw_price,
+            topup_param_json,
+            product_option,
+            token_id
+        ) values (
+                #{storeId},
+                #{orderId},
+                #{topupStatus},
+                #{paymentStatus},
+                #{esimCorp},
+                #{esimIccid},
+                #{shippingTel},
+                #{shippingName},
+                null,
+                #{shippingMail},
+                #{topupUsdprice},
+                #{topupKrwprice},
+                #{topupParamJson},
+                #{productOption},
+                #{tokenId}
+        )
+    </insert>
+
+    <select id="findById" parameterType="topupOrderDto" resultType="topupOrderDto">
+        select * from TB_TOPUP_ORDER where id = #{id}
+    </select>
+    <select id="findByTokenId" parameterType="topupOrderDto" resultType="topupOrderDto">
+        select * from TB_TOPUP_ORDER where token_id = #{tokenId}
+    </select>
+
+    <update id="updateTopupStatus" parameterType="topupOrderDto" >
+        update TB_TOPUP_ORDER set
+            topup_status = #{topupStatus}
+        where id=#{id}
+    </update>
+
+    <update id="updateTopupOrderNo" parameterType="topupOrderDto" >
+        update TB_TOPUP_ORDER set
+            topup_order_no = #{topupOrderNo}
+        where id=#{id}
+    </update>
+
+
+    <update id="updatePaypalStatus" parameterType="topupOrderDto" >
+        update TB_TOPUP_ORDER set
+            payment_status = #{paymentStatus}
+        where id=#{id}
+    </update>
+</mapper>

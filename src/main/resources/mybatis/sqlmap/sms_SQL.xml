@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.SmsMapper">
+
+
+    <!-- nhn Sms insert -->
+    <insert id="insertSmsResponse" parameterType="map">
+        insert into SMS_MSG_RES (
+            seq,
+            header_result_code,
+            header_result_message,
+            header_is_successful,
+            message_request_id,
+            message_status_code,
+            message_recipient_no,
+            message_recipient_seq,
+            message_recipient_message,
+            message_recipient_code,
+            sender,
+            sender_no,
+            reg_date,
+            template_contents,
+            template_title,
+            store_id,
+            origin_product_no,
+            option_id,
+            type
+        ) values (
+             null,
+             #{header_resultCode},
+             #{header_resultMessage},
+             #{header_isSuccessful},
+             #{message_request_id},
+             #{message_status_code},
+             #{message_recipientNo},
+             #{message_recipientSeq},
+             #{message_resultMessage},
+             #{message_resultCode},
+             #{sender},
+             #{senderNo},
+             now(),
+             #{template_contents},
+             #{template_title},
+             #{storeId},
+             #{originProductNo},
+             #{optionId},
+              #{type}
+         )
+    </insert>
+
+    <select id="adSelectSmsList" parameterType="map" resultType="smsDto">
+        select *
+        from SMS_MSG_RES
+        where 1=1
+        <if test='storeId != null and storeId != "all"'>
+            and store_id = #{storeId}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+
+        order by seq desc
+        <include refid="common.pagingFooter"></include>
+    </select>
+
+    <select id="adSelectSmsListCnt" parameterType="map" resultType="int">
+        select count(1)
+        from SMS_MSG_RES
+        where 1=1
+        <if test='storeId != null and storeId != "all"'>
+            and store_id = #{storeId}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+    </select>
+
+</mapper>

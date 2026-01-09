@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.KakaoContentsMapper">
+
+    <insert id="insertKakaoContents" parameterType="map">
+        insert into TB_KAKAO_CONTENTS
+        (
+            kakao_parameter,
+            kakao_template_key,
+            esim_flag,
+            store_id,
+            order_id
+         )
+        values (#{kakaoParameter},
+                #{kakaoTemplateKey},
+                #{esimFlag},
+                #{storeId},
+                #{orderId}
+                )
+    </insert>
+
+    <select id="adSelectKakaContentsList" parameterType="long" resultType="kakaoContentsDto">
+        SELECT * FROM TB_KAKAO_CONTENTS
+        WHERE order_id = #{id}
+    </select>
+
+
+    <select id="findById" parameterType="map" resultType="kakaoContentsDto">
+        select *
+        from TB_KAKAO_CONTENTS where id = #{id}
+    </select>
+
+</mapper>

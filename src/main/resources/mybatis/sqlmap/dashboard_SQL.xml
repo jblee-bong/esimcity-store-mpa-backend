@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.DashboardMapper">
+
+    <select id="selectDashboardListWithStoreId" resultType="map" parameterType="map">
+        SELECT
+            tb.store_id AS storeId, tb.origin_product_no AS originProductNo, tb.total_payment_amount_sum AS totalPaymentAmountSum, tb.origin_product_no_cnt AS originProductNoCnt
+             , p.origin_product_seller_management_code AS originProductSellerManagementCode, s.store_name AS storeName FROM (
+                                                                                                                                SELECT store_id ,origin_product_no, SUM(total_payment_amount) AS total_payment_amount_sum,  COUNT(origin_product_no) AS origin_product_no_cnt FROM TB_ORDER
+                                                                                                                                WHERE store_id = #{storeId} and del_yn = 'N' AND send_status NOT IN (4,5,6,7)
+                                                                                                                                <if test='startDate != null and startDate != ""'>
+                                                                                                                                    and regist_dt <![CDATA[>=]]> CONCAT(#{startDate},' 00:00:00')
+                                                                                                                                </if>
+                                                                                                                                <if test='endDate != null and endDate != ""'>
+                                                                                                                                    and regist_dt <![CDATA[<=]]> CONCAT(#{endDate},' 23:59:59')
+                                                                                                                                </if>
+                                                                                                                                GROUP BY store_id, origin_product_no
+                                                                                                                            ) tb
+                                                                                                                                INNER JOIN TB_PRODUCT p ON tb.origin_product_no = p.origin_product_no
+                                                                                                                                INNER JOIN TB_STORE s ON tb.store_id = s.id
+
+        ORDER BY originProductNoCnt asc
+    </select>
+
+
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.EsimApiIngStepLogsMapper">
+
+
+    <insert id="insert" parameterType="esimApiIngStepLogsDto">
+        insert into TB_ESIM_API_ING_STEP_LOGS (
+            esim_logs,
+            order_id
+        ) values (
+                     #{esimLogs},
+                     #{orderId}
+                 )
+    </insert>
+
+
+    <select id="adSelectEsimApiIngStepLogsList" parameterType="long" resultType="esimApiIngStepLogsDto">
+        SELECT * FROM TB_ESIM_API_ING_STEP_LOGS
+        WHERE order_id = #{id}  ORDER BY id asc
+    </select>
+
+</mapper>

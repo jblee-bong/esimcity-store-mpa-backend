@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.ApiPurchaseItemMapper">
+
+
+
+    <select id="selectApiPurchaseItemWithApiPurchaseItemType" parameterType="apiPurchaseItemDto" resultType="apiPurchaseItemDto">
+        select * FROM TB_API_PURCHASE_ITEM
+        where api_purchase_item_type = #{apiPurchaseItemType}
+
+        <if test='searchKeyword != null and searchKeyword != ""'>
+            and (LOWER(api_purchase_item_procut_id) LIKE CONCAT('%',LOWER(#{searchKeyword}),'%') or
+            LOWER(api_purchase_item_description) LIKE CONCAT('%',LOWER(#{searchKeyword}),'%'))
+        </if>
+        ORDER BY regist_dt DESC
+    </select>
+
+
+    <select id="selectApiPurchaseItemWithApiPurchaseItemTypeAndApiPurchaseItemProcutId" parameterType="apiPurchaseItemDto" resultType="apiPurchaseItemDto">
+        select * FROM TB_API_PURCHASE_ITEM
+        where api_purchase_item_type = #{apiPurchaseItemType}
+          and api_purchase_item_procut_id = #{apiPurchaseItemProcutId}
+
+    </select>
+
+
+    <select id="selectApiPurchaseItemListForTopup" parameterType="apiPurchaseItemDto" resultType="apiPurchaseItemDto">
+        select * FROM TB_API_PURCHASE_ITEM
+        where api_purchase_item_type = #{apiPurchaseItemType}
+          and api_purchase_cover_domain_code = (select api_purchase_cover_domain_code from TB_API_PURCHASE_ITEM where api_purchase_item_procut_id =  #{apiPurchaseItemProcutId})
+          and api_purchase_apn = (select api_purchase_apn from TB_API_PURCHASE_ITEM where api_purchase_item_procut_id =  #{apiPurchaseItemProcutId})
+          and api_purchase_is_charge=1
+    </select>
+
+    <select id="selectApiPurchaseItemListForTopupWithTuge" parameterType="apiPurchaseItemDto" resultType="apiPurchaseItemDto">
+        select * FROM TB_API_PURCHASE_ITEM
+        where api_purchase_item_type = #{apiPurchaseItemType}
+          and api_purchase_item_card_type = #{apiPurchaseItemCardType}
+          and api_purchase_cover_domain_code = #{apiPurchaseCoverDomainCode}
+          and api_purchase_is_charge=1
+    </select>
+
+
+
+    <select id="findById" parameterType="apiPurchaseItemDto" resultType="apiPurchaseItemDto">
+        select * FROM TB_API_PURCHASE_ITEM
+        where api_purchase_item_type = #{apiPurchaseItemType} AND api_purchase_item_procut_id = #{apiPurchaseItemProcutId}
+    </select>
+
+
+
+    <delete id="deleteWithApiPurchaseItemType" parameterType="apiPurchaseItemDto">
+        delete FROM TB_API_PURCHASE_ITEM
+        where api_purchase_item_type = #{apiPurchaseItemType}
+    </delete>
+
+
+    <delete id="deleteWithApiCardType">
+        delete FROM TB_API_CARD_TYPE
+    </delete>
+
+
+    <insert id="insert" parameterType="apiPurchaseItemDto" >
+        INSERT INTO TB_API_PURCHASE_ITEM
+        (
+            api_purchase_item_procut_id,
+            api_purchase_item_type,
+            api_purchase_item_description,
+            api_purchase_item_select_type,
+            api_purchase_item_days,
+            api_purchase_price,
+            api_purchase_krw_price,
+            api_purchase_currency,
+            api_purchase_product_type,
+            api_purchase_data_total,
+            api_purchase_data_unit,
+            api_purchase_slow_speed,
+            api_purchase_cover_domain_code,
+            api_purchase_item_is_daily,
+            api_purchase_apn,
+            api_purchase_is_charge,
+            api_purchase_item_card_type,
+            api_purchase_item_period_type
+        )VALUES
+             (
+               #{apiPurchaseItemProcutId},
+               #{apiPurchaseItemType},
+               #{apiPurchaseItemDescription},
+               #{apiPurchaseItemSelectType},
+               #{apiPurchaseItemDays},
+               #{apiPurchasePrice},
+               #{apiPurchaseKrwPrice},
+               #{apiPurchaseCurrency},
+               #{apiPurchaseProductType},
+               #{apiPurchaseDataTotal},
+               #{apiPurchaseDataUnit},
+               #{apiPurchaseSlowSpeed},
+               #{apiPurchaseCoverDomainCode},
+               #{apiPurchaseItemIsDaily},
+               #{apiPurchaseApn},
+               #{apiPurchaseIsCharge},
+               #{apiPurchaseItemCardType},
+               #{apiPurchaseItemPeriodType}
+             );
+    </insert>
+
+    <insert id="insertCardType" parameterType="apiCardTypeDto" >
+        INSERT INTO TB_API_CARD_TYPE
+        (
+            card_type,
+            time_zone,
+            renew_yn,
+            support_get_usage_yn,
+            renew_count
+        )VALUES
+            (
+                #{cardType},
+                #{timeZone},
+                #{renewYn},
+                #{supportGetUsageYn},
+                #{renewCount}
+            );
+    </insert>
+
+
+    <select id="selectCardTypeFindByCardType" parameterType="apiCardTypeDto" resultType="apiCardTypeDto">
+        select * FROM TB_API_CARD_TYPE
+        where card_type = #{cardType}
+
+    </select>
+
+
+</mapper>

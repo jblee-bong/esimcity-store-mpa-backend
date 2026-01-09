@@ -1,0 +1,631 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.OrderMapper">
+
+    <insert id="insertOrder" parameterType="orderDto" >
+        insert into TB_ORDER(
+            id,
+            store_id,
+            origin_product_no,
+            option_id,
+            product_order_id,
+            product_name,
+            product_option,
+            order_id,
+            orderer_id,
+            orderer_name,
+            orderer_no,
+            orderer_tel,
+            payment_date,
+            shipping_memo,
+            quantity,
+            all_quantity,
+            cancel_quantity,
+            shipment_box_id,
+            unit_price,
+            delivery_fee_amount,
+            total_payment_amount,
+            shipping_base_address,
+            shipping_zip_code,
+            shipping_detailed_address,
+            shipping_tel1,
+            shipping_tel2,
+            shipping_name,
+            ordering_use_status
+            <if test='sendStatus != null and sendStatus != "" and sendStatus != "99"'>
+                ,send_status
+            </if>
+
+        ) values (
+             null,
+             #{storeId},
+             #{originProductNo},
+             #{optionId},
+             #{productOrderId},
+             #{productName},
+             #{productOption},
+             #{orderId},
+             #{ordererId},
+             #{ordererName},
+             #{ordererNo},
+             #{ordererTel},
+             #{paymentDate},
+             #{shippingMemo},
+             #{quantity},
+             #{allQuantity},
+             #{cancelQuantity},
+             #{shipmentBoxId},
+             #{unitPrice},
+             #{deliveryFeeAmount},
+             #{totalPaymentAmount},
+             #{shippingBaseAddress},
+             #{shippingZipCode},
+             #{shippingDetailedAddress},
+             #{shippingTel1},
+             #{shippingTel2},
+             #{shippingName},
+            #{orderingUseStatus}
+            <if test='sendStatus != null and sendStatus != "" and sendStatus != "99"'>
+                ,#{sendStatus}
+            </if>
+        ) on duplicate key update
+            product_order_id = #{productOrderId},
+            product_name = #{productName},
+            product_option = #{productOption},
+            order_id = #{orderId},
+            orderer_id = #{ordererId},
+            orderer_name = #{ordererName},
+            orderer_no = #{ordererNo},
+            orderer_tel = #{ordererTel},
+            payment_date = #{paymentDate},
+            shipping_memo = #{shippingMemo},
+            quantity = #{quantity},
+            all_quantity = #{allQuantity},
+            cancel_quantity = #{cancelQuantity},
+            shipment_box_id = #{shipmentBoxId},
+            unit_price = #{unitPrice},
+            delivery_fee_amount = #{deliveryFeeAmount},
+            total_payment_amount = #{totalPaymentAmount},
+            modify_dt = now(),
+            shipping_base_address = #{shippingBaseAddress},
+            shipping_zip_code = #{shippingZipCode},
+            shipping_detailed_address = #{shippingDetailedAddress},
+            shipping_tel1 = #{shippingTel1},
+            shipping_tel2 = #{shippingTel2},
+            shipping_name = #{shippingName},
+            ordering_use_status = #{orderingUseStatus}
+            <if test='sendStatus != null and sendStatus != "" and sendStatus != "99"'>
+                ,send_status = #{sendStatus}
+            </if>
+            <if test='sendStatus != null and sendStatus == "99"'>
+                ,send_status = before_send_status
+            </if>
+    </insert>
+
+    <update id="updateBeforeStatus"  parameterType="orderDto">
+        update TB_ORDER
+        set before_send_status = send_status
+        where
+            product_order_id = #{productOrderId}
+            AND order_id = #{orderId}
+    </update>
+
+
+    <select id="selectOrderWithProductOrderIdAndOrderId"  parameterType="orderDto"   resultType="orderDto">
+        select * FROM TB_ORDER
+        where
+            product_order_id = #{productOrderId}
+          AND order_id = #{orderId}
+    </select>
+
+    <select id="selectOrderForSms" parameterType="storeDto" resultType="orderDto">
+        select o.*,
+               po.option_name1,
+                po.option_name2,
+                po.option_name3,
+                po.option_name4
+        from (<include refid="common.existTbOrder"></include>) o
+        LEFT OUTER JOIN TB_PRODUCT_OPTION po ON po.option_id = o.option_id
+        where o.store_id = #{id} and o.send_date_time is null and (o.send_status = 0  OR  o.send_status = 8) and o.payment_date > date_add(NOW(), <include refid="common.thirtyMinutesAgo"/>);
+    </select>
+
+
+    <select id="selectOrderForCancelIccidUpdate" parameterType="storeDto" resultType="orderDto">
+        select o.*,
+        po.option_name1,
+        po.option_name2,
+        po.option_name3,
+        po.option_name4
+        from (<include refid="common.existTbOrder"></include>) o
+        LEFT OUTER JOIN TB_PRODUCT_OPTION po ON po.option_id = o.option_id
+        WHERE  o.store_id = #{id} and o.send_status <![CDATA[<>]]> 0 AND o.esim_api_request_id is not null and (o.esim_iccid is null OR esim_iccid = '') and o.payment_date > date_add(NOW(), <include refid="common.thirtyMinutesAgo"/>);
+    </select>
+
+
+    <select id="selectOrderForTransStatusChange" parameterType="storeDto" resultType="orderDto">
+        select o.*
+        from (<include refid="common.existTbOrder"></include>) o
+        where o.store_id = #{id} and o.trans_use_yn ='Y' and trans_success_yn ='N' and o.payment_date > date_add(NOW(), <include refid="common.thirtyMinutesAgo"/>);
+    </select>
+
+    <select id="selectOrderForOrderingStatusChange" parameterType="storeDto" resultType="orderDto">
+        select o.*
+        from (<include refid="common.existTbOrder"></include>) o
+        where o.store_id = #{id} and o.ordering_use_status =0 and o.payment_date > date_add(NOW(), <include refid="common.thirtyMinutesAgo"/>);
+    </select>
+
+
+    <update id="updateOrderSms" parameterType="orderDto">
+        update TB_ORDER set
+                            send_status = #{sendStatus},
+                            send_method = #{sendMethod},
+                            send_date_time = now(),
+                            fail_method = #{failMethod} ,
+                            esim_api_request_id = #{esimApiRequestId},
+                            esim_corp = #{esimCorp},
+                            esim_activation_code = #{esimActivationCode},
+                            esim_description = #{esimDescription},
+                            esim_product_days =#{esimProductDays},
+                            esim_product_id = #{esimProductId},
+                            trans_use_yn = #{transUseYn}
+        where id = #{id}
+    </update>
+
+    <update id="updateOrderSmsForEsim" parameterType="orderDto">
+        update TB_ORDER set
+                            send_status = #{sendStatus},
+                            send_method = #{sendMethod},
+                            fail_method = #{failMethod} ,
+                            esim_api_request_id = #{esimApiRequestId},
+                            esim_corp = #{esimCorp},
+                            esim_activation_code = #{esimActivationCode},
+                            esim_description = #{esimDescription},
+                            esim_product_days =#{esimProductDays},
+                            esim_product_id = #{esimProductId},
+                            esim_rcode = #{esimRcode}
+        where id = #{id}
+    </update>
+
+    <update id="updateOrderSmsForEsimIccid" parameterType="orderDto">
+        update TB_ORDER set
+                esim_iccid = (CASE WHEN esim_iccid IS NULL THEN #{esimIccid} ELSE CONCAT(esim_iccid,',',#{esimIccid}) END )
+        where id = #{id}
+    </update>
+
+
+    <update id="updateOrderSmsForEsimApn" parameterType="orderDto">
+        update TB_ORDER set
+            esim_apn = #{esimApn}
+        where id = #{id}
+    </update>
+
+
+    <update id="updateOrderSmsForEsimActivationCode" parameterType="orderDto">
+        update TB_ORDER set
+            esim_activation_code = (CASE WHEN esim_activation_code IS NULL THEN #{esimActivationCode} ELSE CONCAT(esim_activation_code,',',#{esimActivationCode}) END )
+        where id = #{id}
+    </update>
+
+
+    <update id="updateOrderSmsForEsimApiRequestId" parameterType="orderDto">
+        update TB_ORDER set
+            esim_api_request_id = (CASE WHEN esim_api_request_id IS NULL THEN #{esimApiRequestId} ELSE CONCAT(esim_api_request_id,',',#{esimApiRequestId}) END )
+        where id = #{id}
+    </update>
+
+    <update id="updateOrderMethod" parameterType="orderDto">
+        update TB_ORDER set
+                re_send_method = #{reSendMethod},
+                re_fail_method = #{reFailMethod}
+        where id = #{id}
+    </update>
+
+
+    <update id="updateOrderSmsForEsimIccidAll" parameterType="orderDto">
+        update TB_ORDER set
+            esim_iccid = #{esimIccid}
+        where id = #{id}
+    </update>
+    <update id="updateOrderSmsForEsimIccidWordMove" parameterType="orderDto">
+        update TB_ORDER set
+            esim_iccid = #{esimIccid},
+            esim_rcode = #{esimRcode}
+        where id = #{id}
+    </update>
+
+
+    <select id="selectCountOrderWorldMoveEsim" parameterType="map" resultType="int">
+        select count(1) FROM TB_ORDER_WORDMOVE_ESIM where order_id = #{orderId}
+    </select>
+
+    <select id="selectOrderWorldMoveEsim" parameterType="orderWorldmoveEsimDto" resultType="orderWorldmoveEsimDto">
+        select * FROM TB_ORDER_WORDMOVE_ESIM where order_id = #{orderId} and esim_type = #{esimType} and esim_iccid = #{esimIccid};
+    </select>
+
+
+    <select id="selectOrderWorldMoveEsimFirst" parameterType="orderWorldmoveEsimDto" resultType="orderWorldmoveEsimDto">
+        select * FROM TB_ORDER_WORDMOVE_ESIM where order_id = #{orderId} limit 1;
+    </select>
+
+
+    <select id="selectListOrderTugeEsim" parameterType="map" resultType="orderTugeEsimDto">
+        select * FROM TB_ORDER_TUGE_ESIM where order_id = #{orderId} order by id asc
+    </select>
+
+
+    <update id="updateOrderStatus" parameterType="map">
+        update TB_ORDER set
+                            send_status = #{sendStatus},
+
+                            <if test='sendStatus != null and sendStatus == "4"'>
+                                change_unit_price = unit_price,
+                                unit_price = #{changeUnitPrice},
+
+                                change_total_payment_amount = total_payment_amount,
+                                total_payment_amount = #{totalPaymentAmount}
+                            </if>
+                            <if test='sendStatus != null and sendStatus != "4"'>
+                                unit_price = change_unit_price,
+                                total_payment_amount = change_total_payment_amount
+                            </if>
+        where id = #{id}
+    </update>
+
+    <update id="updateOrderOnlyStatus" parameterType="map">
+        update TB_ORDER set
+        send_status = #{sendStatus}
+        where id = #{id}
+    </update>
+
+
+    <select id="adSelectOrder" parameterType="map" resultType="orderDto">
+        select o.*
+        from (<include refid="common.existTbOrder"></include>) o
+        where o.del_yn = 'N'
+        and id = #{id}
+    </select>
+
+    <select id="selectOrderWithEsimIccid" parameterType="orderDto" resultType="orderDto">
+        select o.*
+        from (<include refid="common.existTbOrder"></include>) o
+        where o.del_yn = 'N'
+        and esim_iccid like CONCAT('%',#{esimIccid},'%')
+    </select>
+
+    <select id="selectOrderWithEsimApiRequestId" parameterType="orderDto" resultType="orderDto">
+        select o.*
+        from (<include refid="common.existTbOrder"></include>) o
+        where o.del_yn = 'N'
+        and esim_api_request_id like CONCAT('%',#{esimApiRequestId},'%')
+    </select>
+
+
+
+
+
+    <select id="adSelectOrderList" parameterType="map" resultType="orderDto">
+        select o.*, p.origin_product_seller_management_code,
+        po.option_name1,
+        po.option_name2,
+        po.option_name3,
+        po.option_name4
+        from (<include refid="common.existTbOrder"></include>) o
+        LEFT OUTER JOIN TB_PRODUCT p ON o.origin_product_no = p.origin_product_no
+        LEFT OUTER JOIN TB_PRODUCT_OPTION po ON po.option_id = o.option_id
+        where o.del_yn = 'N'
+        <if test='tab != null and tab != "all"'>
+            and o.store_id = #{tab}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND o.store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+        <if test='startDate != null and startDate != ""'>
+            and o.payment_date <![CDATA[>=]]> CONCAT(#{startDate},' 00:00:00')
+        </if>
+        <if test='endDate != null and endDate != ""'>
+            and o.payment_date <![CDATA[<=]]> CONCAT(#{endDate},' 23:59:59')
+        </if>
+        <if test='ordererName != null and ordererName != ""'>
+            and o.orderer_name LIKE CONCAT('%',#{ordererName},'%')
+        </if>
+        <if test='ordererTel != null and ordererTel != ""'>
+            and o.orderer_tel LIKE CONCAT('%',#{ordererTel},'%')
+        </if>
+        <if test='shippingTel1 != null and shippingTel1 != ""'>
+            and o.shipping_tel1 LIKE CONCAT('%',#{shippingTel1},'%')
+        </if>
+        <if test='esimIccid != null and esimIccid != ""'>
+            and o.esim_iccid LIKE CONCAT('%',#{esimIccid},'%')
+        </if>
+        <if test='productOrderId != null and productOrderId != ""'>
+            and o.product_order_id LIKE CONCAT('%',#{productOrderId},'%')
+        </if>
+
+
+
+        order by ${orderby}
+        <include refid="common.pagingFooter"></include>
+    </select>
+
+
+    <select id="fetchOrderListForExcel" parameterType="map" resultType="orderDto">
+        select o.*, p.origin_product_seller_management_code,
+        po.option_name1,
+        po.option_name2,
+        po.option_name3,
+        po.option_name4,
+        CASE WHEN o.send_status = 0 THEN '미발신'
+             WHEN o.send_status = 1 THEN '발신'
+             WHEN o.send_status = 2 THEN '부분실패'
+             WHEN o.send_status = 3 THEN '발송실패'
+             WHEN o.send_status = 4 THEN '취소'
+             WHEN o.send_status = 5 THEN '취소요청'
+             WHEN o.send_status = 6 THEN '반품'
+             WHEN o.send_status = 7 THEN '반품요청'
+        ELSE '' END AS send_status_nm
+
+        from (<include refid="common.existTbOrder"></include>) o
+        LEFT OUTER JOIN TB_PRODUCT p ON o.origin_product_no = p.origin_product_no
+        LEFT OUTER JOIN TB_PRODUCT_OPTION po ON po.option_id = o.option_id
+        where o.del_yn = 'N'
+        <if test='tab != null and tab != "all"'>
+            and o.store_id = #{tab}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND o.store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+        <if test='startDate != null and startDate != ""'>
+            and o.payment_date <![CDATA[>=]]> CONCAT(#{startDate},' 00:00:00')
+        </if>
+        <if test='endDate != null and endDate != ""'>
+            and o.payment_date <![CDATA[<=]]> CONCAT(#{endDate},' 23:59:59')
+        </if>
+        <if test='ordererName != null and ordererName != ""'>
+            and o.orderer_name LIKE CONCAT('%',#{ordererName},'%')
+        </if>
+        <if test='ordererTel != null and ordererTel != ""'>
+            and o.orderer_tel LIKE CONCAT('%',#{ordererTel},'%')
+        </if>
+        <if test='shippingTel1 != null and shippingTel1 != ""'>
+            and o.shipping_tel1 LIKE CONCAT('%',#{shippingTel1},'%')
+        </if>
+        <if test='esimIccid != null and esimIccid != ""'>
+            and o.esim_iccid LIKE CONCAT('%',#{esimIccid},'%')
+        </if>
+        <if test='productOrderId != null and productOrderId != ""'>
+            and o.product_order_id LIKE CONCAT('%',#{productOrderId},'%')
+        </if>
+        order by ${orderby}
+    </select>
+
+
+
+
+
+    <select id="adSelectOrderListCnt" parameterType="map" resultType="int">
+        select count(1)
+        from (<include refid="common.existTbOrder"></include>) o
+        LEFT OUTER JOIN TB_PRODUCT p ON o.origin_product_no = p.origin_product_no
+        LEFT OUTER JOIN TB_PRODUCT_OPTION po ON po.option_id = o.option_id
+        where o.del_yn = 'N'
+        <if test='tab != null and tab != "all"'>
+            and o.store_id = #{tab}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND o.store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+
+        <if test='startDate != null and startDate != ""'>
+            and o.payment_date <![CDATA[>=]]> CONCAT(#{startDate},' 00:00:00')
+        </if>
+        <if test='endDate != null and endDate != ""'>
+            and o.payment_date <![CDATA[<=]]> CONCAT(#{endDate},' 23:59:59')
+        </if>
+        <if test='ordererName != null and ordererName != ""'>
+            and o.orderer_name LIKE CONCAT('%',#{ordererName},'%')
+        </if>
+        <if test='ordererTel != null and ordererTel != ""'>
+            and o.orderer_tel LIKE CONCAT('%',#{ordererTel},'%')
+        </if>
+        <if test='shippingTel1 != null and shippingTel1 != ""'>
+            and o.shipping_tel1 LIKE CONCAT('%',#{shippingTel1},'%')
+        </if>
+
+
+        <if test='esimIccid != null and esimIccid != ""'>
+            and o.esim_iccid LIKE CONCAT('%',#{esimIccid},'%')
+        </if>
+        <if test='productOrderId != null and productOrderId != ""'>
+            and o.product_order_id LIKE CONCAT('%',#{productOrderId},'%')
+        </if>
+    </select>
+
+
+
+    <select id="adSelectOrderStatic" parameterType="map" resultType="map">
+        select COUNT(1) as cnt, SUM(total_payment_amount) as totalPaymentAmountSum
+        from (<include refid="common.existTbOrder"></include>) o
+        where o.del_yn = 'N' AND send_status NOT IN (4,5,6,7) <!--취소하지않은것만 -->
+        <if test='tab != null and tab != "all"'>
+            and o.store_id = #{tab}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND o.store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+        <if test='startDate != null and startDate != ""'>
+            and o.payment_date <![CDATA[>=]]> CONCAT(#{startDate},' 00:00:00')
+        </if>
+        <if test='endDate != null and endDate != ""'>
+            and o.payment_date <![CDATA[<=]]> CONCAT(#{endDate},' 23:59:59')
+        </if>
+        <if test='ordererName != null and ordererName != ""'>
+            and o.orderer_name LIKE CONCAT('%',#{ordererName},'%')
+        </if>
+        <if test='ordererTel != null and ordererTel != ""'>
+            and o.orderer_tel LIKE CONCAT('%',#{ordererTel},'%')
+        </if>
+        <if test='shippingTel1 != null and shippingTel1 != ""'>
+            and o.shipping_tel1 LIKE CONCAT('%',#{shippingTel1},'%')
+        </if>
+        <if test='esimIccid != null and esimIccid != ""'>
+            and o.esim_iccid LIKE CONCAT('%',#{esimIccid},'%')
+        </if>
+        <if test='productOrderId != null and productOrderId != ""'>
+            and o.product_order_id LIKE CONCAT('%',#{productOrderId},'%')
+        </if>
+        order by id desc
+        <include refid="common.pagingFooter"></include>
+    </select>
+
+    <select id="fetchOrder" parameterType="map" resultType="orderDto">
+        select *
+        from (<include refid="common.existTbOrder"></include>) o where order_id = #{id}
+    </select>
+
+    <select id="fetchOrderOnly" parameterType="map" resultType="orderDto">
+        select *
+        from TB_ORDER o where id = #{id}
+    </select>
+
+
+
+    <select id="findById" parameterType="map" resultType="orderDto">
+        select *
+        from (<include refid="common.existTbOrder"></include>) o where id = #{id}
+    </select>
+
+
+    <insert id="insertOrderWorldmoveEsim" parameterType="orderWorldmoveEsimDto" >
+        insert into TB_ORDER_WORDMOVE_ESIM(
+            esim_qr_text,
+            esim_type,
+            esim_iccid,
+            order_id,
+            apn_explain
+        ) values (
+                     #{esimQrText},
+                     #{esimType},
+                     #{esimIccid},
+                     #{orderId},
+                     #{apnExplain}
+                 )
+    </insert>
+
+
+
+
+    <insert id="insertReTransMailInfo" parameterType="orderRetransMailInfoDto" >
+        insert into TB_ORDER_RETRANS_MAIL_INFO(
+            mail,
+            order_id
+        ) values (
+                     #{mail},
+                     #{orderId}
+                 )
+    </insert>
+
+    <select id="fetchRetransMailInfoDtoAll" resultType="orderRetransMailInfoDto">
+        select *
+        from TB_ORDER_RETRANS_MAIL_INFO
+        WHERE  send_status = 0 and regist_dt > date_add(NOW(), <include refid="common.thirtyMinutesAgo"/>);
+    </select>
+
+
+    <update id="updateRetransMailInfoComfirm" parameterType="orderRetransMailInfoDto">
+        update TB_ORDER_RETRANS_MAIL_INFO set
+                                              send_status = 1,
+                                              send_date_time = now()
+        where id = #{id}
+    </update>
+
+
+
+
+    <insert id="insertOrderTugeEsim" parameterType="orderTugeEsimDto" >
+        insert into TB_ORDER_TUGE_ESIM(
+            order_id,
+            order_no,
+            iccid,
+            qr_code,
+            channel_order_no,
+            imsi,
+            msisdn,
+            activated_start_time,
+            activated_end_time,
+            latest_activation_time,
+            renew_expiration_time,
+            order_type
+        ) values (
+                    #{orderId},
+                    #{orderNo},
+                    #{iccid},
+                    #{qrCode},
+                    #{channelOrderNo},
+                    #{imsi},
+                    #{msisdn},
+                    #{activatedStartTime},
+                    #{activatedEndTime},
+                    #{latestActivationTime},
+                    #{renewExpirationTime},
+                    #{orderType}
+                 )
+    </insert>
+
+
+    <select id="selecTugeItemWithIccid" parameterType="orderTugeEsimDto" resultType="orderTugeEsimDto">
+        select *
+        from TB_ORDER_TUGE_ESIM o where iccid = #{iccid}
+    </select>
+
+    <select id="selectOrderAiraloToken" resultType="string">
+        SELECT airalo_token FROM TB_ORDER_AIRALO_TOKEN WHERE regist_dt > DATE_ADD(now(), INTERVAL -10 HOUR) ORDER BY regist_dt desc limit 1
+    </select>
+
+    <insert id="inserttOrderAiraloToken" parameterType="map" >
+        insert into TB_ORDER_AIRALO_TOKEN(
+            airalo_token
+        ) values (
+            #{token}
+        )
+    </insert>
+
+    <update id="updateOrderForTransSuccessYn" parameterType="orderDto">
+        update TB_ORDER set
+            trans_success_yn = 'Y'
+        where product_order_id = #{productOrderId}
+    </update>
+
+    <update id="updateOrderDecided" parameterType="orderDto">
+        update TB_ORDER set
+            order_decided_status = #{orderDecidedStatus},
+            order_decided_date = #{orderDecidedDate}
+        where id = #{id}
+    </update>
+
+    <update id="updateOrderDecidedMethod" parameterType="orderDto">
+        update TB_ORDER set
+                            send_decided_method = #{sendDecidedMethod},
+                            fail_decided_method = #{failDecidedMethod}
+        where id = #{id}
+    </update>
+
+
+
+    <update id="updateOrderForOrderingUseStatus" parameterType="orderDto">
+        update TB_ORDER set
+            ordering_use_status = #{orderingUseStatus}
+        where product_order_id = #{productOrderId}
+    </update>
+
+
+
+    <update id="updateOrderAllPrice" parameterType="orderDto">
+        update TB_ORDER set
+            order_all_price = #{orderAllPrice},
+            order_price_currency = #{orderPriceCurrency}
+        where id = #{id}
+    </update>
+
+
+</mapper>

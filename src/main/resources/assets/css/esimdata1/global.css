@@ -1,0 +1,95 @@
+  :root {
+    --primary-color: #6a0dad;
+    --text-dark: #000000;
+    --text-light: #222222;
+    --text-white: #fafafb;
+    --bg-light-gray: #f2f2f2;
+    --bg-medium-gray: #f8f8f8;
+    --bg-header: #e8eef0;
+    --bg-white: #ffffff;
+    --border-color: #d9d9d9;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+    background-color: var(--bg-light-gray);
+    color: var(--text-light);
+  }
+
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 51px;
+  }
+
+  .card {
+    background-color: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+  }
+
+  hr.divider {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 1182px) {
+    .container {
+      padding: 0 24px;
+    }
+  }
+
+  
+    /* conic-gradient 예시 전용 스타일 */
+    /* Custom property를 등록하여 애니메이션 가능하게 함 */
+    @property --percentage {
+      syntax: '<percentage>';
+      initial-value: 0%;
+      inherits: false;
+    }
+
+    .circular-progress {
+        position: relative;
+        width: 25vh;
+        height: 25vh;
+        top: 0;
+        left: 0;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* conic-gradient를 사용하여 채워지는 효과 구현 */
+        background: conic-gradient(#eeeeee calc(100% - var(--percentage)), #6a0dad 0);
+        transition: background 0.5s ease-in-out; /* 부드러운 전환 효과 */
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .progress-value {
+        position: absolute;
+        font-weight: bold;
+        color: #333;
+        /* 중앙에 작은 원을 만들어 안쪽을 비워줌 */
+        background-color: white;
+        width: 21vh;
+        height: 21vh;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+        font-size: 30px;
+        color: var(--text-dark);
+    }
+    .text-wrapper-4 {
+      color: #6a0dad;
+    }
+
+
+    input[type="range"] {
+        margin-top: 20px;
+        width: 200px;
+    }

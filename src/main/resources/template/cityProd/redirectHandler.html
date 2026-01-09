@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Processing...</title>
+</head>
+<body style="background-color: #ffffff;">
+
+<div style="text-align: center; margin-top: 100px; font-family: sans-serif;">
+  <p>결제 처리를 완료하고 있습니다.</p>
+  <p>잠시만 기다려 주세요...</p>
+  <form id="confirmForm" method="post" action="/external/order/redirectHandler">
+    <input type="hidden" name="token" th:value="${token}">
+  </form>
+</div>
+
+<script th:inline="javascript">
+  document.getElementById("confirmForm").submit();
+</script>
+
+</body>
+</html>

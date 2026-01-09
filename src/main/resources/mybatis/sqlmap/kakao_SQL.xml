@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.KakaoMsgMapper">
+
+    <insert id="insertKakaoLog" parameterType="map">
+        insert into KAKAO_MSG_RES
+        (header_result_code,
+         header_result_message,
+         header_is_successful,
+         message_request_id,
+         message_recipient_seq,
+         message_recipient_no,
+         message_recipient_code,
+         message_recipient_message,
+         template_key,
+         stats_id,
+         store_id,
+         origin_product_no,
+         option_id,
+         reg_date
+         )
+        values (#{header_resultCode},
+                #{header_resultMessage},
+                #{header_isSuccessful},
+                #{requestId},
+                #{message_recipientSeq},
+                #{message_recipientNo},
+                #{message_resultCode},
+                #{message_resultMessage},
+                #{templateKey},
+                #{kakaoStatsId},
+                #{storeId},
+                #{originProductNo},
+                #{optionId},
+                now()
+                )
+    </insert>
+
+    <select id="adSelectKakaoList" parameterType="map" resultType="kakaoDto">
+        select *
+        from KAKAO_MSG_RES
+        where 1=1
+        <if test='storeId != null and storeId != "all"'>
+            and store_id = #{storeId}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+        order by seq desc
+        <include refid="common.pagingFooter"></include>
+    </select>
+
+    <select id="adSelectKakaoListCnt" parameterType="map" resultType="int">
+        select count(1)
+        from KAKAO_MSG_RES
+        where 1=1
+        <if test='storeId != null and storeId != "all"'>
+            and store_id = #{storeId}
+        </if>
+        <if test="userAuthority != 'ROLE_ADMIN'">
+            AND store_id in (<include refid="common.emailStoreMappItemList"></include>)
+        </if>
+    </select>
+
+</mapper>

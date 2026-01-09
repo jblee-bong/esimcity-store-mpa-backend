@@ -1,0 +1,147 @@
+spring:
+  datasource:
+    url: jdbc:mariadb://114.207.112.85:3306/naver2?useUnicode=true&charaterEncoding=utf-8
+    username: simvillage
+    password: simvillage2024!@
+    driver-class-name: org.mariadb.jdbc.Driver
+  redis:
+    host: 114.207.112.85
+    port: 6379
+    password: esimvil2025!
+testMode: false
+
+logging:
+  config: classpath:logback-prod.xml
+
+server-origin: https://www.esimcity.co.kr
+usage-uri: /external/esimdata
+usage2-uri: /api/ex/data
+
+testEmail: jblee6110@gmail.com
+testTel: 01097716110
+
+fileSavePath: /home/file/
+
+api:
+  tsim:
+    account: 81e5be297e2241f58a813547c8275126
+    tsimSecret:  8082f4f0d3ec207fc5e670d995b33b25
+    baseUrl: https://api.tsimtech.com
+  tuge:
+    accountId: ECKR
+    secretkey: 386R3TGIZFGTKJLL
+    signKey: 29J1O8FHFWBHVWVXWJPIAJ4G08LKX6HD
+    vector: C3YY39Z7HA1T89L4
+    baseUrl: https://enterpriseapi.tugegroup.com:8070/api-publicappmodule/
+    base2Url: https://enterpriseapi.tugegroup.com:8070/openapi/
+    version: 1.0
+  worldmove: #월드무브 완료
+    baseUrl: https://fmshippingsys.fastmove.com.tw
+    merchantId: b0001f5
+    deptId: '0002d1'
+    token: cad4e5015673b45e387fb71ccb7db08d
+  niz:
+    nizId: X1XK8II40NENI4PN0MM19Stest
+    nizPass: 4NZG5JPOSY2FKKK5UP66D1test
+    nizPartnerCode: '000200000test'
+    baseUrl: https://simapi.simgonow.com
+  airalo:
+    clientId: a17f9843e9e8df7f2d5e1d38823442f6test
+    clientSecret: MK11yYutJTa2lR32zqsh3kaF0D3rlHn0PE8vlsiXtest
+    baseUrl: https://partners-api.airalo.com
+
+
+
+# 인증 토큰 발급 요청
+naver-api:
+  client_id: replace
+  client_secret: replace
+  base: https://api.commerce.naver.com
+  token: /external/v1/oauth2/token
+
+  # 상품 목록 조회
+  product-search: /external/v1/products/search
+
+  # 채널 상품 조회
+  channel-product-info: /external/v2/products/channel-products/{channelProductNo}
+
+  # 원 상품 조회
+  origin-product-info: /external/v2/products/origin-products/{originProductNo}
+
+  # 변경 상품 주문 내역 조회 (order step 1)
+  order-list-info: /external/v1/pay-order/seller/product-orders/last-changed-statuses
+
+  # 상품 주문 상세내역 조회 (order step 2)
+  order-detail-info: /external/v1/pay-order/seller/product-orders/query
+
+  # 발송 처리
+  trans-status-change: /external/v1/pay-order/seller/product-orders/dispatch
+
+  #발주 처리
+  ordering-status-change: /external/v1/pay-order/seller/product-orders/confirm
+
+  #상품정보수정
+  product-option-info-change: /external/v1/products/origin-products/{originProductNo}/option-stock
+
+
+# 쿠팡 API 설정
+coupang-api:
+  base: https://api-gateway.coupang.com
+  access-key: replace
+  secret-key: replace
+  token: /oauth/token
+  # 상품 관련 API
+  product-search: /v2/providers/seller_api/apis/api/v1/marketplace/seller-products
+  product-detail: /v2/providers/seller_api/apis/api/v1/marketplace/seller-products/{sellerProductId}
+  # 카테고리 관련 API
+  category: /v2/providers/seller_api/apis/api/v1/marketplace/meta/display-categories/{displayCategoryCode}
+  # 주문 관련 API
+  order-list: /v2/providers/openapi/apis/api/v5/vendors/{vendorId}/ordersheets
+  order-cancel-list: /v2/providers/openapi/apis/api/v6/vendors/{vendorId}/returnRequests
+  #발주 처리
+  ordering-status-ready: /v2/providers/openapi/apis/api/v4/vendors/{vendorId}/ordersheets/acknowledgement
+  ordering-status-check: /v2/providers/openapi/apis/api/v5/vendors/{vendorId}/ordersheets/{shipmentBoxId}
+  ordering-status-ing: /v2/providers/openapi/apis/api/v4/vendors/{vendorId}/orders/invoices
+
+
+sms:
+  api:
+    domain: https://api-sms.cloud.toast.com
+    mmsSendUrl: /sms/v3.0/appKeys/{appKey}/sender/mms
+    smsSendUrl: /sms/v3.0/appKeys/{appKey}/sender/sms
+    # nhn sms service api 정보
+    appkey: hNvI1cTan1kSJO3M
+    secretKey: DrEWZnr7
+
+kakao:
+  api:
+    domain: https://api-alimtalk.cloud.toast.com
+    ## 메세지 치환 발송 api
+    messagesUrl: /alimtalk/v2.2/appkeys/{appkey}/messages
+    ## 템플릿 검색
+    templateUrl: /alimtalk/v2.2/appkeys/{appkey}/senders/{senderKey}/templates
+    # nhn kakaotalk service api 정보
+    appkey: 34kqT3lzS7vHfCBp
+    secretKey: QweCaNcR
+    senderKey: cb48152cf89a62c8bbcec5b3c28781e9de8d3cf2
+
+
+exchange:
+  key: 8ba5407c41a879520a3da16f
+  url: https://v6.exchangerate-api.com/v6/
+
+paypal:
+  clientId: AcE-9gFZyFdDKvbeSkmH9ocXV2tRLrYDHvDFX55ToSXOUFitbacX0hf49TBu0sZFcSsfRkHi-Gki1j-T
+  clientSecret: EE-IB3hEoUzl2DwnRA_gcdts6oJmDVHp0eda5JVrplzZFuLadyFhXZrOKFn4jHK0BgxfudDEcar68zUT
+  successCallback: https://www.esimcity.co.kr/api/external/paypal/success
+  cancelCallback: https://www.esimcity.co.kr/api/external/paypal/cancel
+  comfirmUrl: https://www.esimcity.co.kr/api/external/order/complete
+  apiUrl: https://api-m.paypal.com
+
+portOne:
+  storeId: store-075bbcc9-c369-4c7a-8d1a-27387b6c00b9
+  channelKey: channel-key-d234460f-ff0c-4487-b3ec-d06dab1f6bfb
+  secretKey: aDROoPj8KF79Ux1IG8laNQ4OpJQNJHB7BjiyFo20r4NjjPy0V4pF2tbZYdjXHE9Aj1zOkcuyq7lwHcfY
+  checkUrl: https://api.portone.io/payments
+  redirectUrl: http://192.168.219.102:8080/external/portone/complete
+  cancelUrl: https://api.portone.io//payments/{token}/cancel

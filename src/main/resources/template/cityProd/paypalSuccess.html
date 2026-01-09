@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eSIM CITY - 충전 결과</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/esimcity/favicon.svg">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --gold: #D4AF37;
+      --gold-light: #F5E6C8;
+      --gold-dark: #B8941F;
+      --cream: #FAF8F3;
+      --beige: #F5F1EB;
+      --white: #FFFFFF;
+      --text-dark: #2C2C2C;
+      --text-medium: #666666;
+      --text-light: #999999;
+      --border-light: #E8E5DF;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+      --success: #10B981;
+      --error: #EF4444;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #FFFFFF 0%, var(--cream) 100%);
+      color: var(--text-dark);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* Header */
+    .top-header {
+      background: var(--white);
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .brand-logo {
+      height: 50px;
+      width: auto;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      padding: 64px 0 48px;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--text-medium);
+      font-weight: 400;
+    }
+
+    /* Result Card */
+    .result-card-wrapper {
+      margin-bottom: 40px;
+    }
+
+    .result-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 48px 56px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-light);
+      text-align: center;
+    }
+
+    .result-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    .result-icon.success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+
+    .result-icon.error {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error);
+    }
+
+    .result-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+    }
+
+    .result-title.success {
+      color: var(--success);
+    }
+
+    .result-title.error {
+      color: var(--error);
+    }
+
+    .result-message {
+      font-size: 16px;
+      color: var(--text-medium);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    /* Info Cards Grid */
+    .info-section {
+      margin-bottom: 40px;
+    }
+
+    .info-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .info-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+      border-color: var(--gold-light);
+    }
+
+    .info-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold-dark);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .info-card-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    .info-card-note {
+      font-size: 13px;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+
+    .info-card-full {
+      grid-column: 1 / -1;
+    }
+
+    /* Error Message */
+    .error-message-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 24px 0;
+      color: var(--error);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* CTA Section */
+    .cta-wrapper {
+      margin: 48px 0;
+    }
+
+    .cta-button {
+      display: block;
+      background: var(--gold);
+      color: var(--white);
+      text-align: center;
+      padding: 20px 40px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .cta-button:hover {
+      background: var(--gold-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(212, 175, 55, 0.4);
+    }
+
+    .cta-button-secondary {
+      display: block;
+      background: var(--white);
+      color: var(--text-dark);
+      text-align: center;
+      padding: 20px 40px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      border: 2px solid var(--border-light);
+      transition: all 0.3s ease;
+      margin-top: 16px;
+    }
+
+    .cta-button-secondary:hover {
+      border-color: var(--gold);
+      color: var(--gold-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Footer */
+    .main-footer {
+      background: var(--beige);
+      padding: 56px 0 40px;
+      margin-top: 80px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .footer-inner {
+      text-align: center;
+    }
+
+    .footer-logo {
+      height: 45px;
+      width: auto;
+      margin-bottom: 24px;
+      opacity: 0.9;
+    }
+
+    .footer-tagline {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-medium);
+      margin-bottom: 32px;
+      letter-spacing: 1px;
+    }
+
+    .footer-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border-light);
+      margin: 32px 0;
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-light);
+    }
+
+    .footer-copyright {
+      font-weight: 400;
+    }
+
+    .footer-version {
+      font-weight: 300;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .hero-section {
+        padding: 40px 0 32px;
+      }
+
+      .hero-title {
+        font-size: 32px;
+      }
+
+      .hero-subtitle {
+        font-size: 16px;
+      }
+
+      .result-card {
+        padding: 32px 24px;
+        border-radius: 16px;
+      }
+
+      .result-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 30px;
+      }
+
+      .result-title {
+        font-size: 24px;
+      }
+
+      .info-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .info-card {
+        padding: 24px;
+      }
+
+      .info-card-value {
+        font-size: 20px;
+      }
+
+      .cta-button {
+        font-size: 16px;
+        padding: 18px 32px;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .top-header {
+        padding: 20px 0;
+      }
+
+      .brand-logo {
+        height: 40px;
+      }
+
+      .hero-title {
+        font-size: 28px;
+      }
+
+      .result-card {
+        padding: 24px 20px;
+      }
+
+      .info-card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-header">
+    <div class="container">
+      <div class="header-inner">
+        <a th:href="${esimLogoLink}" class="logo-link">
+          <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="brand-logo">
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <section class="hero-section">
+        <h1 class="hero-title">충전 결과</h1>
+        <p class="hero-subtitle" th:text="${success ? '충전 요청이 완료되었습니다' : '충전 요청 중 오류가 발생했습니다'}"></p>
+      </section>
+
+      <section class="result-card-wrapper">
+        <div class="result-card">
+          <!-- Success Case -->
+          <div th:if="${success}">
+            <div class="result-icon success">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+            </div>
+            <h2 class="result-title success">충전이 성공적으로 완료되었습니다</h2>
+            <p class="result-message">
+              선택하신 상품으로 충전이 완료되었습니다.<br>
+              잠시 후 사용량 조회 페이지에서 확인하실 수 있습니다.
+            </p>
+          </div>
+
+          <!-- Error Case -->
+          <div th:if="${!success}">
+            <div class="result-icon error">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <h2 class="result-title error">충전 요청 실패</h2>
+            <p class="result-message" th:text="${errorMessage ?: '충전 요청 중 오류가 발생했습니다.'}">
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Order Info Section (Success Case Only) -->
+      <section class="info-section" th:if="${success}">
+        <div class="info-cards-grid">
+          <div class="info-card info-card-full" th:if="${productName}">
+            <div class="info-card-title">충전 상품</div>
+            <div class="info-card-value" th:text="${productName}"></div>
+          </div>
+
+
+          <div class="info-card" th:if="${iccid}">
+            <div class="info-card-title">ICCID 번호</div>
+            <div class="info-card-value" th:text="${iccid}"></div>
+            <div class="info-card-note">고객센터 문의 시 필요합니다</div>
+          </div>
+
+          <div class="info-card info-card-full" th:if="${chargeDate}">
+            <div class="info-card-title">충전 일시</div>
+            <div class="info-card-value" th:text="${chargeDate}"></div>
+            <div class="info-card-note">(한국시간 기준)</div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Action Buttons -->
+      <section class="cta-wrapper">
+        <a th:href="${esimQuestLink}" class="cta-button-secondary">고객 지원 문의하기</a>
+      </section>
+    </div>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="footer-logo">
+        <p class="footer-tagline">Connect Anywhere, Anytime</p>
+        <div class="footer-divider"></div>
+        <div class="footer-bottom">
+          <p class="footer-copyright" th:text="${esimCopyWrite}"></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    history.replaceState(null, null, location.href);
+    window.onpopstate = function () {
+      history.go(1);
+    };
+  </script>
+</body>
+</html>
+

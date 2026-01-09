@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+    <typeAliases>
+        <typeAlias type="com.naver.naverspabackend.dto.CommonMap" alias="commonMap"/>
+        <typeAlias type="com.naver.naverspabackend.dto.UserDto" alias="userDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.StoreDto" alias="storeDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.UserStoreMappDto" alias="userStoreMappDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.ProductDto" alias="productDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.ProductOptionDto" alias="productOptionDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.OrderDto" alias="orderDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.EsimPriceDto" alias="esimPriceDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.TopupOrderDto" alias="topupOrderDto"/>
+
+        <typeAlias type="com.naver.naverspabackend.dto.KakaoContentsDto" alias="kakaoContentsDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.OrderWorldmoveEsimDto" alias="orderWorldmoveEsimDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.OrderTugeEsimDto" alias="orderTugeEsimDto"/>
+
+        <typeAlias type="com.naver.naverspabackend.dto.MatchInfoDto" alias="matchInfoDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.KakaoDto" alias="kakaoDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.SmsDto" alias="smsDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.CodeDto" alias="codeDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.MailDto" alias="mailDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.MailContentsDto" alias="mailContentsDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.BulkDto" alias="bulkDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.ApiPurchaseItemDto" alias="apiPurchaseItemDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.ApiCardTypeDto" alias="apiCardTypeDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.EsimApiIngStepLogsDto" alias="esimApiIngStepLogsDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.OrderRetransMailInfoDto" alias="orderRetransMailInfoDto"/>
+
+
+    </typeAliases>
+</configuration>

@@ -1,0 +1,2875 @@
+{
+  "contents": [
+    {
+      "originProductNo": 9053778927,
+      "channelProducts": [
+        {
+          "originProductNo": 9053778927,
+          "channelProductNo": 9096498581,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "한국eSIM 이심 유심 국내 선불 데이터 무제한 한국인 외국인 입국전해외구입가능",
+          "sellerManagementCode": "E 한국이심",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 229000,
+          "discountedPrice": 3300,
+          "mobileDiscountedPrice": 3300,
+          "stockQuantity": 5599940,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryFee": 0,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20230906_114/1693983572577DVyt3_JPEG/4909690374030484_310035053.jpg"
+          },
+          "sellerTags": [
+            {
+              "text": "한국유심"
+            },
+            {
+              "text": "한국ESIM"
+            },
+            {
+              "text": "데이터ESIM"
+            },
+            {
+              "text": "데이터무제한"
+            },
+            {
+              "text": "외국인사용"
+            },
+            {
+              "text": "한국이심"
+            },
+            {
+              "text": "데이터이심"
+            },
+            {
+              "text": "ESIM폰"
+            },
+            {
+              "text": "로밍데이터"
+            },
+            {
+              "text": "국내데이터유심"
+            }
+          ],
+          "regDate": "2023-08-23T16:31:03.044+09:00",
+          "modifiedDate": "2023-10-11T11:10:00.845+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 8768060526,
+      "channelProducts": [
+        {
+          "originProductNo": 8768060526,
+          "channelProductNo": 8809624028,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007257",
+          "name": "휴대용 와이파이 에그 대여 국내 무약정 1개월 무제한 포켓 인강 재택",
+          "sellerManagementCode": "A  휴대용 14300",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 173800,
+          "discountedPrice": 14300,
+          "mobileDiscountedPrice": 14300,
+          "stockQuantity": 394073,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 4000,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>해외패키지/기타",
+          "wholeCategoryId": "50000009>50007256>50007257",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220923_6/166390215191704K27_JPEG/65038040605965804_873018326.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2023-07-03T10:30:45.459+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.437+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 8420628814,
+      "channelProducts": [
+        {
+          "originProductNo": 8420628814,
+          "channelProductNo": 8460971709,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "한국유심 칩 선불 20일 단기 데이터무제한 외국인 심카드 SK KT LG 알뜰폰",
+          "sellerManagementCode": "B 유심메인  6000",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 244000,
+          "discountedPrice": 6000,
+          "mobileDiscountedPrice": 6000,
+          "stockQuantity": 245595,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 0,
+          "exchangeFee": 0,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220718_174/1658134459408kNR3I_JPEG/59270348120269900_1737737001.jpg"
+          },
+          "modelName": "한국유심",
+          "brandName": "한국유심",
+          "manufacturerName": "SKT KT",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2023-04-26T11:47:34.072+09:00",
+          "modifiedDate": "2023-10-11T18:17:23.366+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 8250782444,
+      "channelProducts": [
+        {
+          "originProductNo": 8250782444,
+          "channelProductNo": 8290338252,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50001502",
+          "name": "무선 에그 5GB/일 무제한 요금제 에그 구매",
+          "sellerManagementCode": "A 5GB+4Mbps 무선 에그",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 561000,
+          "discountedPrice": 45100,
+          "mobileDiscountedPrice": 45100,
+          "stockQuantity": 129986,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 4200,
+          "exchangeFee": 7200,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "디지털/가전>네트워크장비>무선모뎀",
+          "wholeCategoryId": "50000003>50000098>50001502",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20230324_73/1679644433999CGrg4_PNG/80780268770401891_977451879.png"
+          },
+          "sellerTags": [],
+          "regDate": "2023-03-24T16:56:03.091+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.436+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 8173162446,
+      "channelProducts": [
+        {
+          "originProductNo": 8173162446,
+          "channelProductNo": 8212321576,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "외국인선불유심 칩 데이터유심 한국 5일 30일 한국인도구입 KT 입국전구입가능",
+          "sellerManagementCode": "C 한국데이터유심",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 1046000,
+          "discountedPrice": 5000,
+          "mobileDiscountedPrice": 5000,
+          "stockQuantity": 43999366,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 3000,
+          "exchangeFee": 3000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20230511_47/1683769703516mv9aL_JPEG/12087365313541803_1374534192.jpg"
+          },
+          "sellerTags": [],
+          "regDate": "2023-03-09T18:24:25.766+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.436+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 7883293670,
+      "channelProducts": [
+        {
+          "originProductNo": 7883293670,
+          "channelProductNo": 7921233041,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50001502",
+          "name": "유/무선 홈와이파이 LTE 라우터",
+          "sellerManagementCode": "A S150 유/무선 에그",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 1034000,
+          "discountedPrice": 77000,
+          "mobileDiscountedPrice": 77000,
+          "stockQuantity": 59973,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 4000,
+          "returnFee": 3000,
+          "exchangeFee": 3000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "디지털/가전>네트워크장비>무선모뎀",
+          "wholeCategoryId": "50000003>50000098>50001502",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20230317_55/1679040316173VGODz_PNG/80176158870376131_1639854476.png"
+          },
+          "sellerTags": [],
+          "regDate": "2023-01-15T19:32:45.609+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.435+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 7575009918,
+      "channelProducts": [
+        {
+          "originProductNo": 7575009918,
+          "channelProductNo": 7611841966,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "이제현 완전무제한  30일로 변경 추가금",
+          "sellerManagementCode": "결제창 2",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 9900,
+          "discountedPrice": 9900,
+          "mobileDiscountedPrice": 9900,
+          "stockQuantity": 529968,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryFee": 0,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20200716_7/1594864500630pHN0m_PNG/32226834195639774_1892983529.png"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-11-21T09:41:54.550+09:00",
+          "modifiedDate": "2023-10-17T16:28:23.182+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 7532335320,
+      "channelProducts": [
+        {
+          "originProductNo": 7532335320,
+          "channelProductNo": 7569016784,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "[심빌리지 완전무제한 30일 단위] 휴대용 매일 10GB 무제한 와이파이 에그대여 연장결제",
+          "sellerManagementCode": "V 매일 10GB 무제한 연장",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 88000,
+          "discountedPrice": 44000,
+          "mobileDiscountedPrice": 44000,
+          "stockQuantity": 19454,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 0,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220411_60/1649666776231BBMpt_JPEG/50802621949648809_534499989.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-11-14T14:00:13.524+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.435+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 7346397218,
+      "channelProducts": [
+        {
+          "originProductNo": 7346397218,
+          "channelProductNo": 7381149727,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50001502",
+          "name": "에그무제한 포켓파이 SK KT 에그 EGG 구매 필요시만사용가능",
+          "sellerManagementCode": "A 판매 무선모뎀 33000",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 682000,
+          "discountedPrice": 55000,
+          "mobileDiscountedPrice": 55000,
+          "stockQuantity": 179958,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3500,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "디지털/가전>네트워크장비>무선모뎀",
+          "wholeCategoryId": "50000003>50000098>50001502",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20221125_136/16693450235471PVGK_JPEG/70480851358109078_1437321602.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-10-14T11:31:26.680+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.434+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 7346392635,
+      "channelProducts": [
+        {
+          "originProductNo": 7346392635,
+          "channelProductNo": 7381145125,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "휴대용와이파이 에그와이파이 구매 무제한 필요시만 사용가능",
+          "sellerManagementCode": "A 판매 휴대용 33000 소분류강제변경됨",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 682000,
+          "discountedPrice": 55000,
+          "mobileDiscountedPrice": 55000,
+          "stockQuantity": 189968,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3500,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20221014_110/1665714922836oJz2z_JPEG/66850765540444376_118395654.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-10-14T11:30:20.975+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.434+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 7343129531,
+      "channelProducts": [
+        {
+          "originProductNo": 7343129531,
+          "channelProductNo": 7377868821,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "[심빌리지 완전무제한 30일 단위] 휴대용 와이파이 에그대여 연장결제",
+          "sellerManagementCode": "V 무제한 연장",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 88000,
+          "discountedPrice": 55000,
+          "mobileDiscountedPrice": 55000,
+          "stockQuantity": 58832,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 0,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220411_60/1649666776231BBMpt_JPEG/50802621949648809_534499989.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-10-13T18:36:06.547+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.433+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 7244163783,
+      "channelProducts": [
+        {
+          "originProductNo": 7244163783,
+          "channelProductNo": 7278575273,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "에그대여 SK KT 포켓와이파이 무제한 필요시만 사용가능 기기구매",
+          "sellerManagementCode": "A 판매 에그 33000",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 682000,
+          "discountedPrice": 55000,
+          "mobileDiscountedPrice": 55000,
+          "stockQuantity": 179978,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3500,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20221014_294/1665715577213pxozj_JPEG/66851465923390169_671682264.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-09-28T16:27:12.593+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.433+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 7043361946,
+      "channelProducts": [
+        {
+          "originProductNo": 7043361946,
+          "channelProductNo": 7076973454,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50001502",
+          "name": "에그무제한 대여 30일 12G 국내 포켓와이파이 데이터무제한",
+          "sellerManagementCode": "A 무선모뎀 14300",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 173800,
+          "discountedPrice": 14300,
+          "mobileDiscountedPrice": 14300,
+          "stockQuantity": 394747,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 4000,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "디지털/가전>네트워크장비>무선모뎀",
+          "wholeCategoryId": "50000003>50000098>50001502",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20221124_237/1669251493341CgWYx_JPEG/70387336051468697_545116306.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-08-23T12:37:48.889+09:00",
+          "modifiedDate": "2023-10-19T12:06:41.453+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 7020099423,
+      "channelProducts": [
+        {
+          "originProductNo": 7020099423,
+          "channelProductNo": 7053597339,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007257",
+          "name": "[심빌리지 충전형 1개월 단위] 휴대용 와이파이 에그대여연장결제",
+          "sellerManagementCode": "V 충전형 연장 2",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 173600,
+          "discountedPrice": 14300,
+          "mobileDiscountedPrice": 14300,
+          "stockQuantity": 78987,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 0,
+          "returnFee": 4000,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>해외패키지/기타",
+          "wholeCategoryId": "50000009>50007256>50007257",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220411_171/1649667256031Gqnd2_JPEG/50803101737563604_1782605026.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-08-17T10:15:51.881+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.432+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 6882310130,
+      "channelProducts": [
+        {
+          "originProductNo": 6882310130,
+          "channelProductNo": 6915213673,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "한국선불유심 칩 알뜰폰 SKT KT LG 30일 단기 통화절약형 LTE 데이터무제한",
+          "sellerManagementCode": "B 유심 C 21000",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 214000,
+          "discountedPrice": 21000,
+          "mobileDiscountedPrice": 21000,
+          "stockQuantity": 206326,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220720_25/1658281946125XuvAN_JPEG/59417773951787322_819077925.jpg"
+          },
+          "modelName": "한국유심",
+          "brandName": "한국유심",
+          "manufacturerName": "SKT KT",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-07-14T16:34:42.955+09:00",
+          "modifiedDate": "2023-10-11T18:18:31.893+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 6845210482,
+      "channelProducts": [
+        {
+          "originProductNo": 6845210482,
+          "channelProductNo": 6877958526,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "한국선불 알뜰폰 SKT KT LG 30일 단기 통화 문자 LTE 데이터 무제한 유심",
+          "sellerManagementCode": "B  유심 B+ 24000",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 124000,
+          "discountedPrice": 24000,
+          "mobileDiscountedPrice": 24000,
+          "stockQuantity": 49967,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220803_21/1659519823816YsheJ_JPEG/60655669535823293_1546579874.jpg"
+          },
+          "sellerTags": [],
+          "regDate": "2022-07-05T16:18:13.660+09:00",
+          "modifiedDate": "2023-10-11T18:18:55.816+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 6844937509,
+      "channelProducts": [
+        {
+          "originProductNo": 6844937509,
+          "channelProductNo": 6877683663,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "선불유심 칩 20 30 40 60일 한국 알뜰폰 단기 데이터무제한 심카드",
+          "sellerManagementCode": "B 유심메인 10000",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 240000,
+          "discountedPrice": 10000,
+          "mobileDiscountedPrice": 10000,
+          "stockQuantity": 245467,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 0,
+          "exchangeFee": 0,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220609_59/1654769135371qcL7E_JPEG/55905033778216298_1964309749.jpg"
+          },
+          "modelName": "한국유심",
+          "brandName": "한국유심",
+          "manufacturerName": "SKT KT",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-07-05T14:52:20.224+09:00",
+          "modifiedDate": "2023-10-11T18:19:22.657+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 6844934450,
+      "channelProducts": [
+        {
+          "originProductNo": 6844934450,
+          "channelProductNo": 6877680531,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "한국유심 칩 알뜰폰 SKT KT LG 30일 단기 통화 문자 LTE 데이터 무제한 심카드",
+          "sellerManagementCode": "B 유심 B 30000",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 196000,
+          "discountedPrice": 30000,
+          "mobileDiscountedPrice": 30000,
+          "stockQuantity": 206327,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220718_210/16581344253545ArTe_JPEG/59270314068013250_585865290.jpg"
+          },
+          "modelName": "한국유심",
+          "brandName": "한국유심",
+          "manufacturerName": "SKT KT",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-07-05T14:51:33.970+09:00",
+          "modifiedDate": "2023-10-11T18:19:46.403+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 6844811855,
+      "channelProducts": [
+        {
+          "originProductNo": 6844811855,
+          "channelProductNo": 6877557279,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "한국선불유심 알뜰폰 SKT KT LG 30일 단기 통화 문자 LTE 데이터 칩 무제한",
+          "sellerManagementCode": "B 유심 D 17000",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 222000,
+          "discountedPrice": 17000,
+          "mobileDiscountedPrice": 17000,
+          "stockQuantity": 206322,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220829_276/1661763595179rk9vL_JPEG/62899374886880404_228634377.jpg"
+          },
+          "modelName": "한국유심",
+          "brandName": "한국유심",
+          "manufacturerName": "SKT KT",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-07-05T14:18:56.663+09:00",
+          "modifiedDate": "2023-10-11T18:20:10.986+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 6742946815,
+      "channelProducts": [
+        {
+          "originProductNo": 6742946815,
+          "channelProductNo": 6775198224,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "휴대용 와이파이 에그대여",
+          "sellerManagementCode": "A  휴대용 14300 소분류강제변경됨",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 193800,
+          "discountedPrice": 14300,
+          "mobileDiscountedPrice": 14300,
+          "stockQuantity": 394714,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 4000,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220312_25/1647012723610o4w3P_PNG/48148558434981098_1092234131.png"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-06-09T15:23:19.113+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.430+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 6738766277,
+      "channelProducts": [
+        {
+          "originProductNo": 6738766277,
+          "channelProductNo": 6770991364,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "[심빌리지 무제한 30일 단위] 에그대여 연장결제",
+          "sellerManagementCode": "V 80GB 완전 무제한 연장",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 88000,
+          "discountedPrice": 44000,
+          "mobileDiscountedPrice": 44000,
+          "stockQuantity": 39742,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 0,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220621_201/1655801232121yEcxT_JPEG/56937074816443742_600680533.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-06-08T11:05:08.634+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.429+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 6628679916,
+      "channelProducts": [
+        {
+          "originProductNo": 6628679916,
+          "channelProductNo": 6660418760,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "에그대여 국내 SK KT LG 30일 단기 20G 휴대용 포켓 와이파이 라우터",
+          "sellerManagementCode": "A 에그 19800",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 162800,
+          "discountedPrice": 19800,
+          "mobileDiscountedPrice": 19800,
+          "stockQuantity": 395949,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 4000,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220923_116/1663902171140yx6Os_JPEG/65038059820291291_1990177376.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-05-11T18:03:07.279+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.429+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 6418931787,
+      "channelProducts": [
+        {
+          "originProductNo": 6418931787,
+          "channelProductNo": 6449685720,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007257",
+          "name": "[심빌리지 전체상품] 휴대용 와이파이 에그대여 연장결제",
+          "sellerManagementCode": "V 에그 전체상품 연장",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 173600,
+          "discountedPrice": 14300,
+          "mobileDiscountedPrice": 14300,
+          "stockQuantity": 99526,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 0,
+          "returnFee": 4000,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>해외패키지/기타",
+          "wholeCategoryId": "50000009>50007256>50007257",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220411_190/16496689939579hoEw_JPEG/50804836662300154_435455027.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2022-03-23T16:37:55.136+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.428+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 6022520845,
+      "channelProducts": [
+        {
+          "originProductNo": 6022520845,
+          "channelProductNo": 6050966422,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "국내에그대여 무제한 데이터 요금제 일 단위 연장",
+          "sellerManagementCode": "V 무제한 일 단위 연장",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 99000,
+          "discountedPrice": 5500,
+          "mobileDiscountedPrice": 5500,
+          "stockQuantity": 99911,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryFee": 0,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220727_105/1658889295875UQBw9_JPEG/60025079573156076_2108190682.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-11-29T18:28:39.773+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.428+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5728109354,
+      "channelProducts": [
+        {
+          "originProductNo": 5728109354,
+          "channelProductNo": 5753922588,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "이문숙 님 주택과 사무실 심빌리지 와이파이 분실 결제창",
+          "sellerManagementCode": "에그분실 보험미가입 결제창",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 94400,
+          "discountedPrice": 94400,
+          "mobileDiscountedPrice": 94400,
+          "stockQuantity": 199998,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryFee": 0,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20200716_7/1594864500630pHN0m_PNG/32226834195639774_1892983529.png"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-07-30T11:31:06.217+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.428+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5671992999,
+      "channelProducts": [
+        {
+          "originProductNo": 5671992999,
+          "channelProductNo": 5697247926,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "(주)알투컴 20GB 1개월 10일 대여 23대 결제창",
+          "sellerManagementCode": "결제창 1",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 733700,
+          "discountedPrice": 733700,
+          "mobileDiscountedPrice": 733700,
+          "stockQuantity": 529986,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryFee": 0,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20200716_7/1594864500630pHN0m_PNG/32226834195639774_1892983529.png"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-07-06T12:42:52.796+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.427+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5548781453,
+      "channelProducts": [
+        {
+          "originProductNo": 5548781453,
+          "channelProductNo": 5572687743,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "[심빌리지 40GB 1개월 단위] 휴대용 와이파이 에그대여 연장결제",
+          "sellerManagementCode": "V 40GB 연장",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 66000,
+          "discountedPrice": 30800,
+          "mobileDiscountedPrice": 30800,
+          "stockQuantity": 19989,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 0,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220411_178/1649666714124M6Nm8_JPEG/50802559842248132_1736453997.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-05-07T16:41:13.796+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.427+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5548779059,
+      "channelProducts": [
+        {
+          "originProductNo": 5548779059,
+          "channelProductNo": 5572685250,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "에그대여 국내 SK KT LG 30일 단기 40G 휴대용 포켓 와이파이",
+          "sellerManagementCode": "A 에그 30800",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 66000,
+          "discountedPrice": 30800,
+          "mobileDiscountedPrice": 30800,
+          "stockQuantity": 39934,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3500,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220620_215/16557169328613ydFE_JPEG/56852766562283442_468914332.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-05-07T16:40:02.761+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.426+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5548402053,
+      "channelProducts": [
+        {
+          "originProductNo": 5548402053,
+          "channelProductNo": 5572303711,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "심빌리지 와이파이 단말기 대여 연체결제창",
+          "sellerManagementCode": "에그 연체료 결제창 1",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 110000,
+          "discountedPrice": 2200,
+          "mobileDiscountedPrice": 2200,
+          "stockQuantity": 199958,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryFee": 0,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20211224_50/16403380765453xFTj_JPEG/41473972281212492_629160322.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-05-07T14:18:58.211+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.426+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5469229813,
+      "channelProducts": [
+        {
+          "originProductNo": 5469229813,
+          "channelProductNo": 5492271212,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "[심빌리지 2GB 무제한 1개월 단위] 휴대용 와이파이 에그대여 연장결제",
+          "sellerManagementCode": "V 2GB 무제한 연장",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 55000,
+          "discountedPrice": 37400,
+          "mobileDiscountedPrice": 37400,
+          "stockQuantity": 19866,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 0,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220411_73/164966690700443llh_JPEG/50802752704558841_1251874654.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-03-31T16:18:00.157+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.426+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5469225187,
+      "channelProducts": [
+        {
+          "originProductNo": 5469225187,
+          "channelProductNo": 5492266524,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "[심빌리지 20GB 1개월 단위] 휴대용 와이파이 에그대여 연장결제",
+          "sellerManagementCode": "V 20GB 연장",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 44000,
+          "discountedPrice": 19800,
+          "mobileDiscountedPrice": 19800,
+          "stockQuantity": 19995,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 0,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220411_2/16496667503882LqDU_JPEG/50802596103739992_1941774292.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-03-31T16:15:54.081+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.426+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5468689126,
+      "channelProducts": [
+        {
+          "originProductNo": 5468689126,
+          "channelProductNo": 5491724977,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "[심빌리지 완전무제한 30일 단위] 휴대용 와이파이 에그대여 연장결제",
+          "sellerManagementCode": "V 완전 무제한 연장",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 88000,
+          "discountedPrice": 49500,
+          "mobileDiscountedPrice": 49500,
+          "stockQuantity": 18684,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 0,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220411_60/1649666776231BBMpt_JPEG/50802621949648809_534499989.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-03-31T12:24:49.756+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.425+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5468683220,
+      "channelProducts": [
+        {
+          "originProductNo": 5468683220,
+          "channelProductNo": 5491719018,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "에그대여 국내 SK KT LG 30일 22G 포켓 와이파이",
+          "sellerManagementCode": "A 에그 19800",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 44000,
+          "discountedPrice": 19800,
+          "mobileDiscountedPrice": 19800,
+          "stockQuantity": 39959,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3500,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220923_169/1663902220744Q85xR_JPEG/65038109427857280_676665373.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-03-31T12:22:44.995+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.425+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5468556221,
+      "channelProducts": [
+        {
+          "originProductNo": 5468556221,
+          "channelProductNo": 5491591167,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "국내에그대여 SK KT LG 30일 무제한 포켓 와이파이",
+          "sellerManagementCode": "A 에그 무제한 28600",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 183000,
+          "discountedPrice": 28600,
+          "mobileDiscountedPrice": 28600,
+          "stockQuantity": 197948,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 3500,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220923_270/1663901251261v1d54_JPEG/65037096978399803_1943952958.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-03-31T11:28:40.139+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.424+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5466548728,
+      "channelProducts": [
+        {
+          "originProductNo": 5466548728,
+          "channelProductNo": 5489563588,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007257",
+          "name": "[심빌리지 충전형 1개월 단위] 휴대용 와이파이 에그대여연장결제",
+          "sellerManagementCode": "V 에그 충전형 연장",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 173600,
+          "discountedPrice": 14300,
+          "mobileDiscountedPrice": 14300,
+          "stockQuantity": 77440,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 0,
+          "returnFee": 4000,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "wholeCategoryName": "여가/생활편의>해외여행>해외패키지/기타",
+          "wholeCategoryId": "50000009>50007256>50007257",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220411_171/1649667256031Gqnd2_JPEG/50803101737563604_1782605026.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-03-30T14:10:03.373+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.424+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5463544807,
+      "channelProducts": [
+        {
+          "originProductNo": 5463544807,
+          "channelProductNo": 5486531220,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "도로청소㈜ 1개월 에그연장",
+          "sellerManagementCode": "고정 결제창 1",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "SUSPENSION",
+          "salePrice": 37400,
+          "discountedPrice": 37400,
+          "mobileDiscountedPrice": 37400,
+          "stockQuantity": 529978,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryFee": 0,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20200716_7/1594864500630pHN0m_PNG/32226834195639774_1892983529.png"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-03-29T10:12:31.616+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.424+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5343123634,
+      "channelProducts": [
+        {
+          "originProductNo": 5343123634,
+          "channelProductNo": 5364778082,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "에그대여 국내 30일 10G 포켓와이파이 SK KT LG",
+          "sellerManagementCode": "A 에그 14300",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 196000,
+          "discountedPrice": 14300,
+          "mobileDiscountedPrice": 14300,
+          "stockQuantity": 393692,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 4000,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220923_163/1663901194174ohLPt_JPEG/65037039886313751_492176109.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "엘지유플러스",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-01-28T16:23:46.555+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.424+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 5343120845,
+      "channelProducts": [
+        {
+          "originProductNo": 5343120845,
+          "channelProductNo": 5364775248,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007257",
+          "name": "휴대용 와이파이 20GB 에그 LTE 국내 포켓 1개월단위 연장 장기사용가능",
+          "sellerManagementCode": "A 휴대용 19800",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 44000,
+          "discountedPrice": 19800,
+          "mobileDiscountedPrice": 19800,
+          "stockQuantity": 39943,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 4000,
+          "exchangeFee": 7000,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>해외패키지/기타",
+          "wholeCategoryId": "50000009>50007256>50007257",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20220923_124/1663902238085SLSKG_JPEG/65038126769838001_244423058.jpg"
+          },
+          "modelName": "모바일 라우터 에그",
+          "brandName": "에그",
+          "manufacturerName": "SKT KT LG",
+          "sellerTags": [
+            {
+              "code": 2417295,
+              "text": "휴대하기좋은크기"
+            },
+            {
+              "code": 898563,
+              "text": "간편한사용"
+            },
+            {
+              "code": 886107,
+              "text": "감각적디자인"
+            },
+            {
+              "code": 76050,
+              "text": "만족스러운"
+            },
+            {
+              "code": 1846615,
+              "text": "사용이편리한"
+            },
+            {
+              "code": 761469,
+              "text": "수명이오래가는"
+            },
+            {
+              "code": 2309628,
+              "text": "기분UP되는"
+            },
+            {
+              "code": 1148935,
+              "text": "집에서즐기는"
+            },
+            {
+              "code": 4532,
+              "text": "가성비좋은"
+            },
+            {
+              "code": 15599,
+              "text": "실용적"
+            }
+          ],
+          "regDate": "2021-01-28T16:22:39.130+09:00",
+          "modifiedDate": "2023-10-02T04:50:41.423+09:00"
+        }
+      ]
+    },
+    {
+      "originProductNo": 4926815880,
+      "channelProducts": [
+        {
+          "originProductNo": 4926815880,
+          "channelProductNo": 4943158786,
+          "channelServiceType": "STOREFARM",
+          "categoryId": "50007260",
+          "name": "한국유심 이심 eSIM 선불 칩 20일부터 단기 데이터무제한 외국인 SK KT LG 알뜰폰",
+          "sellerManagementCode": "B 유심메인  8000",
+          "statusType": "SALE",
+          "channelProductDisplayStatusType": "ON",
+          "salePrice": 240000,
+          "discountedPrice": 8000,
+          "mobileDiscountedPrice": 8000,
+          "stockQuantity": 244282,
+          "knowledgeShoppingProductRegistration": true,
+          "deliveryAttributeType": "NORMAL",
+          "deliveryFee": 3000,
+          "returnFee": 0,
+          "exchangeFee": 0,
+          "managerPurchasePoint": 1,
+          "textReviewPoint": 100,
+          "photoVideoReviewPoint": 200,
+          "regularCustomerPoint": 100,
+          "wholeCategoryName": "여가/생활편의>해외여행>와이파이/USIM",
+          "wholeCategoryId": "50000009>50007256>50007260",
+          "representativeImage": {
+            "url": "http://shop1.phinf.naver.net/20231013_92/16971794392191D9PV_JPEG/44326938031275641_908787457.jpg"
+          },
+          "modelName": "한국유심",
+          "brandName": "한국유심",
+          "manufacturerName": "SKT KT",
+          "sellerTags": [
+            {
+              "code": 256672,
+              "text": "선불유심"
+            },
+            {
+              "code": 17464,
+              "text": "유심칩"
+            },
+            {
+              "code": 2510946,
+              "text": "단기"
+            },
+            {
+              "code": 3984646,
+              "text": "무제한"
+            },
+            {
+              "code": 200260,
+              "text": "LTE"
+            },
+            {
+              "code": 499484,
+              "text": "4G"
+            },
+            {
+              "text": "한국선불유심"
+            }
+          ],
+          "regDate": "2020-05-25T11:51:52.617+09:00",
+          "modifiedDate": "2023-10-13T15:44:02.024+09:00"
+        }
+      ]
+    }
+  ],
+  "page": 1,
+  "size": 50,
+  "totalElements": 39,
+  "totalPages": 1,
+  "sort": {
+    "sorted": true,
+    "fields": [
+      {
+        "name": "regDate",
+        "direction": "DESC"
+      },
+      {
+        "name": "productNo",
+        "direction": "DESC"
+      }
+    ]
+  },
+  "first": true,
+  "last": true
+}
