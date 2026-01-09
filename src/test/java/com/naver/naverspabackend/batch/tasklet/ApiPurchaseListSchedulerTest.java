@@ -4,6 +4,8 @@ package com.naver.naverspabackend.batch.tasklet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.naver.naverspabackend.dto.*;
 import com.naver.naverspabackend.enums.ApiType;
 import com.naver.naverspabackend.security.NaverRedisRepository;
@@ -21,10 +23,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -439,6 +445,63 @@ public class ApiPurchaseListSchedulerTest {
                 }
             }
         }
+    }
+
+
+    @Test
+    void esimAccessTest () throws Exception {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String requestId = UUID.randomUUID().toString();
+
+
+        String url = "https://api.esimaccess.com/api/v1/open/package/list";
+
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(60000); // 커넥션 최대 시간
+        factory.setReadTimeout(60000); // 읽기 최대 시간
+
+        // SSL 인증 무시
+        RestTemplate restTemplate = new RestTemplate(factory);
+
+        // create headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(org.springframework.http.MediaType.APPLICATION_JSON));
+
+        Gson gson = new Gson();
+        Map<String,Object> jsonObject = new HashMap<>();
+        jsonObject.put("dataType",2);
+
+        String signStr =timestamp  +  requestId + "a111c008c987408c919ffb791108228a" + gson.toJson(jsonObject);
+        String sign = HMACSha256(signStr, "7d270b27ace046d5847517576494103d").toLowerCase();
+
+        headers.add("RT-AccessCode","a111c008c987408c919ffb791108228a");
+        HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
+
+
+        ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
+        System.out.println(response.getBody());
+    }
+    /**
+     * HMAC-SHA256 해시를 생성하는 메서드
+     */
+    public static String HMACSha256(String data, String key) throws Exception {
+        String algorithm = "HmacSHA256";
+        Mac sha256_HMAC = Mac.getInstance(algorithm);
+        SecretKeySpec secret_key = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), algorithm);
+        sha256_HMAC.init(secret_key);
+
+        byte[] hash = sha256_HMAC.doFinal(data.getBytes(StandardCharsets.UTF_8));
+
+        // 바이트 배열을 16진수 문자열(Hex String)로 변환
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     public double getRealSamePrice(ApiPurchaseItemDto apiPurchaseItemDto){

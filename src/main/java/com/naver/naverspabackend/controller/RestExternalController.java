@@ -62,11 +62,7 @@ public class RestExternalController {
     @PostMapping("/email/send")
     public Map<String, String> emailSend(@RequestBody Map<String,Object> params, HttpServletResponse response) throws Exception {
 
-        orderService.insertReTransMailInfo(params);
-
-        Map<String, String> result = new HashMap<>();
-        result.put("result", "success");
-        return result;
+        return orderService.insertReTransMailInfo(params);
     }
 
 

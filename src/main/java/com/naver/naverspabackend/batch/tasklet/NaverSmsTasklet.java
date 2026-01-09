@@ -1022,30 +1022,32 @@ public class NaverSmsTasklet implements Tasklet {
 
         orderMapper.updateOrderSms(orderDto);
 
-        /*
+
         try{
-            boolean esimFlagInfo = "Y".equals(matchInfoDto.getEsimFlag());
-            if(esimFlagInfo && email.equals(notExistEmail)){
-                Map<String, Object> kakaoParameters = new HashMap<>();
-                Map<String, String> exitem = new HashMap<>();
-                exitem.put("id",orderDto.getId()+"");
-                kakaoParameters.put("exitem",CommonUtil.stringToBase64Encode(gson.toJson(exitem)));
-                kakaoParameters.put("orderTitle", orderDto.getProductName());
-                String orderRealName = "";
-                if(orderDto.getOptionName1()!=null){
-                    orderRealName = orderDto.getOptionName1();
+            if(orderDto.getId() == 109205737){
+                boolean esimFlagInfo = "Y".equals(matchInfoDto.getEsimFlag());
+                if(esimFlagInfo && email.equals(notExistEmail)){
+                    Map<String, Object> kakaoParameters = new HashMap<>();
+                    Map<String, String> exitem = new HashMap<>();
+                    exitem.put("id",orderDto.getId()+"");
+                    kakaoParameters.put("exitem",CommonUtil.stringToBase64Encode(gson.toJson(exitem)));
+                    kakaoParameters.put("orderTitle", orderDto.getProductName());
+                    String orderRealName = "";
+                    if(orderDto.getOptionName1()!=null){
+                        orderRealName = orderDto.getOptionName1();
+                    }
+                    if(orderDto.getOptionName2()!=null){
+                        if(!orderRealName.equals(""))
+                            orderRealName += " ";
+                        orderRealName += orderDto.getOptionName2();
+                    }
+                    kakaoParameters.put("orderRealName", orderRealName);
+                    kakaoParameters.put("ordererName", orderDto.getOrdererName());
+                    kakaoService.requestSendKakaoMsg(kakaoParameters, "ESIM_MAIL_RETRANS",storeDto,orderDto, "N", matchInfoDto.getEKakaoResendFlag(),false, shippingTel1);
                 }
-                if(orderDto.getOptionName2()!=null){
-                    if(!orderRealName.equals(""))
-                        orderRealName += " ";
-                    orderRealName += orderDto.getOptionName2();
-                }
-                kakaoParameters.put("orderRealName", orderRealName);
-                kakaoParameters.put("ordererName", orderDto.getOrdererName());
-                kakaoService.requestSendKakaoMsg(kakaoParameters, "ESIM_MAIL_RETRANS",storeDto,orderDto, "N", matchInfoDto.getEKakaoResendFlag(),false, shippingTel1);
             }
         }catch (Exception e){
-        }*/
+        }
 
 
     }

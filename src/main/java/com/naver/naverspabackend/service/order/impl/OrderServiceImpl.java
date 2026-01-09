@@ -15,6 +15,7 @@ import com.naver.naverspabackend.service.sms.MailService;
 import com.naver.naverspabackend.util.CommonUtil;
 import com.naver.naverspabackend.util.PagingUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -169,12 +170,20 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void insertReTransMailInfo(Map<String, Object> params) {
+    public Map<String, String> insertReTransMailInfo(Map<String, Object> params) {
+        Map<String, String> result = new HashMap<>();
         OrderRetransMailInfoDto orderRetransMailInfoDto = new OrderRetransMailInfoDto();
 
         orderRetransMailInfoDto.setMail(params.get("mail").toString());
         orderRetransMailInfoDto.setOrderId(params.get("orderId").toString());
-        orderMapper.insertReTransMailInfo(orderRetransMailInfoDto);
+        try{
+            orderMapper.insertReTransMailInfo(orderRetransMailInfoDto);
+        }catch (DuplicateKeyException e){
+            result.put("result", "exist");
+            return result;
+        }
+        result.put("result", "success");
+        return result;
     }
 
     @Override

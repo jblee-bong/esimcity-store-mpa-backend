@@ -35,7 +35,7 @@ public interface OrderService {
 
     OrderTugeEsimDto selecTugeItemWithIccid(OrderTugeEsimDto param);
 
-    void insertReTransMailInfo(Map<String, Object> params);
+    Map<String, String> insertReTransMailInfo(Map<String, Object> params);
 
     List<OrderRetransMailInfoDto> fetchRetransMailInfoDtoAll();
 
