@@ -223,6 +223,9 @@ public class TugeUtil {
 
             if(apiPurchaseItemDto.isApiPurchaseItemIsDaily()){
                 String dailySize = apiPurchaseItemProcutIds[apiPurchaseItemProcutIds.length-1];
+                if(dailySize.split("/").length>1){
+                    dailySize = dailySize.split("/")[0];
+                }
                 if(dailySize.equals("U") || dailySize.equals("Unlimited") ){
                     model.addAttribute("totalUsageTxt", "unlimited");
                     model.addAttribute("totalUsage","unlimited");//현재 사이클 전체데이터

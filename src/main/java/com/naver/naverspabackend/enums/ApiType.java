@@ -5,6 +5,6 @@ import lombok.Getter;
 @Getter
 public enum ApiType {
 
-    NIZ, TSIM,AIRALO,TUGE,WORLDMOVE
+    NIZ, TSIM,AIRALO,TUGE,WORLDMOVE,ESIMACCESS
 
 }

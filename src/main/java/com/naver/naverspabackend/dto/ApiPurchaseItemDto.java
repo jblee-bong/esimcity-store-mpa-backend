@@ -31,11 +31,14 @@ public class ApiPurchaseItemDto extends BaseDto {
     private String apiPurchaseDataTotal; // tuge를 위한 값. 데이터총량
     private String apiPurchaseDataUnit; // tuge를 위한 값. 데이터단위
 
+    private String apiPurchaseNormalSpeed; // 기본제공속도
     private String apiPurchaseSlowSpeed; // tuge를 위한 값. 데이터단위
+    private String apiPurchaseUnusedValidTime; // 구매후 몇일 내 사용
 
     private String apiPurchaseCoverDomainCode;//국가코드
     private boolean apiPurchaseItemIsDaily;//데일리상품인지유무
     private String apiPurchaseApn; //apn
+    private String apiPurchaseExportDomainCode; //나가는 도메인 코드
 
     private String searchKeyword;
 

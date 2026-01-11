@@ -53,7 +53,6 @@ public class NaverDeceidedScheduler {
         param.put("userAuthority","ROLE_ADMIN");
         List<StoreDto> storeDtos = storeMapper.selectStoreList(param);
         for (StoreDto storeDto : storeDtos) {
-
             if(storeDto.getPlatform()==null){
                 log.warn("플랫폼이 설정되지 않은 스토어: Store ID: {}, Store Name: {}", storeDto.getId(), storeDto.getStoreName());
             }else if(storeDto.getPlatform().equals("naver")){
@@ -63,8 +62,6 @@ public class NaverDeceidedScheduler {
             }else{
                 log.warn("지원하지 않는 플랫폼: {} - Store ID: {}, Store Name: {}", storeDto.getPlatform(), storeDto.getId(), storeDto.getStoreName());
             }
-
-
         }
     }
 

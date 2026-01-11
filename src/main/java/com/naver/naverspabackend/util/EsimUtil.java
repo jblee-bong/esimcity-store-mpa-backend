@@ -55,6 +55,27 @@ public class EsimUtil {
         this.airaloBaseUrl = airaloBaseUrl;
     }
 
+
+    static String esimAccessBaseUrl;
+    @Value("${api.esimaccess.baseUrl}")
+    public void setEsimAccessBaseUrl(String esimAccessBaseUrl) {
+        this.esimAccessBaseUrl = esimAccessBaseUrl;
+    }
+
+    static String esimAccessClientId;
+    @Value("${api.esimaccess.clientId}")
+    public void setEsimAccessClientId(String esimAccessClientId) {
+        this.esimAccessClientId = esimAccessClientId;
+    }
+
+    static String esimAccessClientSecret;
+    @Value("${api.esimaccess.clientSecret}")
+    public void setEsimAccessClientSecret(String esimAccessClientSecret) {
+        this.esimAccessClientSecret = esimAccessClientSecret;
+    }
+
+
+
     static TugeRedisRepository tugeRedisRepository;
     @Autowired
     public void setTugeRedisRepository(TugeRedisRepository tugeRedisRepository) {
@@ -114,5 +135,8 @@ public class EsimUtil {
         return new AirAloUtil(storeDto.getEsimApiAiraloClientId(), storeDto.getEsimApiAiraloClientSecret(), airaloBaseUrl, esimApiIngStepLogsService,orderMapper);
     }
 
+    public static EsimAccessUtil getEsimAccess(StoreDto storeDto)  {
+        return new EsimAccessUtil(esimAccessClientId, esimAccessClientSecret, esimAccessBaseUrl, esimApiIngStepLogsService, apiPurchaseItemService,orderMapper);
+    }
 
 }

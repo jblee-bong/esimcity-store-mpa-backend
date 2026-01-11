@@ -8,7 +8,7 @@ spring:
     host: 114.207.112.85
     port: 6379
     password: esimvil2025!
-testMode: false
+testMode: true
 
 logging:
   config: classpath:logback-prod.xml
@@ -49,6 +49,11 @@ api:
     clientId: a17f9843e9e8df7f2d5e1d38823442f6test
     clientSecret: MK11yYutJTa2lR32zqsh3kaF0D3rlHn0PE8vlsiXtest
     baseUrl: https://partners-api.airalo.com
+  esimaccess:
+    clientId: a111c008c987408c919ffb791108228a
+    clientSecret: 7d270b27ace046d5847517576494103d
+    baseUrl: https://api.esimaccess.com/api
+
 
 
 

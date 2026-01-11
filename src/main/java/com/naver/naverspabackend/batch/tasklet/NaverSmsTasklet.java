@@ -125,6 +125,7 @@ public class NaverSmsTasklet implements Tasklet {
         WorldMoveUtil worldMoveUtil =  EsimUtil.getWorldMoveUtil(storeDto);
         NizUtil nizUtil =  EsimUtil.getNizUtil(storeDto);
         AirAloUtil airAloUtil  =  EsimUtil.getAirAloUtil(storeDto);
+        EsimAccessUtil esimAccess  =  EsimUtil.getEsimAccess(storeDto);
 
 
         MatchInfoDto matchInfoDto = matchInfoMapper.selectMatchInfoByOrder(orderDto);
@@ -625,7 +626,90 @@ public class NaverSmsTasklet implements Tasklet {
 
                         matchInfoDto.setEsimFlag("N");
                     }
-                }else if(matchInfoDto.getEsimType().equals("99")){
+                }else if(matchInfoDto.getEsimType().equals("07")){
+                    orderDto.setEsimCorp("ESIMACCESS");
+                    try {
+                        if(orderDto.getEsimApiRequestId()==null || orderDto.getEsimApiRequestId().equals("")){ //이심 요청 전
+                            List<String> orderIdList = new ArrayList<>();
+                            for(int j=0;j<orderDto.getQuantity();j++) {
+                                esimMap = esimAccess.contextLoads2(matchInfoDto.getEsimProductId(), matchInfoDto.getEsimProductDays(), orderDto.getId()); //이심 요청
+                                if ((Boolean) esimMap.get("success")) {
+                                    Map<String, Object> obj = (Map<String, Object>) esimMap.get("obj");
+                                    String orderId =  obj.get("orderNo").toString();
+                                    orderIdList.add(orderId);
+                                    if(orderDto.getEsimApiRequestId()==null || orderDto.getEsimApiRequestId().equals("")){
+                                        orderDto.setEsimApiRequestId(orderId);
+                                    }else{
+                                        orderDto.setEsimApiRequestId(orderDto.getEsimApiRequestId() + ","+ orderId);
+                                    }
+                                }
+                            }
+                            orderMapper.updateOrderSmsForEsim(orderDto);
+                            return;
+                        }else{
+                            //여기서 상태 체크해서 개통 완료일 경우 다음 스탭 진행
+
+                            String[] esimApiRequestIds = orderDto.getEsimApiRequestId().split(",");
+                            Map<String,Object> result =  esimAccess.contextLoads3(esimApiRequestIds[i], orderDto.getId());
+                            if ((Boolean) result.get("success")) {
+                                Map<String, Object> obj = (Map<String, Object>) result.get("obj");
+                                List<HashMap> esimList = (List<HashMap>) obj.get("esimList");
+                                if(esimList.size()>0){
+                                    esimMap = esimList.get(0);
+                                    if(!esimMap.get("smdpStatus").toString().equals("RELEASED")){
+                                        return;
+                                    }
+                                    fileUtil.makeQrCodeEsimAccess(esimMap);
+                                }else{
+                                    return;
+                                }
+                            }else{
+                                return;
+                            }
+                            try{
+                                orderDto.setEsimIccid(esimMap.get("iccid")!=null?esimMap.get("iccid").toString():null);
+                                orderMapper.updateOrderSmsForEsimIccid(orderDto);
+
+                                orderDto.setEsimApn(esimMap.get("apn")!=null?esimMap.get("apn").toString():null);
+                                orderMapper.updateOrderSmsForEsimApn(orderDto);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+
+
+
+                            String id = CommonUtil.stringToBase64Encode((orderDto.getId()+""));
+                            String type = CommonUtil.stringToBase64Encode(ApiType.ESIMACCESS.name());
+                            String orderId = CommonUtil.stringToBase64Encode(esimApiRequestIds[i]);
+                            String iccid = CommonUtil.stringToBase64Encode(esimMap.get("iccid").toString());
+
+                            Map<String, String> exitem = new HashMap<>();
+                            exitem.put("id",orderDto.getId()+"");
+                            exitem.put("type",ApiType.ESIMACCESS.name());
+                            exitem.put("orderId",esimApiRequestIds[i]);
+                            exitem.put("iccid",esimMap.get("iccid").toString());
+                            String esitemEncode = CommonUtil.stringToBase64Encode(gson.toJson(exitem));
+                            esimMap.put("usage2Url",serverOrigin+usage2Uri+"?exitem="+ esitemEncode);
+
+                            esimMap.put("usageUrl",serverOrigin+usageUri+"?id="+ id +"&type="+ type+"&orderId="+orderId+"&iccid="+iccid);
+
+                            esimMap.put("exitem",CommonUtil.stringToBase64Encode(gson.toJson(exitem)));
+                            esimMap.put("eEsimId",id);
+                            esimMap.put("eEsimType",type);
+                            esimMap.put("eEsimOrderId",orderId);
+                            esimMap.put("eEsimIccid",iccid);
+                            esimMap.put("eEsimRcode","");
+
+
+                            esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.OPEN_END.getExplain(), orderDto.getId());
+                        }
+                    } catch (Exception e) {
+                        esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.ERROR.getExplain() + e.getMessage(), orderDto.getId());
+                        matchInfoDto.setEsimFlag("N");
+                    }
+                }
+                else if(matchInfoDto.getEsimType().equals("99")){
                     orderDto.setEsimCorp("벌크");
                     try {
                         esimMap = BulkUtil.contextLoads2( matchInfoDto.getEsimProductId(), orderDto, orderDto.getId());

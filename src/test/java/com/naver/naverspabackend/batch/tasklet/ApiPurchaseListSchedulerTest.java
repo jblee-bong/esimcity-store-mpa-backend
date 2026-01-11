@@ -450,38 +450,74 @@ public class ApiPurchaseListSchedulerTest {
 
     @Test
     void esimAccessTest () throws Exception {
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        String requestId = UUID.randomUUID().toString();
+        ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
+        apiPurchaseItemDto.setApiPurchaseItemType(ApiType.ESIMACCESS.name());
+        List<Map<String,Object>> itemList  = OriginEsimAccessUtil.contextLoads1();
+        apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
+        for(int j=0;j<itemList.size();j++){
+            Map<String,Object> item = itemList.get(j);
+
+            int activeType  = (int) item.get("activeType");//언제부터 요금제 카운트 시작 1. 휴대폰설치시점 2. 최초네트워크접속시점
+            if(activeType!=2){ // 최초네트워크접속시점만 판매함
+                continue;
+            }
+
+            apiPurchaseItemDto.setApiPurchaseExportDomainCode(item.get("ipExport").toString());
+            apiPurchaseItemDto.setApiPurchaseItemProcutId(item.get("packageCode").toString());
+            apiPurchaseItemDto.setApiPurchaseItemDescription(item.get("name").toString());
+            double price = (Double.parseDouble(item.get("price").toString())/10000);
+            apiPurchaseItemDto.setApiPurchasePrice(price+"");//가격
+            apiPurchaseItemDto.setApiPurchaseCurrency(item.get("currencyCode").toString());//화폐단위
+            apiPurchaseItemDto.setApiPurchaseDataTotal(item.get("volume").toString());//용량
+            apiPurchaseItemDto.setApiPurchaseDataUnit("bytes"); //용량단위
+
+            int dataType  = (int) item.get("dataType");
+            apiPurchaseItemDto.setApiPurchaseItemSelectType(dataType+"");//1:총량제, 2:일일제한(속도제어), 3:일일제한(차단) 4:일일무제한
+            apiPurchaseItemDto.setApiPurchaseItemIsDaily(dataType==2 || dataType == 3  || dataType == 4);
+
+            int unusedValidTime  = (int) item.get("unusedValidTime");
+            apiPurchaseItemDto.setApiPurchaseUnusedValidTime(unusedValidTime+"");
+
+            apiPurchaseItemDto.setApiPurchaseItemDays(((Integer) item.get("duration")) + ((String) item.get("durationUnit")));//활성화후 유효기간 (일)
+
+            apiPurchaseItemDto.setApiPurchaseCoverDomainCode(item.get("location").toString());
+
+            apiPurchaseItemDto.setApiPurchaseNormalSpeed(item.get("speed").toString());
+
+            apiPurchaseItemDto.setApiPurchaseSlowSpeed(item.get("fupPolicy").toString());
+            if((Integer) item.get("supportTopUpType")==2){
+                apiPurchaseItemDto.setApiPurchaseIsCharge(true);
+            }else{
+                apiPurchaseItemDto.setApiPurchaseIsCharge(false);
+
+            }
 
 
-        String url = "https://api.esimaccess.com/api/v1/open/package/list";
-
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
-
-        // SSL 인증 무시
-        RestTemplate restTemplate = new RestTemplate(factory);
-
-        // create headers
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(org.springframework.http.MediaType.APPLICATION_JSON));
-
-        Gson gson = new Gson();
-        Map<String,Object> jsonObject = new HashMap<>();
-        jsonObject.put("dataType",2);
-
-        String signStr =timestamp  +  requestId + "a111c008c987408c919ffb791108228a" + gson.toJson(jsonObject);
-        String sign = HMACSha256(signStr, "7d270b27ace046d5847517576494103d").toLowerCase();
-
-        headers.add("RT-AccessCode","a111c008c987408c919ffb791108228a");
-        HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
+            apiPurchaseItemService.insert(apiPurchaseItemDto);
+        }
 
 
-        ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
-        System.out.println(response.getBody());
+    }
+
+    @Test
+    void esimAccessPurchase () throws Exception {
+        StoreDto storeDto = new StoreDto();
+        EsimAccessUtil esimAccess  =  EsimUtil.getEsimAccess(storeDto);
+        //Brazil 500MB/Day
+        HashMap esimMap = esimAccess.contextLoads2( "P74QTP3AR", "365",12312L); //이심 요청
+        System.out.println(esimMap);
+
+
+    }
+    @Test
+    void esimAccessPurchaseStatus () throws Exception {
+        StoreDto storeDto = new StoreDto();
+        EsimAccessUtil esimAccess  =  EsimUtil.getEsimAccess(storeDto);
+        //Brazil 500MB/Day
+        Map<String,Object> result =  esimAccess.contextLoads3("B23051616050537", 12312L);
+        System.out.println(result);
+
+
     }
     /**
      * HMAC-SHA256 해시를 생성하는 메서드

@@ -299,4 +299,18 @@ public class FileUtil {
 
         esimMap.put("qrImageUrl", qrImageUrl);
     }
+
+    public void makeQrCodeEsimAccess(HashMap esimMap) throws IOException, WriterException {
+
+        esimMap.put("iccid", esimMap.get("iccid"));
+
+        String lpaCode = esimMap.get("ac").toString();
+        String[] lapSplits = lpaCode.split("\\$");
+        esimMap.put("smdp", lapSplits[1]);
+        esimMap.put("activation_code", lapSplits[2]);
+        esimMap.put("lpaCode", lpaCode);
+
+        String qrImageUrl = serverOrigin + uploadQrCodeFile( esimMap);
+        esimMap.put("qrImageUrl", qrImageUrl);
+    }
 }
