@@ -167,6 +167,7 @@ public class BatchConfig {
         Map<String, Object> map = new HashMap<>();
         map.put("jobName", "importNaverJob");
         factory.setJobDataAsMap(map);
+        factory.setRequestsRecovery(false);
         return factory;
     }
 

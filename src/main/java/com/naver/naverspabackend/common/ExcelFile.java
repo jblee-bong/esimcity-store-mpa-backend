@@ -188,7 +188,13 @@ public class ExcelFile< T> {
                                         try{
                                             value = cellsInRowList.get(i).getStringCellValue();
                                         }catch (Exception e){
-                                            value = Long.toString((long) cellsInRowList.get(i).getNumericCellValue());
+                                           try{
+
+                                               value = Long.toString((long) cellsInRowList.get(i).getNumericCellValue());
+                                           }catch (Exception e2){
+                                               e2.printStackTrace();
+                                               value = "";
+                                           }
                                         }
                                         item.put(field.getName(),value);
                                     } else if (field.getType() == Boolean.class) {

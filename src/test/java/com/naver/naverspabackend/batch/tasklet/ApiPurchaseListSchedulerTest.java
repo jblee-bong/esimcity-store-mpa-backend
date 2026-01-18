@@ -355,6 +355,67 @@ public class ApiPurchaseListSchedulerTest {
                     e.printStackTrace();
                 }
 
+                try{
+                    ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
+                    apiPurchaseItemDto.setApiPurchaseItemType(ApiType.ESIMACCESS.name());
+                    List<Map<String,Object>> itemList  = OriginEsimAccessUtil.contextLoads1();
+
+                    EsimPriceDto param = new EsimPriceDto();
+                    param.setType(ApiType.ESIMACCESS.name());
+                    EsimPriceDto esimPriceDto = esimPriceService.findById(param);
+                    Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
+
+                    apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
+
+                    for(int j=0;j<itemList.size();j++){
+                        Map<String,Object> item = itemList.get(j);
+
+                        int activeType  = (int) item.get("activeType");//언제부터 요금제 카운트 시작 1. 휴대폰설치시점 2. 최초네트워크접속시점
+                        if(activeType!=2){ // 최초네트워크접속시점만 판매함
+                            continue;
+                        }
+                        apiPurchaseItemDto.setApiPurchaseExportDomainCode(item.get("ipExport").toString());
+                        apiPurchaseItemDto.setApiPurchaseItemProcutId(item.get("packageCode").toString());
+                        apiPurchaseItemDto.setApiPurchaseItemDescription(item.get("name").toString());
+                        double price = (Double.parseDouble(item.get("price").toString())/10000);
+                        apiPurchaseItemDto.setApiPurchasePrice(price+"");//가격
+                        if(echangeRate!=null){
+                            double krwPrice = echangeRate *price;
+                            apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
+                        }
+                        apiPurchaseItemDto.setApiPurchaseCurrency(item.get("currencyCode").toString());//화폐단위
+                        apiPurchaseItemDto.setApiPurchaseDataTotal(item.get("volume").toString());//용량
+                        apiPurchaseItemDto.setApiPurchaseDataUnit("bytes"); //용량단위
+
+                        int dataType  = (int) item.get("dataType");
+                        apiPurchaseItemDto.setApiPurchaseItemSelectType(dataType+"");//1:총량제, 2:일일제한(속도제어), 3:일일제한(차단) 4:일일무제한
+                        apiPurchaseItemDto.setApiPurchaseItemIsDaily(dataType==2 || dataType == 3  || dataType == 4);
+
+                        int unusedValidTime  = (int) item.get("unusedValidTime");
+                        apiPurchaseItemDto.setApiPurchaseUnusedValidTime(unusedValidTime+"");
+
+                        apiPurchaseItemDto.setApiPurchaseItemDays(((Integer) item.get("duration")) +"");//활성화후 유효기간 (일)
+
+                        apiPurchaseItemDto.setApiPurchaseCoverDomainCode(item.get("location").toString());
+
+                        apiPurchaseItemDto.setApiPurchaseNormalSpeed(item.get("speed").toString());
+
+                        apiPurchaseItemDto.setApiPurchaseSlowSpeed(item.get("fupPolicy").toString());
+                        if((Integer) item.get("supportTopUpType")==2){
+                            apiPurchaseItemDto.setApiPurchaseIsCharge(true);
+                        }else{
+                            apiPurchaseItemDto.setApiPurchaseIsCharge(false);
+
+                        }
+
+
+                        apiPurchaseItemService.insert(apiPurchaseItemDto);
+                    }
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
 
 
 
@@ -404,6 +465,8 @@ public class ApiPurchaseListSchedulerTest {
                             apiPurchaseItemParam.setApiPurchaseItemType(ApiType.TSIM.name());
                         }else if(matchInfoDto.getEsimType().equals("05")){
                             apiPurchaseItemParam.setApiPurchaseItemType(ApiType.TUGE.name());
+                        }else if(matchInfoDto.getEsimType().equals("07")){
+                            apiPurchaseItemParam.setApiPurchaseItemType(ApiType.ESIMACCESS.name());
                         }
 
 
@@ -413,13 +476,15 @@ public class ApiPurchaseListSchedulerTest {
                             if(apiPurchaseItemDto.getApiPurchaseKrwPrice()!=null){
                                 double apiPrice = getRealSamePrice(apiPurchaseItemDto);
 
-
+                                if(matchInfoDto.getEsimType().equals("07")){
+                                    apiPrice = getEsimAccessRealPrice(apiPurchaseItemDto,matchInfoDto.getEsimProductDays());
+                                }
 
 
                                 //한국가격에서 세일가격을 뺴야 옵션가랑 비교가능
                                 apiPrice = apiPrice-matchInfoDto.getProductDto().getSalePrice();
 
-                                if (Math.abs(apiPrice - currentOptionPrice) > 100) {
+                                if (Math.abs(apiPrice - currentOptionPrice) > 10) {
                                     // 두 가격의 차이(양수)가 100원보다 크면 실행 바꿔야함. 가격을 api 가격으로
                                     optionBodyMap.put("id",matchInfoDto.getProductOptionDto().getOptionId());
                                     optionBodyMap.put("stockQuantity",10000);
@@ -453,7 +518,14 @@ public class ApiPurchaseListSchedulerTest {
         ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
         apiPurchaseItemDto.setApiPurchaseItemType(ApiType.ESIMACCESS.name());
         List<Map<String,Object>> itemList  = OriginEsimAccessUtil.contextLoads1();
+
+        EsimPriceDto param = new EsimPriceDto();
+        param.setType(ApiType.ESIMACCESS.name());
+        EsimPriceDto esimPriceDto = esimPriceService.findById(param);
+        Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
+
         apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
+
         for(int j=0;j<itemList.size();j++){
             Map<String,Object> item = itemList.get(j);
 
@@ -461,12 +533,15 @@ public class ApiPurchaseListSchedulerTest {
             if(activeType!=2){ // 최초네트워크접속시점만 판매함
                 continue;
             }
-
             apiPurchaseItemDto.setApiPurchaseExportDomainCode(item.get("ipExport").toString());
             apiPurchaseItemDto.setApiPurchaseItemProcutId(item.get("packageCode").toString());
             apiPurchaseItemDto.setApiPurchaseItemDescription(item.get("name").toString());
             double price = (Double.parseDouble(item.get("price").toString())/10000);
             apiPurchaseItemDto.setApiPurchasePrice(price+"");//가격
+            if(echangeRate!=null){
+                double krwPrice = echangeRate *price;
+                apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
+            }
             apiPurchaseItemDto.setApiPurchaseCurrency(item.get("currencyCode").toString());//화폐단위
             apiPurchaseItemDto.setApiPurchaseDataTotal(item.get("volume").toString());//용량
             apiPurchaseItemDto.setApiPurchaseDataUnit("bytes"); //용량단위
@@ -478,7 +553,7 @@ public class ApiPurchaseListSchedulerTest {
             int unusedValidTime  = (int) item.get("unusedValidTime");
             apiPurchaseItemDto.setApiPurchaseUnusedValidTime(unusedValidTime+"");
 
-            apiPurchaseItemDto.setApiPurchaseItemDays(((Integer) item.get("duration")) + ((String) item.get("durationUnit")));//활성화후 유효기간 (일)
+            apiPurchaseItemDto.setApiPurchaseItemDays(((Integer) item.get("duration")) +"");//활성화후 유효기간 (일)
 
             apiPurchaseItemDto.setApiPurchaseCoverDomainCode(item.get("location").toString());
 
@@ -519,26 +594,6 @@ public class ApiPurchaseListSchedulerTest {
 
 
     }
-    /**
-     * HMAC-SHA256 해시를 생성하는 메서드
-     */
-    public static String HMACSha256(String data, String key) throws Exception {
-        String algorithm = "HmacSHA256";
-        Mac sha256_HMAC = Mac.getInstance(algorithm);
-        SecretKeySpec secret_key = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), algorithm);
-        sha256_HMAC.init(secret_key);
-
-        byte[] hash = sha256_HMAC.doFinal(data.getBytes(StandardCharsets.UTF_8));
-
-        // 바이트 배열을 16진수 문자열(Hex String)로 변환
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) hexString.append('0');
-            hexString.append(hex);
-        }
-        return hexString.toString();
-    }
 
     public double getRealSamePrice(ApiPurchaseItemDto apiPurchaseItemDto){
 
@@ -577,13 +632,13 @@ public class ApiPurchaseListSchedulerTest {
             //데일리가없을경우 그냥 가격가중치로
             try{
                 int daily = Integer.parseInt(apiPurchaseItemDto.getApiPurchaseItemDays().toString());
-                if(daily<=9)
+                if(daily<=5)
                     daysWeight = weight1;
-                else if(daily<=19)
+                else if(daily<=10)
                     daysWeight = weight2;
-                else if(daily<=25)
+                else if(daily<=15)
                     daysWeight = weight3;
-                else if(daily<=25)
+                else if(daily<=20)
                     daysWeight = weight4;
                 else
                     daysWeight = weight5;
@@ -598,6 +653,122 @@ public class ApiPurchaseListSchedulerTest {
             return Math.round(apiPrice * daysWeight / 100.0) * 100;
         }
     }
+
+
+    private double getEsimAccessRealPrice(ApiPurchaseItemDto apiPurchaseItemDto, String esimProductDays) {
+
+        EsimPriceDto param = new EsimPriceDto();
+        param.setType(apiPurchaseItemDto.getApiPurchaseItemType());
+        EsimPriceDto esimPriceDto = esimPriceService.findById(param);
+        Double weight1 = esimPriceDto.getWeight1();
+        Double weight2 = esimPriceDto.getWeight2();
+        Double weight3 = esimPriceDto.getWeight3();
+        Double weight4 = esimPriceDto.getWeight4();
+        Double weight5 = esimPriceDto.getWeight5();
+
+        double apiPrice =  Double.parseDouble(apiPurchaseItemDto.getApiPurchaseKrwPrice());
+
+
+        //esimaccess에서 제공하는 할인율에 따른 가격 계산
+        //=IFS(C47<= 1, 0.96,  C47<= 2, 0.95,  C47<= 3, 0.94,  C47<= 4, 0.93,
+        // C47 <= 5,0.92,C47 <= 6,0.91,
+        // C47 <= 7,0.9,C47 <= 8,0.89,
+        // C47 <= 9,0.89,
+        // C47<=11,0.89,C47<=13,0.88
+        // ,C47<=15,0.87
+        // ,C47<=17,0.86,C47<=19,0.85,
+        // C47<=21,0.85,
+        // C47<=23,0.84
+        // ,C47<=25,0.83,
+        // C47<=27,0.82,C47<=29,0.82, TRUE, 0.82)
+        try{
+            int daily = Integer.parseInt(esimProductDays);
+            if(daily<=1)
+                apiPrice = apiPrice * 0.96;
+            else if(daily<=2)
+                apiPrice = apiPrice * 0.95;
+            else if(daily<=3)
+                apiPrice = apiPrice * 0.94;
+            else if(daily<=4)
+                apiPrice = apiPrice * 0.93;
+            else if(daily<=5)
+                apiPrice = apiPrice * 0.92;
+            else if(daily<=6)
+                apiPrice = apiPrice * 0.91;
+            else if(daily<=7)
+                apiPrice = apiPrice * 0.9;
+            else if(daily<=11)
+                apiPrice = apiPrice * 0.89;
+            else if(daily<=13)
+                apiPrice = apiPrice * 0.88;
+            else if(daily<=15)
+                apiPrice = apiPrice * 0.87;
+            else if(daily<=17)
+                apiPrice = apiPrice * 0.86;
+            else if(daily<=21)
+                apiPrice = apiPrice * 0.85;
+            else if(daily<=23)
+                apiPrice = apiPrice * 0.84;
+            else if(daily<=25)
+                apiPrice = apiPrice * 0.83;
+            else
+                apiPrice = apiPrice * 0.82;
+
+            apiPrice = apiPrice * daily;
+
+        }catch (Exception e){
+
+        }
+
+        double priceWeight = 0;
+        //금액으로인한 가중치
+        if(apiPrice<= 5000){
+            priceWeight = weight1;
+        }else if(apiPrice<= 10000){
+            priceWeight = weight2;
+        }else if(apiPrice<= 15000){
+            priceWeight = weight3;
+        }else if(apiPrice<= 20000){
+            priceWeight = weight4;
+        }else{
+            priceWeight = weight5;
+        }
+        double daysWeight = 0;
+        //여기서 알고리즘 실행
+
+        boolean dailyFlag = apiPurchaseItemDto.isApiPurchaseItemIsDaily();
+
+        if(!dailyFlag){
+            //총량일경우 가격 가중치로
+            daysWeight = priceWeight;
+        }else{
+            //데일리가없을경우 그냥 가격가중치로
+            try{
+                int daily = Integer.parseInt(esimProductDays);
+                if(daily<=9)
+                    daysWeight = weight1;
+                else if(daily<=19)
+                    daysWeight = weight2;
+                else if(daily<=25)
+                    daysWeight = weight3;
+                else if(daily<=25)
+                    daysWeight = weight4;
+                else
+                    daysWeight = weight5;
+
+            }catch (Exception e){
+                daysWeight = priceWeight;
+
+            }
+        }
+        if(priceWeight<daysWeight){
+            return Math.round(apiPrice * priceWeight / 100.0) * 100;
+        }else{
+            return Math.round(apiPrice * daysWeight / 100.0) * 100;
+        }
+
+    }
+
 
     public void processNaverStore(Long originProductNo, Map<String,Object> bodyMap,StoreDto storeDto) {
         try {

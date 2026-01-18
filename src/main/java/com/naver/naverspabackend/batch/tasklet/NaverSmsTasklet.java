@@ -473,6 +473,15 @@ public class NaverSmsTasklet implements Tasklet {
                             String[] esimApiRequestIds = orderDto.getEsimApiRequestId().split(",");
 
                             OrderTugeEsimDto orderTugeEsimDto = orderTugeEsimDtoList.get(i);
+                            OrderTugeEsimDto orderTugeEsimDtoParam = new OrderTugeEsimDto();
+                            orderTugeEsimDtoParam.setOrderNo(esimApiRequestIds[i]);
+
+                            orderTugeEsimDto = orderMapper.selectListOrderTugeEsimByOrderNo(orderTugeEsimDtoParam);
+                            if(orderTugeEsimDto==null){
+                                System.out.println("TUGE 장애발생");
+                                return;
+                            }
+
                             orderDto.setEsimIccid(orderTugeEsimDto.getIccid());
                             orderMapper.updateOrderSmsForEsimIccid(orderDto);
                             esimMap.put("iccid",orderTugeEsimDto.getIccid());
@@ -667,11 +676,16 @@ public class NaverSmsTasklet implements Tasklet {
                                 return;
                             }
                             try{
-                                orderDto.setEsimIccid(esimMap.get("iccid")!=null?esimMap.get("iccid").toString():null);
+                                orderDto.setEsimIccid(esimMap.get("iccid").toString());
                                 orderMapper.updateOrderSmsForEsimIccid(orderDto);
 
-                                orderDto.setEsimApn(esimMap.get("apn")!=null?esimMap.get("apn").toString():null);
-                                orderMapper.updateOrderSmsForEsimApn(orderDto);
+                                if(esimMap.get("apn")!=null){
+                                    orderDto.setEsimApn(esimMap.get("apn").toString());
+                                    orderMapper.updateOrderSmsForEsimApn(orderDto);
+                                }
+
+                                orderDto.setEsimTranNo(esimMap.get("esimTranNo").toString());
+                                orderMapper.updateOrderSmsForEsimTransNo(orderDto);
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
@@ -683,12 +697,14 @@ public class NaverSmsTasklet implements Tasklet {
                             String type = CommonUtil.stringToBase64Encode(ApiType.ESIMACCESS.name());
                             String orderId = CommonUtil.stringToBase64Encode(esimApiRequestIds[i]);
                             String iccid = CommonUtil.stringToBase64Encode(esimMap.get("iccid").toString());
+                            String esimTranNo = CommonUtil.stringToBase64Encode(esimMap.get("esimTranNo").toString());
 
                             Map<String, String> exitem = new HashMap<>();
                             exitem.put("id",orderDto.getId()+"");
                             exitem.put("type",ApiType.ESIMACCESS.name());
                             exitem.put("orderId",esimApiRequestIds[i]);
                             exitem.put("iccid",esimMap.get("iccid").toString());
+                            exitem.put("esimTranNo",esimMap.get("esimTranNo").toString());
                             String esitemEncode = CommonUtil.stringToBase64Encode(gson.toJson(exitem));
                             esimMap.put("usage2Url",serverOrigin+usage2Uri+"?exitem="+ esitemEncode);
 
@@ -758,6 +774,8 @@ public class NaverSmsTasklet implements Tasklet {
                             type = "TUGE";
                         else if(matchInfoDto.getEsimType().equals("06"))
                             type = "WORLDMOVE";
+                        else if(matchInfoDto.getEsimType().equals("07"))
+                            type = "ESIMACCESS";
                         ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
                         apiPurchaseItemDto.setApiPurchaseItemProcutId(matchInfoDto.getEsimProductId());
                         apiPurchaseItemDto.setApiPurchaseItemType(type);
@@ -792,7 +810,14 @@ public class NaverSmsTasklet implements Tasklet {
                                 OrderWorldmoveEsimDto orderWroldMoveEsimText = orderMapper.selectOrderWorldMoveEsimFirst(orderWroldMoveEsimParam);
                                 esimMap.put("eSimApnInfo",orderWroldMoveEsimText.getApnExplain()!=null && !orderWroldMoveEsimText.getApnExplain().equals("")?("<li style=\"margin-bottom: 8px;\"><strong style=\"color: #dc2626;\">APN값은 "+orderWroldMoveEsimText.getApnExplain()+"입니다. 현지에서 인터넷 오류시에만 확인 부탁드립니다.</strong></li>"):"");
                                 esimMap.put("eSimMApnInfo",orderWroldMoveEsimText.getApnExplain()!=null && !orderWroldMoveEsimText.getApnExplain().equals("")?("* APN 값은 " +orderWroldMoveEsimText.getApnExplain() + " 입니다. 현지에서 인터넷 오류시에만 확인 부탁드립니다."):"");
+                            }else if(type.equals("ESIMACCESS")){
+                                Map<String, Object> paramMap = new HashMap<>();
+                                paramMap.put("id",orderDto.getId());
+                                OrderDto esimaccessOrder = orderMapper.findById(paramMap);
+                                esimMap.put("eSimApnInfo",esimaccessOrder.getEsimApn()!=null && !esimaccessOrder.getEsimApn().equals("")?("<li style=\"margin-bottom: 8px;\"><strong style=\"color: #dc2626;\">APN값은 "+esimaccessOrder.getEsimApn()+"입니다. 현지에서 인터넷 오류시에만 확인 부탁드립니다.</strong></li>"):"");
+                                esimMap.put("eSimMApnInfo",esimaccessOrder.getEsimApn()!=null && !esimaccessOrder.getEsimApn().equals("")?("* APN 값은 " +esimaccessOrder.getEsimApn() + " 입니다. 현지에서 인터넷 오류시에만 확인 부탁드립니다."):"");
                             }
+
                             if(esimMap.get("eSimApnInfo")== null || esimMap.get("eSimApnInfo").toString().equals("")){
                                 esimMap.put("eSimApnInfo",("<li style=\"margin-bottom: 8px;\"><strong style=\"color: #dc2626;\">APN 정보가 필요하신 경우 알림톡이나 톡톡을 통해 문의주세요.</strong></li>"));
                                 esimMap.put("eSimMApnInfo",("* APN 값은 정보가 필요하신 경우 알림톡이나 톡톡을 통해 문의주세요."));
@@ -1108,27 +1133,25 @@ public class NaverSmsTasklet implements Tasklet {
 
 
         try{
-            if(orderDto.getId() == 109205737){
-                boolean esimFlagInfo = "Y".equals(matchInfoDto.getEsimFlag());
-                if(esimFlagInfo && email.equals(notExistEmail)){
-                    Map<String, Object> kakaoParameters = new HashMap<>();
-                    Map<String, String> exitem = new HashMap<>();
-                    exitem.put("id",orderDto.getId()+"");
-                    kakaoParameters.put("exitem",CommonUtil.stringToBase64Encode(gson.toJson(exitem)));
-                    kakaoParameters.put("orderTitle", orderDto.getProductName());
-                    String orderRealName = "";
-                    if(orderDto.getOptionName1()!=null){
-                        orderRealName = orderDto.getOptionName1();
-                    }
-                    if(orderDto.getOptionName2()!=null){
-                        if(!orderRealName.equals(""))
-                            orderRealName += " ";
-                        orderRealName += orderDto.getOptionName2();
-                    }
-                    kakaoParameters.put("orderRealName", orderRealName);
-                    kakaoParameters.put("ordererName", orderDto.getOrdererName());
-                    kakaoService.requestSendKakaoMsg(kakaoParameters, "ESIM_MAIL_RETRANS",storeDto,orderDto, "N", matchInfoDto.getEKakaoResendFlag(),false, shippingTel1);
+            boolean esimFlagInfo = "Y".equals(matchInfoDto.getEsimFlag());
+            if(esimFlagInfo && email.equals(notExistEmail)){
+                Map<String, Object> kakaoParameters = new HashMap<>();
+                Map<String, String> exitem = new HashMap<>();
+                exitem.put("id",orderDto.getId()+"");
+                kakaoParameters.put("exitem",CommonUtil.stringToBase64Encode(gson.toJson(exitem)));
+                kakaoParameters.put("orderTitle", orderDto.getProductName());
+                String orderRealName = "";
+                if(orderDto.getOptionName1()!=null){
+                    orderRealName = orderDto.getOptionName1();
                 }
+                if(orderDto.getOptionName2()!=null){
+                    if(!orderRealName.equals(""))
+                        orderRealName += " ";
+                    orderRealName += orderDto.getOptionName2();
+                }
+                kakaoParameters.put("orderRealName", orderRealName);
+                kakaoParameters.put("ordererName", orderDto.getOrdererName());
+                kakaoService.requestSendKakaoMsg(kakaoParameters, "ESIM_MAIL_RETRANS",storeDto,orderDto, "N", matchInfoDto.getEKakaoResendFlag(),false, shippingTel1);
             }
         }catch (Exception e){
         }

@@ -8,7 +8,7 @@ spring:
     host: 114.207.112.85
     port: 6379
     password: esimvil2025!
-testMode: true
+testMode: false
 
 logging:
   config: classpath:logback-prod.xml
@@ -150,3 +150,18 @@ portOne:
   checkUrl: https://api.portone.io/payments
   redirectUrl: http://192.168.219.102:8080/external/portone/complete
   cancelUrl: https://api.portone.io//payments/{token}/cancel
+
+
+payApp:
+  userId: esimcity
+  shopname: 이심시티
+  #redirectUrl: http://192.168.219.102:8080/external/payapp/completePage
+  #feedbackurl: http://192.168.219.102:8080/external/payapp/complete
+  redirectUrl: https://www.esimcity.co.kr/api/external/payapp/completePage
+  feedbackurl: https://www.esimcity.co.kr/api/external/payapp/complete
+  cancelUrl: https://api.payapp.kr/oapi/apiLoad.html
+  linkkey: A2Q8eZWtgPoxCAxxNCRncO1DPJnCCRVaOgT+oqg6zaM=
+  linkval: A2Q8eZWtgPoxCAxxNCRncES8gSO9C8T0ITT3JEGhYvY=
+  kakaoSuccessKey: ESIM_CHARGE_SUCCESS
+  kakaoFailKey: ESIM_CHARGE_FAIL
+  kakaoFail2Key: ESIM_CHARGE_FAIL2

@@ -3,6 +3,8 @@ package com.naver.naverspabackend.service.topupOrder;
 import com.naver.naverspabackend.dto.EsimPriceDto;
 import com.naver.naverspabackend.dto.TopupOrderDto;
 
+import java.util.List;
+
 public interface TopupOrderService {
 
     void insert(TopupOrderDto topupOrderDto);
@@ -14,4 +16,6 @@ public interface TopupOrderService {
     void updatePaypalStatus(TopupOrderDto topupOrderDto);
 
     void updateTopupOrderNo(TopupOrderDto topupOrderDto);
+
+    List<TopupOrderDto> findByEsimIccidSuccessCharge(TopupOrderDto topupOrderParam);
 }

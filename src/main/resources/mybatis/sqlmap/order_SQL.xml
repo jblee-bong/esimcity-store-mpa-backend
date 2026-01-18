@@ -193,6 +193,12 @@
         where id = #{id}
     </update>
 
+    <update id="updateOrderSmsForEsimTransNo" parameterType="orderDto">
+        update TB_ORDER set
+            esim_tran_no = (CASE WHEN esim_tran_no IS NULL THEN #{esimTranNo} ELSE CONCAT(esim_tran_no,',',#{esimTranNo}) END )
+        where id = #{id}
+    </update>
+
 
     <update id="updateOrderSmsForEsimApn" parameterType="orderDto">
         update TB_ORDER set
@@ -577,6 +583,12 @@
         select *
         from TB_ORDER_TUGE_ESIM o where iccid = #{iccid}
     </select>
+
+    <select id="selectListOrderTugeEsimByOrderNo" parameterType="orderTugeEsimDto" resultType="orderTugeEsimDto">
+        select *
+        from TB_ORDER_TUGE_ESIM o where order_no = #{orderNo}
+    </select>
+
 
     <select id="selectOrderAiraloToken" resultType="string">
         SELECT airalo_token FROM TB_ORDER_AIRALO_TOKEN WHERE regist_dt > DATE_ADD(now(), INTERVAL -10 HOUR) ORDER BY regist_dt desc limit 1

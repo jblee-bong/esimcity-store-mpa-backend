@@ -196,6 +196,8 @@ public class MatchInfoServiceImpl implements MatchInfoService {
             return ApiResult.succeed(apiPurchaseItemMapper.selectApiPurchaseItemWithApiPurchaseItemType(new ApiPurchaseItemDto(ApiType.TUGE.name(), paramMap.get("searchKey")!=null?paramMap.get("searchKey").toString():"")), null);
         }else if(paramMap.get("value").equals("06")){
             return ApiResult.succeed(apiPurchaseItemMapper.selectApiPurchaseItemWithApiPurchaseItemType(new ApiPurchaseItemDto(ApiType.WORLDMOVE.name(), paramMap.get("searchKey")!=null?paramMap.get("searchKey").toString():"")), null);
+        }else if(paramMap.get("value").equals("07")){
+            return ApiResult.succeed(apiPurchaseItemMapper.selectApiPurchaseItemWithApiPurchaseItemType(new ApiPurchaseItemDto(ApiType.ESIMACCESS.name(), paramMap.get("searchKey")!=null?paramMap.get("searchKey").toString():"")), null);
         }else if(paramMap.get("value").equals("99")){
             return ApiResult.succeed(BulkUtil.contextLoads1(), null);
         }else{

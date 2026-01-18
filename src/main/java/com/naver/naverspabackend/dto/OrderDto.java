@@ -216,6 +216,8 @@ public class OrderDto extends BaseDto {
     private String ordererNo;
 
 
+    //esimaccess용 조회번호
+    private String esimTranNo;
 
 
     private String shippingMemo;

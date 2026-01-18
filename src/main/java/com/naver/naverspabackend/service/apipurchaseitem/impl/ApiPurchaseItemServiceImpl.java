@@ -54,6 +54,11 @@ public class ApiPurchaseItemServiceImpl implements ApiPurchaseItemService {
     }
 
     @Override
+    public List<ApiPurchaseItemDto> selectApiPurchaseItemListForTopupWithEsimaccess(ApiPurchaseItemDto apiPurchaseItemDto) {
+        return apiPurchaseItemMapper.selectApiPurchaseItemListForTopupWithEsimaccess(apiPurchaseItemDto);
+    }
+
+    @Override
     public void deleteWithApiCardType() {
         apiPurchaseItemMapper.deleteWithApiCardType();
     }

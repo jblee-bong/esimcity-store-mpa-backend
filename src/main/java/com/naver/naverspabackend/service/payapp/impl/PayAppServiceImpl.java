@@ -1,47 +1,33 @@
-package com.naver.naverspabackend.service.portone.impl;
+package com.naver.naverspabackend.service.payapp.impl;
 
 import com.google.gson.Gson;
 import com.naver.naverspabackend.dto.*;
 import com.naver.naverspabackend.enums.ApiType;
-import com.naver.naverspabackend.enums.EsimApiIngSteLogsType;
 import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
 import com.naver.naverspabackend.service.esimPrice.EsimPriceService;
 import com.naver.naverspabackend.service.order.OrderService;
-import com.naver.naverspabackend.service.papal.PaypalService;
-import com.naver.naverspabackend.service.portone.PortOneService;
+import com.naver.naverspabackend.service.payapp.PayAppService;
+import com.naver.naverspabackend.service.sms.KakaoService;
 import com.naver.naverspabackend.service.store.StoreService;
 import com.naver.naverspabackend.service.topupOrder.TopupOrderService;
 import com.naver.naverspabackend.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import java.net.URLEncoder;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.nio.charset.StandardCharsets;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
-public class PortOneServiceImpl implements PortOneService {
-
-
-
-    @Value("${paypal.clientId}")
-    private String clientId;
-
-    @Value("${paypal.clientSecret}")
-    private String clientSecret;
-
-
-    @Value("${paypal.successCallback}")
-    private String successCallback;
-    @Value("${paypal.cancelCallback}")
-    private String cancelCallback;
+public class PayAppServiceImpl implements PayAppService {
 
 
     @Autowired
@@ -64,36 +50,43 @@ public class PortOneServiceImpl implements PortOneService {
     private ApiPurchaseItemService apiPurchaseItemService;
 
 
-    @Value("${portOne.storeId}")
-    private String storeId;
-    @Value("${portOne.channelKey}")
-    private String channelKey;
-    @Value("${portOne.secretKey}")
-    private String secretKey;
+    @Value("${payApp.userId}")
+    private String userId;
 
-    @Value("${portOne.checkUrl}")
-    private String checkUrl;
-    @Value("${portOne.redirectUrl}")
+    @Value("${payApp.shopname}")
+    private String shopname;
+
+    @Value("${payApp.redirectUrl}")
     private String redirectUrl;
 
-    @Value("${portOne.cancelUrl}")
+
+    @Value("${payApp.linkkey}")
+    private String linkkey;
+
+    @Value("${payApp.linkval}")
+    private String linkval;
+
+    @Value("${payApp.feedbackurl}")
+    private String feedbackurl;
+
+
+    @Value("${payApp.cancelUrl}")
     private String cancelUrl;
 
-    @Override
-    public String getAccessToken() {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setBasicAuth(clientId, clientSecret);
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "client_credentials");
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-        ResponseEntity<Map> response = restTemplate.postForEntity( "/v1/oauth2/token", request, Map.class);
+    @Value("${payApp.kakaoSuccessKey}")
+    private String kakaoSuccessKey;
 
-        return (String) response.getBody().get("access_token");
-    }
+    @Value("${payApp.kakaoFailKey}")
+    private String kakaoFailKey;
+
+    @Value("${payApp.kakaoFail2Key}")
+    private String kakaoFail2Key;
+
+    @Autowired
+    private KakaoService kakaoService;
+
 
     @Override
     public Map<String, Object> createOrder(Map<String, Object> params) throws Exception {
@@ -225,7 +218,7 @@ public class PortOneServiceImpl implements PortOneService {
             priceWeight = weight5;
         }
         double price = Math.round(apiPrice * priceWeight / 100.0) * 100;
-        topupOrderDto.setTopupKrwprice((price ) + "");
+        topupOrderDto.setTopupKrwprice(( (int) Math.round(price) ) + "");
         Double usdAmount = (price / echangeRate); //5프로할인 (충전의경우)
         double amount = Math.round(usdAmount * 100.0) / 100.0;
         topupOrderDto.setTopupUsdprice(amount+"");
@@ -243,10 +236,13 @@ public class PortOneServiceImpl implements PortOneService {
         result.put("result",true);
         result.put("token",token);
         result.put("orderName",topupOrderDto.getProductOption());
-        result.put("totalAmount",topupOrderDto.getTopupKrwprice());
-        result.put("storeId",storeId);
-        result.put("channelKey",channelKey);
+        result.put("totalAmount",Integer.parseInt(topupOrderDto.getTopupKrwprice()));
+        result.put("userId",userId);
+        result.put("shopname",shopname);
         result.put("redirectUrl",redirectUrl);
+        result.put("feedbackurl",feedbackurl);
+        result.put("recvphone",orderDto.getShippingTel1());
+
 
 
         return result;
@@ -254,51 +250,49 @@ public class PortOneServiceImpl implements PortOneService {
 
 
     @Override
-    public void captureOrder(Model model,String token) {
+    public String captureOrder(Map<String,Object> params) {
+
+
+        TopupOrderDto param = new TopupOrderDto();
+        param.setTokenId(params.get("var1").toString());
+        TopupOrderDto topupOrderDto = topupOrderService.findByTokenId(param);
+        Map<String, Object> data = new HashMap<>();
+        data.put("id",topupOrderDto.getStoreId());
+        StoreDto storeDto = storeService.findById(data);
+        Map<String, Object> map = new HashMap<>();
+        map.put("id",topupOrderDto.getOrderId());
+        OrderDto orderDto = orderService.fetchOrderOnly(map);
+        Map<String, Object> kakaoParameters = new HashMap<>();
+        kakaoParameters.put("orderRealName", Objects.toString(topupOrderDto.getProductOption(), ""));
+        kakaoParameters.put("ordererName",Objects.toString(topupOrderDto.getShippingName(), ""));
+
         try{
-            TopupOrderDto param = new TopupOrderDto();
-            param.setTokenId(token);
-            TopupOrderDto topupOrderDto = topupOrderService.findByTokenId(param);
-            if(topupOrderDto==null){
+            System.out.println(params.toString());
+            if(!params.get("userid").toString().equals(userId)){
                 throw new Exception();
             }
-            Map<String, Object> data = new HashMap<>();
-            data.put("id",topupOrderDto.getStoreId());
-            StoreDto storeDto = storeService.findById(data);
-            model.addAttribute("productName",topupOrderDto.getProductOption());
-            model.addAttribute("iccid",topupOrderDto.getEsimIccid());
-            model.addAttribute("chargeDate",new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
-            model.addAttribute("esimCopyWrite",storeDto.getEsimCopyWrite());
-            model.addAttribute("esimQuestLink",storeDto.getEsimQuestLink());
-            model.addAttribute("esimLogoLink",storeDto.getEsimLogoLink());
+            if(!params.get("linkkey").toString().equals(linkkey)){
+                throw new Exception();
+            }
+            if(!params.get("linkval").toString().equals(linkval)){
+                throw new Exception();
+            }
+            if(Integer.parseInt(params.get("pay_state").toString())!=4){
+                return "SUCCESS";
+            }
+
+
+
+
 
 
             if(topupOrderDto.getPaymentStatus()!=0 || topupOrderDto.getTopupStatus()!=0){
-
-                if(topupOrderDto.getPaymentStatus()==1 && topupOrderDto.getTopupStatus()==1){
-                    model.addAttribute("success",true);
-                }
-                else if(topupOrderDto.getPaymentStatus()==2 && topupOrderDto.getTopupStatus()==1){
-                    model.addAttribute("success",false);
-                    model.addAttribute("errorMessage","충전은 완료하였으나, 결제에 실패하였습니다. 추후 결제 요청 드리겠습니다. 즐거운 여행되세요.");
-                }else{
-                    model.addAttribute("success",false);
-                    model.addAttribute("errorMessage","충전 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
-                }
-                return;
+                System.out.println("이미종료");
+                return "SUCCESS";
             }
 
-            Map<String, Object> portOneResult = doPaymentCheck(token);
-            if(portOneResult==null) {//결제실패
-                model.addAttribute("errorMessage","충전 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
-                model.addAttribute("success",false);
-                topupOrderDto.setPaymentStatus(2);
-                topupOrderService.updatePaypalStatus(topupOrderDto);
-                return;
-            }else{
-                topupOrderDto.setPaymentStatus(1);//결제성공
-                topupOrderService.updatePaypalStatus(topupOrderDto);
-            }
+            topupOrderDto.setPaymentStatus(1);//결제성공
+            topupOrderService.updatePaypalStatus(topupOrderDto);
 
             if(topupOrderDto.getEsimCorp().equals(ApiType.TSIM.name())){
                 TsimUtil tsimUtil = EsimUtil.getTsimUtil(apiPurchaseItemService,storeDto,active);
@@ -307,9 +301,9 @@ public class PortOneServiceImpl implements PortOneService {
                 if(Integer.parseInt(resultMap.get("code").toString().toString()) == 1 && resultMap.get("msg").toString().equals("Success")){
                     topupOrderDto.setTopupStatus(1);
                     topupOrderService.updateTopupStatus(topupOrderDto);
-                    model.addAttribute("success",true);
-                    return;
-                }else{
+                    transKakao(kakaoParameters,kakaoSuccessKey,storeDto,orderDto,topupOrderDto.getShippingTel());
+                    System.out.println("충전완료");
+                    return "SUCCESS";
                 }
             }
             else if(topupOrderDto.getEsimCorp().equals(ApiType.TUGE.name())){
@@ -322,15 +316,15 @@ public class PortOneServiceImpl implements PortOneService {
                     topupOrderService.updateTopupOrderNo(topupOrderDto);
                     topupOrderDto.setTopupStatus(1);
                     topupOrderService.updateTopupStatus(topupOrderDto);
-                    model.addAttribute("success",true);
-                    return;
+                    transKakao(kakaoParameters,kakaoSuccessKey,storeDto,orderDto,topupOrderDto.getShippingTel());
+                    System.out.println("충전완료");
+                    return "SUCCESS";
                 }
             }
             else if(topupOrderDto.getEsimCorp().equals(ApiType.ESIMACCESS.name())){
                 EsimAccessUtil esimAccessUtil = EsimUtil.getEsimAccess(storeDto);
-                //티심 충전
+                //이심어세스 충전
                 HashMap resultMap = esimAccessUtil.contextLoads5(topupOrderDto);
-
                 if((Boolean) resultMap.get("success")){
                     try{
                         Map<String, Object> result = (Map<String, Object>) resultMap.get("obj");
@@ -342,39 +336,41 @@ public class PortOneServiceImpl implements PortOneService {
                     topupOrderService.updateTopupOrderNo(topupOrderDto);
                     topupOrderDto.setTopupStatus(1);
                     topupOrderService.updateTopupStatus(topupOrderDto);
-                    model.addAttribute("success",true);
-                    return;
+
+                    transKakao(kakaoParameters,kakaoSuccessKey,storeDto,orderDto,topupOrderDto.getShippingTel());
+                    System.out.println("충전완료");
+                    return "SUCCESS";
                 }
             }
 
             topupOrderDto.setTopupStatus(2);
             topupOrderService.updateTopupStatus(topupOrderDto);
-            Map<String, Object> portRefundResult =  refundPayment(token);
+            int mul_no = Integer.parseInt( params.get("mul_no").toString());
+            Map<String, String> portRefundResult =  refundPayment(mul_no);
             if(portRefundResult!=null){
-                Map<String, Object> cancellation = (Map<String, Object>) portRefundResult.get("cancellation");
-                if(cancellation.get("status").toString().equals("SUCCEEDED")){
-                    model.addAttribute("errorMessage","충전 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
+                if(portRefundResult.get("state").toString().equals("1")){
+                    transKakao(kakaoParameters,kakaoFailKey,storeDto,orderDto,topupOrderDto.getShippingTel());
+                    System.out.println("충전 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
                     topupOrderDto.setPaymentStatus(3);
                 }else{
-                    model.addAttribute("errorMessage","충전 요청 중 오류가 발생하여, 결제 취소를 하였으나 결제 취소에 실패하였습니다. 고객센터로 문의주세요.");
+                    transKakao(kakaoParameters,kakaoFail2Key,storeDto,orderDto,topupOrderDto.getShippingTel());
+                    System.out.println("충전 요청 중 오류가 발생하여, 결제 취소를 하였으나 결제 취소에 실패하였습니다. 고객센터로 문의주세요.");
                     topupOrderDto.setPaymentStatus(4);
                 }
                 topupOrderService.updatePaypalStatus(topupOrderDto);
             }else{
-                model.addAttribute("errorMessage","충전 요청 중 오류가 발생하여, 결제 취소를 하였으나 결제 취소에 실패하였습니다. 고객센터로 문의주세요.");
+                transKakao(kakaoParameters,kakaoFail2Key,storeDto,orderDto,topupOrderDto.getShippingTel());
+                System.out.println("충전 요청 중 오류가 발생하여, 결제 취소를 하였으나 결제 취소에 실패하였습니다. 고객센터로 문의주세요.");
                 topupOrderDto.setPaymentStatus(4);
                 topupOrderService.updatePaypalStatus(topupOrderDto);
             }
-            model.addAttribute("success",false);
-            return;
+            return "SUCCESS";
         }catch (Exception e){
             e.printStackTrace();
         }
-
-        model.addAttribute("success",false);
-        model.addAttribute("errorMessage","충전 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
-
-
+        transKakao(kakaoParameters,kakaoFail2Key,storeDto,orderDto,topupOrderDto.getShippingTel());
+        System.out.println("충전 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
+        return "FAIL";
 
     }
 
@@ -408,46 +404,48 @@ public class PortOneServiceImpl implements PortOneService {
         }
     }
 
-    public Map<String, Object> doPaymentCheck(String token){
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "PortOne " + secretKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+    public Map<String, String> refundPayment(Integer mul_no) {
         try {
-            // v2/checkout/orders/{order_id}/capture 호출
-            String encodedPaymentId = URLEncoder.encode(token, "UTF-8");
-            String url =  checkUrl + "/" + encodedPaymentId;
+            RestTemplate restTemplate = new RestTemplate();
 
-            ResponseEntity<Map> response = restTemplate.exchange(url,HttpMethod.GET,entity,Map.class);
+            // 1. 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-            if (response.getStatusCode().is2xxSuccessful()) {
-                Map<String, Object> body = response.getBody();
-                    return  body;
-            }else{
-                throw new Exception();
-            }
+            // 2. 파라미터 설정
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("cmd", "paycancel");
+            params.add("userid", userId);
+            params.add("linkkey", linkkey);
+            params.add("mul_no", mul_no+"");
+            params.add("cancelmemo", "충전실패로인한 취소");
+
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+            // 3. API 호출
+            String responseBody = restTemplate.postForObject(cancelUrl, request, String.class);
+
+            // 4. 응답 파싱 (Query String -> Map)
+            return parseQueryString(responseBody);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
+    private Map<String, String> parseQueryString(String response) {
+        return UriComponentsBuilder.fromUriString("?" + response)
+                .build()
+                .getQueryParams()
+                .toSingleValueMap();
+    }
 
-    public Map<String, Object> refundPayment(String token) {
-        try {
-            Map<String, String> paramHeader = new HashMap<>();
-            paramHeader.put("Authorization", "PortOne " + secretKey);
+    private void transKakao(Map<String, Object> kakaoParameters, String key, StoreDto storeDto, OrderDto orderDto, String telNo) {
+        try{
+                kakaoService.requestSendKakaoMsg(kakaoParameters, key,storeDto,orderDto, "N", "Y",false, telNo);
 
-            Map<String, Object> pathParam = new HashMap<>();
-            pathParam.put("token", URLEncoder.encode(token, "UTF-8"));
-
-            Map<String, Object> paramMap = new HashMap<>();
-            paramMap.put("reason","충전실패");
-            return ApiUtil.postWithRestTemplate(cancelUrl, paramHeader,  paramMap, pathParam, okhttp3.MediaType.parse("application/json; charset=UTF-8"));
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        }catch (Exception e){
         }
-        return null;
     }
 }

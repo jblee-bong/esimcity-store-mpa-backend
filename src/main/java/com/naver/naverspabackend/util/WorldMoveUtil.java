@@ -173,9 +173,9 @@ public class WorldMoveUtil {
         Map<String,String> computedCommonParam = ComputeSHA1(merchantId + rcode +token);
 
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
+        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(5000); // 커넥션 최대 시간
+        factory.setReadTimeout(45000); // 읽기 최대 시간
 
         RestTemplate restTemplate = new RestTemplate(factory);
         restTemplate = makeRestTemplate();
@@ -208,9 +208,9 @@ public class WorldMoveUtil {
         Map<String,String> computedCommonParam = ComputeSHA1(merchantId + activationRequestId+token);
 
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
+        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(5000); // 커넥션 최대 시간
+        factory.setReadTimeout(45000); // 읽기 최대 시간
 
         RestTemplate restTemplate = new RestTemplate(factory);
         restTemplate = makeRestTemplate();
@@ -252,9 +252,9 @@ public class WorldMoveUtil {
         Map<String,String> computedCommonParam = ComputeSHA1(merchantId + rcode + qrcodeType + token);
 
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
+        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(5000); // 커넥션 최대 시간
+        factory.setReadTimeout(45000); // 읽기 최대 시간
 
         RestTemplate restTemplate = new RestTemplate(factory);
         restTemplate = makeRestTemplate();
@@ -296,9 +296,9 @@ public class WorldMoveUtil {
         Map<String,String> computedCommonParam = ComputeSHA1(merchantId + deptId + userId +  wmproductId+1+token);
 
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
+        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(5000); // 커넥션 최대 시간
+        factory.setReadTimeout(45000); // 읽기 최대 시간
 
         RestTemplate restTemplate = new RestTemplate(factory);
         restTemplate = makeRestTemplate();
@@ -343,9 +343,9 @@ public class WorldMoveUtil {
         Map<String,String> computedCommonParam = ComputeSHA1(merchantId + token);
 
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
+        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(5000); // 커넥션 최대 시간
+        factory.setReadTimeout(45000); // 읽기 최대 시간
 
         // SSL 인증 무시
         RestTemplate restTemplate = new RestTemplate(factory);
@@ -417,10 +417,9 @@ public class WorldMoveUtil {
 
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         requestFactory.setHttpClient(httpClient);
-        requestFactory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        requestFactory.setConnectTimeout(60000); // 커넥션 최대 시간
-        requestFactory.setReadTimeout(60000); // 읽기 최대 시간
-        requestFactory.setConnectTimeout(3 * 1000);
+        requestFactory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        requestFactory.setConnectTimeout(5000); // 커넥션 최대 시간
+        requestFactory.setReadTimeout(45000); // 읽기 최대 시간
 
 
         return new RestTemplate(requestFactory);

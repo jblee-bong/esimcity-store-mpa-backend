@@ -315,7 +315,6 @@
         select mi.*
         from TB_MATCH_INFO mi
         where mi.del_yn = 'N' and origin_product_no = #{originProductNo}
-
     </select>
 
 </mapper>

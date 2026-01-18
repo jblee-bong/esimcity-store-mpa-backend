@@ -101,6 +101,10 @@ public class StoreDto extends BaseDto{
     private String esimApiAiraloClientId;
     private String esimApiAiraloClientSecret;
 
+
+    private String esimApiEsimaccessClientId;
+    private String esimApiEsimaccessClientSecret;
+
     public StoreDto() {
         super();
     }

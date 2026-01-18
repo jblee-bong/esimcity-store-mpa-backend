@@ -76,6 +76,8 @@ public class MakeResetTimeUtil {
                             }
                         }
                     }
+                }else if(apiPurchaseItem.getApiPurchaseItemType().equals(ApiType.ESIMACCESS.name())){
+                    result = " 00:00(현지 시간) 충전되며, 이용 일수는 활성화 시점부터 24시간 단위로 계산됩니다.";
                 }
             }
         }catch (Exception e){}
@@ -134,6 +136,8 @@ public class MakeResetTimeUtil {
                             }
                         }
                     }
+                }else if(apiPurchaseItem.getApiPurchaseItemType().equals(ApiType.ESIMACCESS.name())){
+                    result = " 00:00(현지 시간) 충전되며, 이용 일수는 활성화 시점부터 24시간 단위로 계산됩니다.";
                 }
             }
         }catch (Exception e){}
@@ -165,6 +169,15 @@ public class MakeResetTimeUtil {
         return result;
     }
 
+    public static String makeTsimEsimAccessText(ApiPurchaseItemDto apiPurchaseItem) {
+        String result = "";
+        try{
+            if(apiPurchaseItem!=null && apiPurchaseItem.isApiPurchaseItemIsDaily()){
+                result = "데이터 충전: 00:00(현지 시간)<br/>이용 일수: 활성화 시점부터 24시간";
+            }
+        }catch (Exception e){}
+        return result;
+    }
     public static String makeWorldMoveResetText(ApiPurchaseItemDto apiPurchaseItem) {
         String result = "";
         try{

@@ -46,6 +46,11 @@
         select * from TB_TOPUP_ORDER where token_id = #{tokenId}
     </select>
 
+    <select id="findByEsimIccidSuccessCharge" parameterType="topupOrderDto" resultType="topupOrderDto">
+        select * from TB_TOPUP_ORDER where esim_iccid = #{esimIccid} and topup_status = 1 and payment_status = 1
+    </select>
+
+
     <update id="updateTopupStatus" parameterType="topupOrderDto" >
         update TB_TOPUP_ORDER set
             topup_status = #{topupStatus}

@@ -4,10 +4,12 @@ import com.google.gson.Gson;
 import com.naver.naverspabackend.dto.ApiPurchaseItemDto;
 import com.naver.naverspabackend.dto.OrderDto;
 import com.naver.naverspabackend.dto.StoreDto;
+import com.naver.naverspabackend.dto.TopupOrderDto;
 import com.naver.naverspabackend.enums.ApiType;
 import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
 import com.naver.naverspabackend.service.order.OrderService;
 import com.naver.naverspabackend.service.store.StoreService;
+import com.naver.naverspabackend.service.topupOrder.TopupOrderService;
 import com.naver.naverspabackend.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -32,6 +35,8 @@ public class ExController {
     private OrderService orderService;
     @Autowired
     private StoreService storeService;
+    @Autowired
+    private TopupOrderService topupOrderService;
 
     @Autowired
     private ApiPurchaseItemService apiPurchaseItemService;
@@ -50,6 +55,8 @@ public class ExController {
         String iccid = Objects.toString(item.get("iccid"), null);
         String type = Objects.toString(item.get("type"), null);
         String rcode = Objects.toString(item.get("rcode"), null);
+        String esimTranNo = Objects.toString(item.get("esimTranNo"), null);
+
 
         try{
             model.addAttribute("realOrderId",id);
@@ -62,6 +69,9 @@ public class ExController {
             if(orderDto==null){
                 throw new Exception();
             }
+            TopupOrderDto topupOrderParam =new TopupOrderDto();
+            topupOrderParam.setEsimIccid(iccid);
+            List<TopupOrderDto> topupOrderDtoList = topupOrderService.findByEsimIccidSuccessCharge(topupOrderParam);
             Map<String, Object> data = new HashMap<>();
             data.put("id",orderDto.getStoreId());
             StoreDto storeDto = storeService.findById(data);
@@ -71,6 +81,8 @@ public class ExController {
             WorldMoveUtil worldMoveUtil =  EsimUtil.getWorldMoveUtil(storeDto);
             NizUtil nizUtil =  EsimUtil.getNizUtil(storeDto);
             AirAloUtil airAloUtil  =  EsimUtil.getAirAloUtil(storeDto);
+            EsimAccessUtil esimAccessUtil  =  EsimUtil.getEsimAccess(storeDto);
+
 
             model.addAttribute("esimCopyWrite",storeDto.getEsimCopyWrite());
             model.addAttribute("esimQuestLink",storeDto.getEsimQuestLink());
@@ -114,45 +126,86 @@ public class ExController {
                 model.addAttribute("resetTime",MakeResetTimeUtil.makeWorldMoveResetTime(apiPurchaseItemDto));
 
                 model.addAttribute("esimDescription",orderDto.getEsimDescription());
+            }else if(type.equals(ApiType.ESIMACCESS.name())){
+                //TSIM 완료
+                esimAccessUtil.contextLoads4(esimTranNo,id,iccid,model);
             }
 
             String[] productOptions = orderDto.getProductOption().split(" / ");
             String productOption = productOptions[0].split(":")[1];
             productOption += productOptions[1].split(":")[1];;
-
-
-            if(model.getAttribute("totalUsage")!=null && !model.getAttribute("totalUsage").equals("")){
-                String totalUsage  = model.getAttribute("totalUsage").toString();
-                if(totalUsage.equals("unlimited")){
-                    model.addAttribute("totalUsageTxt",totalUsage);
-                }else{
-                    Double totalUsageDouble = Double.parseDouble(totalUsage);
-                    if(totalUsageDouble/1024>1){
-                        model.addAttribute("totalUsageTxt",(totalUsageDouble/1024) + "GB");
+            if(type.equals(ApiType.ESIMACCESS.name())){
+                if(model.getAttribute("totalUsage")!=null && !model.getAttribute("totalUsage").equals("")){
+                    String totalUsage  = model.getAttribute("totalUsage").toString();
+                    if(totalUsage.equals("unlimited")){
+                        model.addAttribute("totalUsageTxt",totalUsage);
                     }else{
-                        model.addAttribute("totalUsageTxt",(totalUsageDouble) + "MB");
+                        Double totalUsageDouble = Double.parseDouble(totalUsage);
+                        if(totalUsageDouble/1000>1){//보여줄떄는 1000으로 나눔 사용자에게 GB단위부터는, 값이 차감되기떄문 (컴퓨터처럼) 1024가 정확하긴하지만 사용자에게는 이렇게 제공
+                            model.addAttribute("totalUsageTxt",(totalUsageDouble/1000) + "GB");
+                        }else{
+                            model.addAttribute("totalUsageTxt",(totalUsageDouble) + "MB");
+                        }
                     }
+                }else {
+                    model.addAttribute("totalUsageTxt","");
                 }
-            }else {
-                model.addAttribute("totalUsageTxt","");
+                if(model.getAttribute("usage")!=null && !model.getAttribute("usage").equals("")){
+                    String usage  = model.getAttribute("usage").toString();
+                    if(usage.equals("unlimited")){
+                        model.addAttribute("usageTxt",usage);
+                    }else{
+                        Double usageDouble = Double.parseDouble(usage);
+                        if(usageDouble/1000>1){
+                            model.addAttribute("usageTxt",(usageDouble/1000) + "GB");
+                        }else{
+                            model.addAttribute("usageTxt",(usageDouble) + "MB");
+                        }
+                    }
+                }else {
+                    model.addAttribute("usageTxt","");
+                }
+            }else{
+                if(model.getAttribute("totalUsage")!=null && !model.getAttribute("totalUsage").equals("")){
+                    String totalUsage  = model.getAttribute("totalUsage").toString();
+                    if(totalUsage.equals("unlimited")){
+                        model.addAttribute("totalUsageTxt",totalUsage);
+                    }else{
+                        Double totalUsageDouble = Double.parseDouble(totalUsage);
+                        if(totalUsageDouble/1024>1){
+                            model.addAttribute("totalUsageTxt",(totalUsageDouble/1024) + "GB");
+                        }else{
+                            model.addAttribute("totalUsageTxt",(totalUsageDouble) + "MB");
+                        }
+                    }
+                }else {
+                    model.addAttribute("totalUsageTxt","");
+                }
+                if(model.getAttribute("usage")!=null && !model.getAttribute("usage").equals("")){
+                    String usage  = model.getAttribute("usage").toString();
+                    if(usage.equals("unlimited")){
+                        model.addAttribute("usageTxt",usage);
+                    }else{
+                        Double usageDouble = Double.parseDouble(usage);
+                        if(usageDouble/1024>1){
+
+                            model.addAttribute("usageTxt",(Math.round((usageDouble/1024) * 100) / 100.0) + "GB");
+                        }else{
+                            model.addAttribute("usageTxt",(usageDouble) + "MB");
+                        }
+                    }
+                }else {
+                    model.addAttribute("usageTxt","");
+                }
             }
 
 
-            if(model.getAttribute("usage")!=null && !model.getAttribute("usage").equals("")){
-                String usage  = model.getAttribute("usage").toString();
-                if(usage.equals("unlimited")){
-                    model.addAttribute("usageTxt",usage);
-                }else{
-                    Double usageDouble = Double.parseDouble(usage);
-                    if(usageDouble/1024>1){
 
-                        model.addAttribute("usageTxt",(Math.round((usageDouble/1024) * 100) / 100.0) + "GB");
-                    }else{
-                        model.addAttribute("usageTxt",(usageDouble) + "MB");
-                    }
+            if(topupOrderDtoList.size()>0){
+                productOption += "<br/><br/>(충전 내역)";
+                for(TopupOrderDto topupOrderDto:topupOrderDtoList){
+                    productOption += ("<br/>" + topupOrderDto.getProductOption());
                 }
-            }else {
-                model.addAttribute("usageTxt","");
             }
 
             model.addAttribute("title",productOption);

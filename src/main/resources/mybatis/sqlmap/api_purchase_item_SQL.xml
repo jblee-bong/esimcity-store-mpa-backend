@@ -42,6 +42,12 @@
     </select>
 
 
+    <select id="selectApiPurchaseItemListForTopupWithEsimaccess" parameterType="apiPurchaseItemDto" resultType="apiPurchaseItemDto">
+        select * FROM TB_API_PURCHASE_ITEM
+        where api_purchase_item_type = #{apiPurchaseItemType}
+          and api_purchase_cover_domain_code = (select api_purchase_cover_domain_code from TB_API_PURCHASE_ITEM where api_purchase_item_procut_id =  #{apiPurchaseItemProcutId})
+          and api_purchase_is_charge=1
+    </select>
 
     <select id="findById" parameterType="apiPurchaseItemDto" resultType="apiPurchaseItemDto">
         select * FROM TB_API_PURCHASE_ITEM

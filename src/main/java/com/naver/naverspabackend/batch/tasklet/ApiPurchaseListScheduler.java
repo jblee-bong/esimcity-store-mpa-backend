@@ -338,6 +338,68 @@ public class ApiPurchaseListScheduler {
             e.printStackTrace();
         }
 
+
+        try{
+            ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
+            apiPurchaseItemDto.setApiPurchaseItemType(ApiType.ESIMACCESS.name());
+            List<Map<String,Object>> itemList  = OriginEsimAccessUtil.contextLoads1();
+
+            EsimPriceDto param = new EsimPriceDto();
+            param.setType(ApiType.ESIMACCESS.name());
+            EsimPriceDto esimPriceDto = esimPriceService.findById(param);
+            Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
+
+            apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
+
+            for(int j=0;j<itemList.size();j++){
+                Map<String,Object> item = itemList.get(j);
+
+                int activeType  = (int) item.get("activeType");//언제부터 요금제 카운트 시작 1. 휴대폰설치시점 2. 최초네트워크접속시점
+                if(activeType!=2){ // 최초네트워크접속시점만 판매함
+                    continue;
+                }
+                apiPurchaseItemDto.setApiPurchaseExportDomainCode(item.get("ipExport").toString());
+                apiPurchaseItemDto.setApiPurchaseItemProcutId(item.get("packageCode").toString());
+                apiPurchaseItemDto.setApiPurchaseItemDescription(item.get("name").toString());
+                double price = (Double.parseDouble(item.get("price").toString())/10000);
+                apiPurchaseItemDto.setApiPurchasePrice(price+"");//가격
+                if(echangeRate!=null){
+                    double krwPrice = echangeRate *price;
+                    apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
+                }
+                apiPurchaseItemDto.setApiPurchaseCurrency(item.get("currencyCode").toString());//화폐단위
+                apiPurchaseItemDto.setApiPurchaseDataTotal(item.get("volume").toString());//용량
+                apiPurchaseItemDto.setApiPurchaseDataUnit("bytes"); //용량단위
+
+                int dataType  = (int) item.get("dataType");
+                apiPurchaseItemDto.setApiPurchaseItemSelectType(dataType+"");//1:총량제, 2:일일제한(속도제어), 3:일일제한(차단) 4:일일무제한
+                apiPurchaseItemDto.setApiPurchaseItemIsDaily(dataType==2 || dataType == 3  || dataType == 4);
+
+                int unusedValidTime  = (int) item.get("unusedValidTime");
+                apiPurchaseItemDto.setApiPurchaseUnusedValidTime(unusedValidTime+"");
+
+                apiPurchaseItemDto.setApiPurchaseItemDays(((Integer) item.get("duration")) +"");//활성화후 유효기간 (일)
+
+                apiPurchaseItemDto.setApiPurchaseCoverDomainCode(item.get("location").toString());
+
+                apiPurchaseItemDto.setApiPurchaseNormalSpeed(item.get("speed").toString());
+
+                apiPurchaseItemDto.setApiPurchaseSlowSpeed(item.get("fupPolicy").toString());
+                if((Integer) item.get("supportTopUpType")==2){
+                    apiPurchaseItemDto.setApiPurchaseIsCharge(true);
+                }else{
+                    apiPurchaseItemDto.setApiPurchaseIsCharge(false);
+
+                }
+
+
+                apiPurchaseItemService.insert(apiPurchaseItemDto);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
     public String formatDataSize(int mb) {
         if (mb >= 1024) {

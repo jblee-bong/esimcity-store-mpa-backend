@@ -7,6 +7,7 @@ import com.naver.naverspabackend.enums.ApiType;
 import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
 import com.naver.naverspabackend.service.order.OrderService;
 import com.naver.naverspabackend.service.papal.PaypalService;
+import com.naver.naverspabackend.service.payapp.PayAppService;
 import com.naver.naverspabackend.service.portone.PortOneService;
 import com.naver.naverspabackend.service.store.StoreService;
 import com.naver.naverspabackend.util.*;
@@ -48,6 +49,8 @@ public class ExternalController {
     private String active;
     @Value("${paypal.comfirmUrl}")
     private String comfirmUrl;
+    @Autowired
+    private PayAppService payAppService;
 
     @GetMapping("/esimdata")
     public String  esimdata(Model model, @RequestParam (name = "id",required = true) String id,  @RequestParam (name = "orderId",required = false) String orderId, @RequestParam(name = "iccid",required = false) String iccid, @RequestParam(name = "type",required = false) String type, @RequestParam(name = "rcode",required = false) String rcode, HttpServletResponse response) throws Exception {
@@ -190,5 +193,12 @@ public class ExternalController {
         // 1. 페이팔에 최종 결제 확정(Capture) 요청
         portOneService.captureOrder(model,token);
         return active + "/paypalSuccess";
+    }
+
+
+    @PostMapping("/payapp/completePage")
+    public String payappCompletePage(Model model,  HttpServletResponse response) throws Exception {
+
+        return active + "/payappSuccess";
     }
 }

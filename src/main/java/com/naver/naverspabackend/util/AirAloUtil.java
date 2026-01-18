@@ -154,9 +154,9 @@ public class AirAloUtil {
 
         String url = baseUrl + "/v2/sims/"+esimIccid;
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
+        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(5000); // 커넥션 최대 시간
+        factory.setReadTimeout(45000); // 읽기 최대 시간
 
         RestTemplate restTemplate = new RestTemplate(factory);
 
@@ -187,9 +187,9 @@ public class AirAloUtil {
     private static HashMap getEsimStatus(String esimIccid) {
         String url = baseUrl + "/v2/sims/"+esimIccid + "/usage";
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
+        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(5000); // 커넥션 최대 시간
+        factory.setReadTimeout(45000); // 읽기 최대 시간
 
         RestTemplate restTemplate = new RestTemplate(factory);
 
@@ -219,9 +219,9 @@ public class AirAloUtil {
 
         String url = baseUrl + "/v2/orders";
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
+        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(5000); // 커넥션 최대 시간
+        factory.setReadTimeout(45000); // 읽기 최대 시간
 
         RestTemplate restTemplate = new RestTemplate(factory);
 
@@ -255,9 +255,9 @@ public class AirAloUtil {
 
         String url = baseUrl + "/v2/packages";
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
+        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(5000); // 커넥션 최대 시간
+        factory.setReadTimeout(45000); // 읽기 최대 시간
 
         RestTemplate restTemplate = new RestTemplate(factory);
 
@@ -314,9 +314,9 @@ public class AirAloUtil {
 
         String url = baseUrl + "/v2/token";
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(60000 * 1000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(60000); // 커넥션 최대 시간
-        factory.setReadTimeout(60000); // 읽기 최대 시간
+        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
+        factory.setConnectTimeout(5000); // 커넥션 최대 시간
+        factory.setReadTimeout(45000); // 읽기 최대 시간
 
         RestTemplate restTemplate = new RestTemplate(factory);
 

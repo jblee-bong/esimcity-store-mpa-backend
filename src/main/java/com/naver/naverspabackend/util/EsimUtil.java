@@ -136,7 +136,7 @@ public class EsimUtil {
     }
 
     public static EsimAccessUtil getEsimAccess(StoreDto storeDto)  {
-        return new EsimAccessUtil(esimAccessClientId, esimAccessClientSecret, esimAccessBaseUrl, esimApiIngStepLogsService, apiPurchaseItemService,orderMapper);
+        return new EsimAccessUtil(storeDto.getEsimApiEsimaccessClientId(), storeDto.getEsimApiEsimaccessClientSecret(), esimAccessBaseUrl, esimApiIngStepLogsService, apiPurchaseItemService,orderMapper);
     }
 
 }

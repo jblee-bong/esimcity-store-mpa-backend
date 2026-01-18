@@ -28,4 +28,6 @@ public interface ApiPurchaseItemService {
     List<ApiPurchaseItemDto> selectApiPurchaseItemListForTopup(ApiPurchaseItemDto param);
 
     List<ApiPurchaseItemDto> selectApiPurchaseItemListForTopupWithTuge(ApiPurchaseItemDto apiPurchaseItemDto);
+
+    List<ApiPurchaseItemDto> selectApiPurchaseItemListForTopupWithEsimaccess(ApiPurchaseItemDto apiPurchaseItemDto);
 }

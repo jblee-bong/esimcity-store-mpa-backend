@@ -47,9 +47,15 @@ public class ApiRetransMailScheduler {
     private OrderService orderService;
 
 
+    @Value("${testmode}")
+    private String testMode;
 
     @Scheduled(cron = "0 */5 * * * *")
     public void ApiRetransMail () {
+        if(testMode.equals("true"))
+        {
+            return;
+        }
         List<OrderRetransMailInfoDto> orderRetransMailInfoDtoList = orderService.fetchRetransMailInfoDtoAll();
         for(OrderRetransMailInfoDto orderRetransMailInfoDto : orderRetransMailInfoDtoList) {
             try{

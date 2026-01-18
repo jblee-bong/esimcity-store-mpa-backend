@@ -72,7 +72,9 @@
             esim_api_niz_pass,
             esim_api_niz_partner_code,
             esim_api_airalo_client_id,
-            esim_api_airalo_client_secret
+            esim_api_airalo_client_secret,
+            esim_api_esimaccess_client_id,
+            esim_api_esimaccess_client_secret
         ) values (
             #{clientId},
             #{clientSecret},
@@ -139,7 +141,9 @@
             #{esimApiNizPass},
             #{esimApiNizPartnerCode},
             #{esimApiAiraloClientId},
-            #{esimApiAiraloClientSecret}
+            #{esimApiAiraloClientSecret},
+            #{esimApiEsimaccessClientId},
+            #{esimApiEsimaccessClientSecret}
         )
     </insert>
 
@@ -251,7 +255,9 @@
             esim_api_niz_pass =            #{esimApiNizPass},
             esim_api_niz_partner_code =            #{esimApiNizPartnerCode},
             esim_api_airalo_client_id =            #{esimApiAiraloClientId},
-            esim_api_airalo_client_secret =            #{esimApiAiraloClientSecret}
+            esim_api_airalo_client_secret =            #{esimApiAiraloClientSecret},
+            esim_api_esimaccess_client_id = #{esimApiEsimaccessClientId},
+            esim_api_esimaccess_client_secret = #{esimApiEsimaccessClientSecret}
         where id = #{id}
     </update>
 

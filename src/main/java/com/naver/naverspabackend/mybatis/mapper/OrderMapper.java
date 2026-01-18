@@ -59,6 +59,8 @@ public interface OrderMapper {
 
     void updateOrderSmsForEsimIccid(OrderDto orderDto);
 
+    void updateOrderSmsForEsimTransNo(OrderDto orderDto);
+
     void updateOrderSmsForEsimActivationCode(OrderDto orderDto);
 
     void updateOrderSmsForEsimApiRequestId(OrderDto orderDto);
@@ -102,4 +104,6 @@ public interface OrderMapper {
     List<OrderRetransMailInfoDto> fetchRetransMailInfoDtoAll();
 
     void updateRetransMailInfoComfirm(OrderRetransMailInfoDto orderRetransMailInfoDto);
+
+    OrderTugeEsimDto selectListOrderTugeEsimByOrderNo(OrderTugeEsimDto esimApiRequestId);
 }

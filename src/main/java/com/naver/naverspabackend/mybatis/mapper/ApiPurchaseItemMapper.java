@@ -32,4 +32,6 @@ public interface ApiPurchaseItemMapper {
     ApiCardTypeDto selectCardTypeFindByCardType(ApiCardTypeDto param);
 
     List<ApiPurchaseItemDto> selectApiPurchaseItemListForTopupWithTuge(ApiPurchaseItemDto apiPurchaseItemDto);
+
+    List<ApiPurchaseItemDto> selectApiPurchaseItemListForTopupWithEsimaccess(ApiPurchaseItemDto apiPurchaseItemDto);
 }
