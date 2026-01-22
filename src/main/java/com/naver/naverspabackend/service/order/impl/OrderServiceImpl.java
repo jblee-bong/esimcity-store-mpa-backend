@@ -2,7 +2,6 @@ package com.naver.naverspabackend.service.order.impl;
 
 import com.google.gson.Gson;
 import com.naver.naverspabackend.dto.*;
-import com.naver.naverspabackend.enums.EsimApiIngSteLogsType;
 import com.naver.naverspabackend.exception.CustomException;
 import com.naver.naverspabackend.mybatis.mapper.EsimApiIngStepLogsMapper;
 import com.naver.naverspabackend.mybatis.mapper.KakaoContentsMapper;
@@ -12,9 +11,12 @@ import com.naver.naverspabackend.response.ApiResult;
 import com.naver.naverspabackend.service.order.OrderService;
 import com.naver.naverspabackend.service.sms.KakaoService;
 import com.naver.naverspabackend.service.sms.MailService;
+import com.naver.naverspabackend.service.store.StoreService;
+import com.naver.naverspabackend.service.topupOrder.TopupOrderService;
 import com.naver.naverspabackend.util.CommonUtil;
 import com.naver.naverspabackend.util.PagingUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,7 @@ import org.springframework.stereotype.Service;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -35,6 +34,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private MailService mailService;
+
+
+    @Autowired
+    private TopupOrderService topupOrderService;
+
+    @Autowired
+    private StoreService storeService;
+
     @Autowired
     private StoreMapper storeMapper;
     @Autowired
@@ -44,6 +51,11 @@ public class OrderServiceImpl implements OrderService {
     private EsimApiIngStepLogsMapper esimApiIngStepLogsMapper;
     @Autowired
     private KakaoService kakaoService;
+
+
+    @Value("${payApp.kakaoSuccessKey}")
+    private String kakaoSuccessKey;
+
 
     @Override
     public ApiResult<List<OrderDto>> fetchOrderList(Map<String, Object> map, PagingUtil pagingUtil) {
@@ -99,56 +111,156 @@ public class OrderServiceImpl implements OrderService {
         try{
             if(item.get("code").toString().equals("0000")){
                 HashMap<String,Object> data = (HashMap<String, Object>) item.get("data");
-                HashMap<String,Object> orderInfo = (HashMap<String, Object>) data.get("orderInfo");
-                OrderTugeEsimDto orderTugeEsimDto = new OrderTugeEsimDto();
+                int eventType = 1;
 
-                OrderDto orderDto = new OrderDto();
-                orderDto.setEsimApiRequestId(orderInfo.get("orderNo").toString());
-                OrderDto result = orderMapper.selectOrderWithEsimApiRequestId(orderDto);
-                if(result == null){
+                try{
+                    eventType = Integer.parseInt(data.get("eventType").toString());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                if(eventType==2){
+                    //충전리턴
+                    HashMap<String,Object> orderInfo = (HashMap<String, Object>) data.get("orderInfo");
+
+                    TopupOrderDto param = new TopupOrderDto();
+                    param.setId(Long.parseLong(orderInfo.get("channelOrderNo").toString().replace("renewOrderNo_","")));
+                    TopupOrderDto topupOrderDto = topupOrderService.findById(param);
+                    Map<String, Object> storeParam = new HashMap<>();
+                    storeParam.put("id",topupOrderDto.getStoreId());
+                    StoreDto storeDto = storeService.findById(storeParam);
+                    Map<String, Object> orderParam = new HashMap<>();
+                    orderParam.put("id",topupOrderDto.getOrderId());
+                    OrderDto orderDto = orderMapper.fetchOrderOnly(orderParam);
+
+                    if(orderDto == null || storeDto == null){
+                        Map<String, String> response = new HashMap<>();
+                        response.put("code", "1");
+                        response.put("msg", item.get("msg").toString());
+                        return ResponseEntity.ok(response);
+                    }
+                    Map<String, Object> kakaoParameters = new HashMap<>();
+                    kakaoParameters.put("orderRealName", Objects.toString(topupOrderDto.getProductOption(), ""));
+                    kakaoParameters.put("ordererName",Objects.toString(topupOrderDto.getShippingName(), ""));
+
+                    //충전완료
+                    topupOrderDto.setTopupStatus(1);
+                    topupOrderService.updateTopupStatus(topupOrderDto);
+                    try{
+                        kakaoService.requestSendKakaoMsg(kakaoParameters, kakaoSuccessKey,storeDto,orderDto, "N", "Y",false, topupOrderDto.getShippingTel());
+                    }catch (Exception e){
+                    }
+
+                    OrderRenewTugeEsimDto orderRenewTugeEsimDto = new OrderRenewTugeEsimDto();
+
+                    orderRenewTugeEsimDto.setOrderId(orderDto.getId());
+                    orderRenewTugeEsimDto.setTopupOrderId(topupOrderDto.getId());
+
+                    orderRenewTugeEsimDto.setOrderNo(orderInfo.get("orderNo").toString());
+                    if(orderInfo.get("iccid")!=null)orderRenewTugeEsimDto.setIccid(orderInfo.get("iccid").toString());
+                    if(orderInfo.get("qrCode")!=null)orderRenewTugeEsimDto.setQrCode(orderInfo.get("qrCode").toString());
+                    if(orderInfo.get("channelOrderNo")!=null)orderRenewTugeEsimDto.setChannelOrderNo(orderInfo.get("channelOrderNo").toString());
+                    if(orderInfo.get("imsi")!=null)orderRenewTugeEsimDto.setImsi(orderInfo.get("imsi").toString());
+                    if(orderInfo.get("msisdn")!=null)orderRenewTugeEsimDto.setMsisdn(orderInfo.get("msisdn").toString());
+
+                    if(orderInfo.get("activatedStartTime")!=null){
+                        // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                        ZonedDateTime activatedStartTime = ZonedDateTime.parse(orderInfo.get("activatedStartTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                        // DB 저장용 포맷 (2026-12-09 23:26:03)
+                        orderRenewTugeEsimDto.setActivatedStartTime(activatedStartTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
+                    }
+                    if(orderInfo.get("activatedEndTime")!=null){
+                        // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                        ZonedDateTime activatedEndTime = ZonedDateTime.parse(orderInfo.get("activatedEndTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                        // DB 저장용 포맷 (2026-12-09 23:26:03)
+                        orderRenewTugeEsimDto.setActivatedEndTime(activatedEndTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
+                    }
+                    if(orderInfo.get("latestActivationTime")!=null){
+                        // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                        ZonedDateTime latestActivationTime = ZonedDateTime.parse(orderInfo.get("latestActivationTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                        // DB 저장용 포맷 (2026-12-09 23:26:03)
+                        orderRenewTugeEsimDto.setLatestActivationTime(latestActivationTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
+                    }
+                    if(orderInfo.get("renewExpirationTime")!=null){
+                        // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                        ZonedDateTime renewExpirationTime = ZonedDateTime.parse(orderInfo.get("renewExpirationTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                        // DB 저장용 포맷 (2026-12-09 23:26:03)
+                        orderRenewTugeEsimDto.setRenewExpirationTime(renewExpirationTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
+                    }
+                    orderMapper.insertOrderRenewTugeEsim(orderRenewTugeEsimDto);
                     Map<String, String> response = new HashMap<>();
-                    response.put("code", "1");
+                    response.put("code", item.get("code").toString());
+                    response.put("msg", item.get("msg").toString());
+                    return ResponseEntity.ok(response);
+                }else{
+                    //이심리턴
+                    HashMap<String,Object> orderInfo = (HashMap<String, Object>) data.get("orderInfo");
+                    OrderTugeEsimDto orderTugeEsimDto = new OrderTugeEsimDto();
+
+                    OrderDto orderDto = new OrderDto();
+                    orderDto.setEsimApiRequestId(orderInfo.get("orderNo").toString());
+                    OrderDto result = orderMapper.selectOrderWithEsimApiRequestId(orderDto);
+
+                    // result가 null일 경우 1분 간격으로 최대 3번 재시도
+                    if(result == null){
+                        //TODO 이부분 나중에 TUGE에서 재 callback 완료되면 제거
+                        int maxRetries = 3;
+                        for(int i = 0; i < maxRetries; i++){
+                            // 1분 대기
+                            try {Thread.sleep(60000); } catch (InterruptedException e) {}
+                            result = orderMapper.selectOrderWithEsimApiRequestId(orderDto);
+                            if(result != null){
+                                break; // 성공하면 루프 종료
+                            }
+                        }
+                        // 3번 재시도 후에도 null이면 에러 응답
+                        //TODO 제거 END
+
+                        if(result == null){
+                            Map<String, String> response = new HashMap<>();
+                            response.put("code", "1");
+                            response.put("msg", item.get("msg").toString());
+                            return ResponseEntity.ok(response);
+                        }
+                    }
+                    orderTugeEsimDto.setOrderId(result.getId());
+
+                    orderTugeEsimDto.setOrderNo(orderInfo.get("orderNo").toString());
+                    if(orderInfo.get("iccid")!=null)orderTugeEsimDto.setIccid(orderInfo.get("iccid").toString());
+                    if(orderInfo.get("qrCode")!=null)orderTugeEsimDto.setQrCode(orderInfo.get("qrCode").toString());
+                    if(orderInfo.get("channelOrderNo")!=null)orderTugeEsimDto.setChannelOrderNo(orderInfo.get("channelOrderNo").toString());
+                    if(orderInfo.get("imsi")!=null)orderTugeEsimDto.setImsi(orderInfo.get("imsi").toString());
+                    if(orderInfo.get("msisdn")!=null)orderTugeEsimDto.setMsisdn(orderInfo.get("msisdn").toString());
+
+                    if(orderInfo.get("activatedStartTime")!=null){
+                        // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                        ZonedDateTime activatedStartTime = ZonedDateTime.parse(orderInfo.get("activatedStartTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                        // DB 저장용 포맷 (2026-12-09 23:26:03)
+                        orderTugeEsimDto.setActivatedStartTime(activatedStartTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
+                    }
+                    if(orderInfo.get("activatedEndTime")!=null){
+                        // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                        ZonedDateTime activatedEndTime = ZonedDateTime.parse(orderInfo.get("activatedEndTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                        // DB 저장용 포맷 (2026-12-09 23:26:03)
+                        orderTugeEsimDto.setActivatedEndTime(activatedEndTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
+                    }
+                    if(orderInfo.get("latestActivationTime")!=null){
+                        // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                        ZonedDateTime latestActivationTime = ZonedDateTime.parse(orderInfo.get("latestActivationTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                        // DB 저장용 포맷 (2026-12-09 23:26:03)
+                        orderTugeEsimDto.setLatestActivationTime(latestActivationTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
+                    }
+                    if(orderInfo.get("renewExpirationTime")!=null){
+                        // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                        ZonedDateTime renewExpirationTime = ZonedDateTime.parse(orderInfo.get("renewExpirationTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                        // DB 저장용 포맷 (2026-12-09 23:26:03)
+                        orderTugeEsimDto.setRenewExpirationTime(renewExpirationTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
+                    }
+                    orderMapper.insertOrderTugeEsim(orderTugeEsimDto);
+                    Map<String, String> response = new HashMap<>();
+                    response.put("code", item.get("code").toString());
                     response.put("msg", item.get("msg").toString());
                     return ResponseEntity.ok(response);
                 }
-                orderTugeEsimDto.setOrderId(result.getId());
-
-                orderTugeEsimDto.setOrderNo(orderInfo.get("orderNo").toString());
-                if(orderInfo.get("iccid")!=null)orderTugeEsimDto.setIccid(orderInfo.get("iccid").toString());
-                if(orderInfo.get("qrCode")!=null)orderTugeEsimDto.setQrCode(orderInfo.get("qrCode").toString());
-                if(orderInfo.get("channelOrderNo")!=null)orderTugeEsimDto.setChannelOrderNo(orderInfo.get("channelOrderNo").toString());
-                if(orderInfo.get("imsi")!=null)orderTugeEsimDto.setImsi(orderInfo.get("imsi").toString());
-                if(orderInfo.get("msisdn")!=null)orderTugeEsimDto.setMsisdn(orderInfo.get("msisdn").toString());
-
-                if(orderInfo.get("activatedStartTime")!=null){
-                    // ISO 8601 문자열을 한국 시간 객체로 바로 변환
-                    ZonedDateTime activatedStartTime = ZonedDateTime.parse(orderInfo.get("activatedStartTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-                    // DB 저장용 포맷 (2026-12-09 23:26:03)
-                    orderTugeEsimDto.setActivatedStartTime(activatedStartTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
-                }
-                if(orderInfo.get("activatedEndTime")!=null){
-                    // ISO 8601 문자열을 한국 시간 객체로 바로 변환
-                    ZonedDateTime activatedEndTime = ZonedDateTime.parse(orderInfo.get("activatedEndTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-                    // DB 저장용 포맷 (2026-12-09 23:26:03)
-                    orderTugeEsimDto.setActivatedEndTime(activatedEndTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
-                }
-                if(orderInfo.get("latestActivationTime")!=null){
-                    // ISO 8601 문자열을 한국 시간 객체로 바로 변환
-                    ZonedDateTime latestActivationTime = ZonedDateTime.parse(orderInfo.get("latestActivationTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-                    // DB 저장용 포맷 (2026-12-09 23:26:03)
-                    orderTugeEsimDto.setLatestActivationTime(latestActivationTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
-                }
-                if(orderInfo.get("renewExpirationTime")!=null){
-                    // ISO 8601 문자열을 한국 시간 객체로 바로 변환
-                    ZonedDateTime renewExpirationTime = ZonedDateTime.parse(orderInfo.get("renewExpirationTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-                    // DB 저장용 포맷 (2026-12-09 23:26:03)
-                    orderTugeEsimDto.setRenewExpirationTime(renewExpirationTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));;
-                }
-                orderMapper.insertOrderTugeEsim(orderTugeEsimDto);
-                Map<String, String> response = new HashMap<>();
-                response.put("code", item.get("code").toString());
-                response.put("msg", item.get("msg").toString());
-                return ResponseEntity.ok(response);
             }else{
                 Map<String, String> response = new HashMap<>();
                 response.put("code", "1");
@@ -163,6 +275,9 @@ public class OrderServiceImpl implements OrderService {
             return ResponseEntity.ok(response);
         }
     }
+
+
+
 
     @Override
     public OrderTugeEsimDto selecTugeItemWithIccid(OrderTugeEsimDto param) {
@@ -194,6 +309,22 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void updateRetransMailInfoComfirm(OrderRetransMailInfoDto orderRetransMailInfoDto) {
         orderMapper.updateRetransMailInfoComfirm(orderRetransMailInfoDto);
+    }
+
+    @Override
+    public OrderTugeEsimDto selectListOrderTugeEsimByOrderNo(OrderTugeEsimDto orderTugeEsimDtoParam) {
+        return orderMapper.selectListOrderTugeEsimByOrderNo(orderTugeEsimDtoParam);
+    }
+
+    @Override
+    public List<OrderRenewTugeEsimDto> selectListOrderRenewTugeEsimList(OrderRenewTugeEsimDto orderRenewTugeEsimParam) {
+        return orderMapper.selectListOrderRenewTugeEsimList(orderRenewTugeEsimParam);
+    }
+
+    @Override
+    public OrderRenewTugeEsimDto selectOrderRenewTugeEsimByOrderNo(OrderRenewTugeEsimDto orderRenewTugeEsimDtoParam) {
+
+        return orderMapper.selectOrderRenewTugeEsimByOrderNo(orderRenewTugeEsimDtoParam);
     }
 
     @Override

@@ -167,7 +167,7 @@ public class ApiPurchaseListSchedulerTest {
                         }
 
                         if(itemList.get(j).get("activeType")!=null){
-                            // ACTIVEDBYDEVICE, ACTIVEDBYORDER 이둘중하나인데 어떤걸 써야하는지 확인필요. 뭐냐면 사고 사용자가 활성화하면 개통되는건지 아닌지
+                            // ACTIVEDBYDEVICE, ACTIVEDBYORDER 이둘중하나인데 어떤걸 써야하는지 확인필요. 뭐냐면 사고 사용자가 활성화하면 개통되는건지 아닌지 //AUTO_ACTIVATE이거사용해야함
                             System.out.println(itemList.get(j).get("activeType").toString());
                         }
 
@@ -195,15 +195,15 @@ public class ApiPurchaseListSchedulerTest {
 
                         if(itemList.get(j).get("limitSpeed")!=null)apiPurchaseItemDto.setApiPurchaseSlowSpeed(itemList.get(j).get("limitSpeed").toString());
 
-                        if(itemList.get(j).get("cardType")!=null && cardTypeList.indexOf(itemList.get(j).get("cardType").toString()) >-1 && cardRenewList.get(cardTypeList.indexOf(itemList.get(j).get("cardType").toString()))){
+                        if(itemList.get(j).get("cardType")!=null && cardTypeList.indexOf(itemList.get(j).get("cardType").toString()) >-1 && cardRenewList.get(cardTypeList.indexOf(itemList.get(j).get("cardType").toString()))
+                                && itemList.get(j).get("productType")!=null && !itemList.get(j).get("productType").toString().equals("DAILY_PACK")
+                        ){
                             apiPurchaseItemDto.setApiPurchaseIsCharge(true);
                         }else{
                             apiPurchaseItemDto.setApiPurchaseIsCharge(false);
 
                         }
 
-                        //TODO 충전기능 오픈전까지 충전불가 아래삭제
-                        apiPurchaseItemDto.setApiPurchaseIsCharge(false);
 
 
 

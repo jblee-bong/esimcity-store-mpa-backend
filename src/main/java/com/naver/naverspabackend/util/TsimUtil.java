@@ -173,6 +173,10 @@ public class TsimUtil {
                     }
                     model.addAttribute("chargeYN","NONE");//DAILY상품
                 }else{
+                    ApiPurchaseItemDto param2 = new ApiPurchaseItemDto();
+                    param2.setApiPurchaseItemProcutId(result.get("channel_dataplan_id").toString());
+                    param2.setApiPurchaseItemType(ApiType.TSIM.name());
+                    model.addAttribute("resetTxt",MakeResetTimeUtil.makeTsimResetText(apiPurchaseItemService.findById(param2)));//종료일 - 매일일경우 리셋일
 
 
                     ApiPurchaseItemDto param = new ApiPurchaseItemDto();

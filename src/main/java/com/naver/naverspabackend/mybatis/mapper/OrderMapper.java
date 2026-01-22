@@ -41,7 +41,6 @@ public interface OrderMapper {
 
     void insertOrderWorldmoveEsim(OrderWorldmoveEsimDto orderWorldmoveEsimDto);
 
-    void insertOrderTugeEsim(OrderTugeEsimDto orderTugeEsimDto);
 
     void updateOrderSmsForEsimIccidWordMove(OrderDto orderDto);
 
@@ -106,4 +105,12 @@ public interface OrderMapper {
     void updateRetransMailInfoComfirm(OrderRetransMailInfoDto orderRetransMailInfoDto);
 
     OrderTugeEsimDto selectListOrderTugeEsimByOrderNo(OrderTugeEsimDto esimApiRequestId);
+
+    void insertOrderTugeEsim(OrderTugeEsimDto orderTugeEsimDto);
+
+    void insertOrderRenewTugeEsim(OrderRenewTugeEsimDto orderRenewTugeEsimDto);
+
+    List<OrderRenewTugeEsimDto> selectListOrderRenewTugeEsimList(OrderRenewTugeEsimDto orderRenewTugeEsimParam);
+
+    OrderRenewTugeEsimDto selectOrderRenewTugeEsimByOrderNo(OrderRenewTugeEsimDto orderRenewTugeEsimDtoParam);
 }

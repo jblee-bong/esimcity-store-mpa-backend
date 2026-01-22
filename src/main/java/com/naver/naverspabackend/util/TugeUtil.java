@@ -3,10 +3,7 @@ package com.naver.naverspabackend.util;
 import com.beust.ah.A;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.naver.naverspabackend.dto.ApiCardTypeDto;
-import com.naver.naverspabackend.dto.ApiPurchaseItemDto;
-import com.naver.naverspabackend.dto.OrderTugeEsimDto;
-import com.naver.naverspabackend.dto.TopupOrderDto;
+import com.naver.naverspabackend.dto.*;
 import com.naver.naverspabackend.enums.ApiType;
 import com.naver.naverspabackend.enums.EsimApiIngSteLogsType;
 import com.naver.naverspabackend.security.TugeRedisRepository;
@@ -29,10 +26,7 @@ import javax.crypto.spec.IvParameterSpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -57,6 +51,8 @@ public class TugeUtil {
     public static TugeRedisRepository tugeRedisRepository;
 
     public static ApiPurchaseItemService apiPurchaseItemService;
+
+
     public static OrderService orderService;
     public TugeUtil(String accountId,String signKey, String secretkey, String vector, String version, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService, TugeRedisRepository tugeRedisRepository,OrderService orderService,ApiPurchaseItemService apiPurchaseItemService,String active){
         this.accountId = accountId;
@@ -103,7 +99,7 @@ public class TugeUtil {
     public static void contextLoads4(String orderId, String iccid, Model model, ApiPurchaseItemDto apiPurchaseItemDto) throws Exception {
         System.setProperty("https.protocols","TLSv1.2");
 
-        HashMap esimResult =  getEsimStatus(orderId,iccid);
+        HashMap esimResult =  getEsimStatus(orderId);
         HashMap esimResult2 =  getEsimStatus2(orderId);
 
         Gson gson = new Gson();
@@ -115,6 +111,28 @@ public class TugeUtil {
             List<Map<String,Object>> esimMap2List = (List<Map<String, Object>>) esimMap2.get("list");
 
             Map<String,Object> orderData = esimMap2List.get(0);
+
+            OrderTugeEsimDto orderTugeEsimDtoParam = new OrderTugeEsimDto();
+            orderTugeEsimDtoParam.setOrderNo(orderData.get("orderNo").toString());
+            OrderTugeEsimDto orderTugeEsimDto = orderService.selectListOrderTugeEsimByOrderNo(orderTugeEsimDtoParam);
+
+            //사용량을 다쓴경우, 충전한데이터가있는지 확인 필요
+            if(orderData.get("orderStatus")!=null && (orderData.get("orderStatus").equals("USED") || orderData.get("orderStatus").equals("EXPIRED"))){
+                OrderRenewTugeEsimDto orderRenewTugeEsimParam = new OrderRenewTugeEsimDto();
+                orderRenewTugeEsimParam.setOrderId(orderTugeEsimDto.getOrderId());
+                List<OrderRenewTugeEsimDto> orderRenewTugeEsimDtoList = orderService.selectListOrderRenewTugeEsimList(orderRenewTugeEsimParam);
+                if(orderRenewTugeEsimDtoList.size()>0){
+                    for(OrderRenewTugeEsimDto orderRenewTugeEsimDto : orderRenewTugeEsimDtoList){
+                        String result = contextLoads4Renew(orderRenewTugeEsimDto.getOrderNo(),orderRenewTugeEsimDto.getIccid(),model,apiPurchaseItemDto);
+                        if(result!=null && result.equals("SUCCESS")){
+                            model.addAttribute("crrentActivity",orderRenewTugeEsimDto.getOrderNo());
+                            return;
+                        }
+                    }
+                }
+            }
+            model.addAttribute("crrentActivity","main");
+
 
             if(orderData.get("orderStatus")!=null && !orderData.get("orderStatus").equals("NOTACTIVE")){
                 // ISO 8601 문자열을 한국 시간 객체로 바로 변환
@@ -133,11 +151,14 @@ public class TugeUtil {
             ApiCardTypeDto param = new ApiCardTypeDto();
             param.setCardType(apiPurchaseItemDto.getApiPurchaseItemCardType());
             ApiCardTypeDto apiCardTypeDto = apiPurchaseItemService.selectCardTypeFindByCardType(param);
-            if(apiCardTypeDto!=null && apiCardTypeDto.isRenewYn() && orderData.get("renewExpirationTime")!=null ){
-                ZonedDateTime renewExpirationTime = ZonedDateTime.parse(orderData.get("renewExpirationTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
 
-                // 3. 현재 시간과의 차이 계산
-                long limitTimeMillis = renewExpirationTime.toInstant().toEpochMilli(); // 이제 이 시간은 '진짜 만료' 10분 전 시간입니다.
+            if(apiCardTypeDto!=null && apiCardTypeDto.isRenewYn() && orderTugeEsimDto.getRenewExpirationTime()!=null ){
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                LocalDateTime localDateTime = LocalDateTime.parse(orderTugeEsimDto.getRenewExpirationTime(), formatter);
+
+                // 현재 시간과의 차이 계산
+                long limitTimeMillis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();; // 이제 이 시간은 '진짜 만료' 10분 전 시간입니다.
                 long currentTimeMillis = System.currentTimeMillis();
                 long diffMillis = limitTimeMillis - currentTimeMillis;
 
@@ -173,7 +194,7 @@ public class TugeUtil {
                                 data.getApiPurchaseDataTotal().equals("Unlimited") ?"무제한":
                                         (
                                             (data.isApiPurchaseItemIsDaily()?"매일 ":"총 ") + data.getApiPurchaseDataTotal() +
-                                            (apiPurchaseItemDto.getApiPurchaseSlowSpeed()!=null?" + 저속 무제한":"")
+                                            (data.getApiPurchaseSlowSpeed()!=null?" + 저속 무제한":"")
                                     )
                         );
                         apiPurchaseItemList.add(apiPurchaseItem);
@@ -195,26 +216,54 @@ public class TugeUtil {
             model.addAttribute("isDaily",apiPurchaseItemDto.isApiPurchaseItemIsDaily());//매일데이터 리셋 유부
 
 
-            if(apiPurchaseItemDto.getApiPurchaseItemPeriodType()==0){
-                model.addAttribute("resetTxt","데이터 충전: 활성화 시점부터 24시간<br/>이용 일수: 활성화 시점부터 24시간");
-            }else {
-                if (apiPurchaseItemDto.getApiPurchaseItemCardType() != null) {
-                    if(apiCardTypeDto!=null && apiCardTypeDto.getTimeZone()!=null){
-                        ZonedDateTime sourceTime = LocalDate.of(2024, 1, 1)
-                                .atTime(LocalTime.MIN) // 00:00
-                                .atZone(ZoneId.of(apiCardTypeDto.getTimeZone()));
+            if(apiPurchaseItemDto.isApiPurchaseItemIsDaily()){
 
-                        // 2. 한국 시간(UTC+9)으로 변환
-                        ZonedDateTime kstTime = sourceTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                if(apiPurchaseItemDto.getApiPurchaseItemPeriodType()==0){
+                    model.addAttribute("resetTxt","데이터 충전: 활성화 시점부터 24시간<br/>이용 일수: 활성화 시점부터 24시간");
+                }else {
+                    if (apiPurchaseItemDto.getApiPurchaseItemCardType() != null) {
+                        if(apiCardTypeDto!=null && apiCardTypeDto.getTimeZone()!=null){
+                            ZonedDateTime sourceTime = LocalDate.of(2024, 1, 1)
+                                    .atTime(LocalTime.MIN) // 00:00
+                                    .atZone(ZoneId.of(apiCardTypeDto.getTimeZone()));
 
-                        // 3. 결과에서 시간만 추출
-                        LocalTime resultTime = kstTime.toLocalTime();
-                        String resetTime = resultTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+                            // 2. 한국 시간(UTC+9)으로 변환
+                            ZonedDateTime kstTime = sourceTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
 
-                        // 결과 출력 포맷 설정
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                        model.addAttribute("resetTxt","데이터 충전: "+resetTime+"(한국 시간)<br/>이용 일수: "+resetTime+"(한국 시간)");
+                            // 3. 결과에서 시간만 추출
+                            LocalTime resultTime = kstTime.toLocalTime();
+                            String resetTime = resultTime.format(DateTimeFormatter.ofPattern("HH:mm"));
 
+                            // 결과 출력 포맷 설정
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                            model.addAttribute("resetTxt","데이터 충전: "+resetTime+"(한국 시간)<br/>이용 일수: "+resetTime+"(한국 시간)");
+
+                        }
+                    }
+                }
+            }else{
+
+                if(apiPurchaseItemDto.getApiPurchaseItemPeriodType()==0){
+                    model.addAttribute("resetTxt","이용 일수: 활성화 시점부터 24시간");
+                }else {
+                    if (apiPurchaseItemDto.getApiPurchaseItemCardType() != null) {
+                        if(apiCardTypeDto!=null && apiCardTypeDto.getTimeZone()!=null){
+                            ZonedDateTime sourceTime = LocalDate.of(2024, 1, 1)
+                                    .atTime(LocalTime.MIN) // 00:00
+                                    .atZone(ZoneId.of(apiCardTypeDto.getTimeZone()));
+
+                            // 2. 한국 시간(UTC+9)으로 변환
+                            ZonedDateTime kstTime = sourceTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+
+                            // 3. 결과에서 시간만 추출
+                            LocalTime resultTime = kstTime.toLocalTime();
+                            String resetTime = resultTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+                            // 결과 출력 포맷 설정
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                            model.addAttribute("resetTxt","이용 일수: "+resetTime+"(한국 시간)");
+
+                        }
                     }
                 }
             }
@@ -270,11 +319,230 @@ public class TugeUtil {
 
 
             model.addAttribute("iccid",iccid);
-            //TODO 충전기능 오픈전까지 충전불가 아래삭제
-            model.addAttribute("chargeYN","N");//충전불가
         }else{
             throw new Exception();
         }
+
+    }
+
+
+
+    public static String contextLoads4Renew(String orderId, String iccid, Model model, ApiPurchaseItemDto apiPurchaseItemDto) throws Exception {
+        System.setProperty("https.protocols","TLSv1.2");
+
+        HashMap esimResult =  getEsimStatus(orderId);
+        HashMap esimResult2 =  getEsimStatus2(orderId);
+
+        Gson gson = new Gson();
+        if(esimResult.get("code").toString().equals("0000") && esimResult2.get("code").toString().equals("0000") ){
+            HashMap<String,Object> esimMap = (HashMap<String, Object>) esimResult.get("data");
+            HashMap<String,Object> esimMap2 = (HashMap<String, Object>) esimResult2.get("data");
+
+
+            List<Map<String,Object>> esimMap2List = (List<Map<String, Object>>) esimMap2.get("list");
+
+            Map<String,Object> orderData = esimMap2List.get(0);
+
+
+            //사용량을 다쓴경우, 충전한데이터가있는지 확인 필요
+            if(orderData.get("orderStatus")!=null && (orderData.get("orderStatus").equals("USED") || orderData.get("orderStatus").equals("EXPIRED"))){
+                return null;
+            }
+
+            if(orderData.get("orderStatus")!=null && !orderData.get("orderStatus").equals("NOTACTIVE")){
+                // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                ZonedDateTime activatedStartTime = ZonedDateTime.parse(orderData.get("activatedStartTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                // DB 저장용 포맷 (2026-12-09 23:26)
+                model.addAttribute("useStartDate",activatedStartTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));//활성화시작일
+                // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                ZonedDateTime activatedEndTime = ZonedDateTime.parse(orderData.get("activatedEndTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+                // DB 저장용 포맷 (2026-12-09 23:26)
+                model.addAttribute("useEndDate",activatedEndTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));//활성화시작일
+            }else{
+                model.addAttribute("useStartDate","");
+                model.addAttribute("useEndDate","");
+            }
+
+            ApiCardTypeDto param = new ApiCardTypeDto();
+            param.setCardType(apiPurchaseItemDto.getApiPurchaseItemCardType());
+            ApiCardTypeDto apiCardTypeDto = apiPurchaseItemService.selectCardTypeFindByCardType(param);
+
+            OrderRenewTugeEsimDto orderRenewTugeEsimDtoParam = new OrderRenewTugeEsimDto();
+            orderRenewTugeEsimDtoParam.setOrderNo(orderData.get("orderNo").toString());
+            OrderRenewTugeEsimDto orderRenewTugeEsimDto = orderService.selectOrderRenewTugeEsimByOrderNo(orderRenewTugeEsimDtoParam);
+
+            if(apiCardTypeDto!=null && apiCardTypeDto.isRenewYn() && orderRenewTugeEsimDto.getRenewExpirationTime()!=null ){
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                LocalDateTime localDateTime = LocalDateTime.parse(orderRenewTugeEsimDto.getRenewExpirationTime(), formatter);
+
+                // 현재 시간과의 차이 계산
+                long limitTimeMillis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();; // 이제 이 시간은 '진짜 만료' 10분 전 시간입니다.
+                long currentTimeMillis = System.currentTimeMillis();
+                long diffMillis = limitTimeMillis - currentTimeMillis;
+
+                if (diffMillis > 0) {
+                    // 10분 전 시점까지 아직 시간이 남은 경우
+                    long days = diffMillis / (24 * 60 * 60 * 1000);
+                    long hours = (diffMillis % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000);
+                    long minutes = (diffMillis % (60 * 60 * 1000)) / (60 * 1000);
+                    String displayTime = null;
+                    if (days > 0) {
+                        // 1일 이상 남았을 때: "1일 5시간 남음"
+                        displayTime = String.format("%d일 %d시간", days, hours);
+                    } else if (hours > 0) {
+                        // 1일 미만, 1시간 이상: "5시간 30분 남음"
+                        displayTime = String.format("%d시간 %d분", hours, minutes);
+                    } else {
+                        // 1시간 미만: "25분 남음"
+                        displayTime = String.format("%d분", minutes);
+                    }
+
+                    model.addAttribute("chargeBtnTxt","충전하기 (남은 시간: " + displayTime + ")");//충전버튼
+                    model.addAttribute("chargeYN","Y");//충전가능
+                    //model.addAttribute("deviceId",deviceId);//충전파라미터
+
+
+                    List<ApiPurchaseItemDto> apiPurchaseItemDtoList = apiPurchaseItemService.selectApiPurchaseItemListForTopupWithTuge(apiPurchaseItemDto);
+                    List<Map<String,String>> apiPurchaseItemList = new ArrayList<>();
+                    for(ApiPurchaseItemDto data : apiPurchaseItemDtoList){
+                        Map<String,String> apiPurchaseItem = new HashMap<>();
+                        apiPurchaseItem.put("channel_dataplan_id",data.getApiPurchaseItemProcutId());
+                        apiPurchaseItem.put("channel_dataplan_day",data.getApiPurchaseItemDays() +"일" );
+                        apiPurchaseItem.put("channel_dataplan_data",
+                                data.getApiPurchaseDataTotal().equals("Unlimited") ?"무제한":
+                                        (
+                                                (data.isApiPurchaseItemIsDaily()?"매일 ":"총 ") + data.getApiPurchaseDataTotal() +
+                                                        (data.getApiPurchaseSlowSpeed()!=null?" + 저속 무제한":"")
+                                        )
+                        );
+                        apiPurchaseItemList.add(apiPurchaseItem);
+                    }
+                    model.addAttribute("apiPurchaseItemList",apiPurchaseItemList);//충전 가능리스트
+
+
+
+                } else {
+                    model.addAttribute("chargeYN","N");//충전불가
+                }
+            } else {
+                model.addAttribute("chargeYN","N");//충전불가
+            }
+            model.addAttribute("end",orderData.get("orderStatus").toString().equals("EXPIRED"));
+
+            String[] apiPurchaseItemProcutIds = apiPurchaseItemDto.getApiPurchaseItemProcutId().split("-");
+
+            model.addAttribute("isDaily",apiPurchaseItemDto.isApiPurchaseItemIsDaily());//매일데이터 리셋 유부
+
+
+            if(apiPurchaseItemDto.isApiPurchaseItemIsDaily()){
+
+                if(apiPurchaseItemDto.getApiPurchaseItemPeriodType()==0){
+                    model.addAttribute("resetTxt","데이터 충전: 활성화 시점부터 24시간<br/>이용 일수: 활성화 시점부터 24시간");
+                }else {
+                    if (apiPurchaseItemDto.getApiPurchaseItemCardType() != null) {
+                        if(apiCardTypeDto!=null && apiCardTypeDto.getTimeZone()!=null){
+                            ZonedDateTime sourceTime = LocalDate.of(2024, 1, 1)
+                                    .atTime(LocalTime.MIN) // 00:00
+                                    .atZone(ZoneId.of(apiCardTypeDto.getTimeZone()));
+
+                            // 2. 한국 시간(UTC+9)으로 변환
+                            ZonedDateTime kstTime = sourceTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+
+                            // 3. 결과에서 시간만 추출
+                            LocalTime resultTime = kstTime.toLocalTime();
+                            String resetTime = resultTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+                            // 결과 출력 포맷 설정
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                            model.addAttribute("resetTxt","데이터 충전: "+resetTime+"(한국 시간)<br/>이용 일수: "+resetTime+"(한국 시간)");
+
+                        }
+                    }
+                }
+            }else{
+
+                if(apiPurchaseItemDto.getApiPurchaseItemPeriodType()==0){
+                    model.addAttribute("resetTxt","이용 일수: 활성화 시점부터 24시간");
+                }else {
+                    if (apiPurchaseItemDto.getApiPurchaseItemCardType() != null) {
+                        if(apiCardTypeDto!=null && apiCardTypeDto.getTimeZone()!=null){
+                            ZonedDateTime sourceTime = LocalDate.of(2024, 1, 1)
+                                    .atTime(LocalTime.MIN) // 00:00
+                                    .atZone(ZoneId.of(apiCardTypeDto.getTimeZone()));
+
+                            // 2. 한국 시간(UTC+9)으로 변환
+                            ZonedDateTime kstTime = sourceTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+
+                            // 3. 결과에서 시간만 추출
+                            LocalTime resultTime = kstTime.toLocalTime();
+                            String resetTime = resultTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+                            // 결과 출력 포맷 설정
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                            model.addAttribute("resetTxt","이용 일수: "+resetTime+"(한국 시간)");
+
+                        }
+                    }
+                }
+            }
+
+
+
+            if(apiPurchaseItemDto.isApiPurchaseItemIsDaily()){
+                String dailySize = apiPurchaseItemProcutIds[apiPurchaseItemProcutIds.length-1];
+                if(dailySize.split("/").length>1){
+                    dailySize = dailySize.split("/")[0];
+                }
+                if(dailySize.equals("U") || dailySize.equals("Unlimited") ){
+                    model.addAttribute("totalUsageTxt", "unlimited");
+                    model.addAttribute("totalUsage","unlimited");//현재 사이클 전체데이터
+                }else{
+                    //refuelingTotal 아직 안됨
+                    //double dataTotal = (double) esimMap.get("refuelingTotal");
+                    double dataTotal = 0d;
+                    if (dailySize.indexOf("GB") > -1) {
+                        // "GB"를 제거하고 숫자로 바꾼 뒤 1024를 곱함
+                        dataTotal = Double.parseDouble(dailySize.replace("GB", "")) * 1024;
+                    } else if (dailySize.indexOf("MB") > -1 || dailySize.indexOf("M") > -1) {
+                        // "MB"를 제거하고 숫자로 바꿈
+                        dataTotal = Double.parseDouble(dailySize.replace("MB", "").replace("M", ""));
+                    }
+
+                    if(dataTotal/1024>1){
+                        model.addAttribute("totalUsageTxt",(Math.round((dataTotal/1024) * 100) / 100.0) + "GB");
+                    }else{
+                        model.addAttribute("totalUsageTxt",(dataTotal) + "MB");
+                    }
+                    model.addAttribute("totalUsage",dataTotal);//현재 사이클 전체데이터
+                }
+            }else{
+                double dataTotal = esimMap.get("dataTotal")!=null?(Double.parseDouble(esimMap.get("dataTotal").toString())):0;
+                if(dataTotal/1024>1){
+                    model.addAttribute("totalUsageTxt",(Math.round((dataTotal/1024) * 100) / 100.0) + "GB");
+                }else{
+                    model.addAttribute("totalUsageTxt",(dataTotal) + "MB");
+                }
+                model.addAttribute("totalUsage",dataTotal);//현재 사이클 전체데이터
+            }
+            double usageData = 0D;
+            if(esimMap.get("dataUsage")!=null)
+                usageData = Double.parseDouble(esimMap.get("dataUsage").toString());
+            if(usageData/1024>1){
+                model.addAttribute("usageTxt",(Math.round((usageData/1024) * 100) / 100.0) + "GB");
+            }else{
+                model.addAttribute("usageTxt",(usageData) + "MB");
+            }
+            model.addAttribute("usage",usageData); //현재 사이클 사용량
+
+
+
+            model.addAttribute("iccid",iccid);
+        }else{
+            throw new Exception();
+        }
+
+        return "SUCCESS";
 
     }
 
@@ -350,7 +618,7 @@ public class TugeUtil {
         Map<String,Object> jsonObject = new HashMap<>();
         jsonObject.put("productCode",topupParam.get("apiPurchaseItemProcutId"));
         jsonObject.put("iccid",topupOrderDto.getEsimIccid());
-        jsonObject.put("channelOrderNo","renewOrderNo"+topupOrderDto.getId());
+        jsonObject.put("channelOrderNo","renewOrderNo_"+topupOrderDto.getId());
         jsonObject.put("idempotencyKey",requestId);
 
         esimApiIngStepLogsService.insertRest(headers,jsonObject, topupOrderDto.getOrderId());
@@ -367,7 +635,7 @@ public class TugeUtil {
 
 
 
-    private static HashMap getEsimStatus(String orderId, String iccid) throws Exception {
+    private static HashMap getEsimStatus(String orderId) throws Exception {
 
         String serviceName = "eSIMApi/v2/order/usage";
 

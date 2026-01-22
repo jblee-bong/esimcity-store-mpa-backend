@@ -579,6 +579,41 @@
     </insert>
 
 
+
+    <insert id="insertOrderRenewTugeEsim" parameterType="orderRenewTugeEsimDto" >
+        insert into TB_ORDER_RENEW_TUGE_ESIM(
+            order_id,
+            topup_order_id,
+            order_no,
+            iccid,
+            qr_code,
+            channel_order_no,
+            imsi,
+            msisdn,
+            activated_start_time,
+            activated_end_time,
+            latest_activation_time,
+            renew_expiration_time,
+            order_type
+        ) values (
+                     #{orderId},
+                     #{topupOrderId},
+                     #{orderNo},
+                     #{iccid},
+                     #{qrCode},
+                     #{channelOrderNo},
+                     #{imsi},
+                     #{msisdn},
+                     #{activatedStartTime},
+                     #{activatedEndTime},
+                     #{latestActivationTime},
+                     #{renewExpirationTime},
+                     #{orderType}
+                 )
+    </insert>
+
+
+
     <select id="selecTugeItemWithIccid" parameterType="orderTugeEsimDto" resultType="orderTugeEsimDto">
         select *
         from TB_ORDER_TUGE_ESIM o where iccid = #{iccid}
@@ -588,6 +623,17 @@
         select *
         from TB_ORDER_TUGE_ESIM o where order_no = #{orderNo}
     </select>
+
+    <select id="selectListOrderRenewTugeEsimList" parameterType="orderRenewTugeEsimDto" resultType="orderRenewTugeEsimDto">
+        select *
+        from TB_ORDER_RENEW_TUGE_ESIM o where order_id = #{orderId} order by id asc
+    </select>
+    <select id="selectOrderRenewTugeEsimByOrderNo" parameterType="orderRenewTugeEsimDto" resultType="orderRenewTugeEsimDto">
+        select *
+        from TB_ORDER_RENEW_TUGE_ESIM o where order_no = #{orderNo}
+    </select>
+
+
 
 
     <select id="selectOrderAiraloToken" resultType="string">

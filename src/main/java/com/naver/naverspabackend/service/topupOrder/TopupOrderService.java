@@ -18,4 +18,6 @@ public interface TopupOrderService {
     void updateTopupOrderNo(TopupOrderDto topupOrderDto);
 
     List<TopupOrderDto> findByEsimIccidSuccessCharge(TopupOrderDto topupOrderParam);
+
+    TopupOrderDto findById(TopupOrderDto param);
 }

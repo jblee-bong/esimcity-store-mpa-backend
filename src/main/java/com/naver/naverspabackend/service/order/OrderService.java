@@ -1,6 +1,7 @@
 package com.naver.naverspabackend.service.order;
 
 import com.naver.naverspabackend.dto.OrderDto;
+import com.naver.naverspabackend.dto.OrderRenewTugeEsimDto;
 import com.naver.naverspabackend.dto.OrderRetransMailInfoDto;
 import com.naver.naverspabackend.dto.OrderTugeEsimDto;
 import com.naver.naverspabackend.response.ApiResult;
@@ -33,6 +34,7 @@ public interface OrderService {
 
     ResponseEntity<Map<String, String>> updateTugeItem(Map<String, Object> item);
 
+
     OrderTugeEsimDto selecTugeItemWithIccid(OrderTugeEsimDto param);
 
     Map<String, String> insertReTransMailInfo(Map<String, Object> params);
@@ -40,4 +42,10 @@ public interface OrderService {
     List<OrderRetransMailInfoDto> fetchRetransMailInfoDtoAll();
 
     void updateRetransMailInfoComfirm(OrderRetransMailInfoDto orderRetransMailInfoDto);
+
+    OrderTugeEsimDto selectListOrderTugeEsimByOrderNo(OrderTugeEsimDto orderTugeEsimDtoParam);
+
+    List<OrderRenewTugeEsimDto> selectListOrderRenewTugeEsimList(OrderRenewTugeEsimDto orderRenewTugeEsimParam);
+
+    OrderRenewTugeEsimDto selectOrderRenewTugeEsimByOrderNo(OrderRenewTugeEsimDto orderRenewTugeEsimDtoParam);
 }

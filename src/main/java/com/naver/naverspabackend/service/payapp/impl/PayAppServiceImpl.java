@@ -251,8 +251,6 @@ public class PayAppServiceImpl implements PayAppService {
 
     @Override
     public String captureOrder(Map<String,Object> params) {
-
-
         TopupOrderDto param = new TopupOrderDto();
         param.setTokenId(params.get("var1").toString());
         TopupOrderDto topupOrderDto = topupOrderService.findByTokenId(param);
@@ -314,10 +312,10 @@ public class PayAppServiceImpl implements PayAppService {
                     HashMap<String,Object> tugeData = (HashMap<String, Object>) resultMap.get("data");
                     topupOrderDto.setTopupOrderNo(tugeData.get("orderNo").toString());
                     topupOrderService.updateTopupOrderNo(topupOrderDto);
-                    topupOrderDto.setTopupStatus(1);
+                    topupOrderDto.setTopupStatus(3);
                     topupOrderService.updateTopupStatus(topupOrderDto);
-                    transKakao(kakaoParameters,kakaoSuccessKey,storeDto,orderDto,topupOrderDto.getShippingTel());
-                    System.out.println("충전완료");
+                    //transKakao(kakaoParameters,kakaoSuccessKey,storeDto,orderDto,topupOrderDto.getShippingTel());
+                    System.out.println("충전대기");
                     return "SUCCESS";
                 }
             }

@@ -19,6 +19,8 @@
         <typeAlias type="com.naver.naverspabackend.dto.KakaoContentsDto" alias="kakaoContentsDto"/>
         <typeAlias type="com.naver.naverspabackend.dto.OrderWorldmoveEsimDto" alias="orderWorldmoveEsimDto"/>
         <typeAlias type="com.naver.naverspabackend.dto.OrderTugeEsimDto" alias="orderTugeEsimDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.OrderRenewTugeEsimDto" alias="orderRenewTugeEsimDto"/>
+
 
         <typeAlias type="com.naver.naverspabackend.dto.MatchInfoDto" alias="matchInfoDto"/>
         <typeAlias type="com.naver.naverspabackend.dto.KakaoDto" alias="kakaoDto"/>

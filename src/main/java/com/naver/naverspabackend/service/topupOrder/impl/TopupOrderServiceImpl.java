@@ -46,4 +46,9 @@ public class TopupOrderServiceImpl implements TopupOrderService {
     public List<TopupOrderDto> findByEsimIccidSuccessCharge(TopupOrderDto topupOrderParam) {
         return topupOrderMapper.findByEsimIccidSuccessCharge(topupOrderParam);
     }
+
+    @Override
+    public TopupOrderDto findById(TopupOrderDto param) {
+        return topupOrderMapper.findById(param);
+    }
 }

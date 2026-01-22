@@ -110,10 +110,8 @@ public class EsimAccessUtil {
             model.addAttribute("usage",dataUsageMb);
             model.addAttribute("iccid",iccid);
             model.addAttribute("isDaily",isDaily);//매일데이터 리셋 유부
-            if(isDaily){
-                model.addAttribute("resetAt","");//종료일 - 매일일경우 리셋일
-                model.addAttribute("resetTxt",MakeResetTimeUtil.makeTsimEsimAccessText(apiPurchaseItemDto));//종료일 - 매일일경우 리셋일
-            }
+            model.addAttribute("resetTxt",MakeResetTimeUtil.makeTsimEsimAccessText(apiPurchaseItemDto));//종료일 - 매일일경우 리셋일
+
             if((esimStatus.get("esimStatus").toString().equals("IN_USE") || esimStatus.get("esimStatus").toString().equals("USED_UP"))
                     && esimStatus.get("activateTime")!=null && !esimStatus.get("activateTime").toString().equals("")){
 
@@ -213,8 +211,6 @@ public class EsimAccessUtil {
                 }
             }
 
-            //TODO 충전기능 오픈전까지 충전불가 아래삭제
-            //model.addAttribute("chargeYN","N");//충전불가
         }else{
             throw new Exception();
         }
@@ -436,8 +432,6 @@ public class EsimAccessUtil {
                 }
             }
 
-            //TODO 충전기능 오픈전까지 충전불가 아래삭제
-            model.addAttribute("chargeYN","N");//충전불가
         }else{
             throw new Exception();
         }

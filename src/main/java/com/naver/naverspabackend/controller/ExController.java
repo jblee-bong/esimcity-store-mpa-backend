@@ -201,14 +201,36 @@ public class ExController {
 
 
 
-            if(topupOrderDtoList.size()>0){
-                productOption += "<br/><br/>(충전 내역)";
-                for(TopupOrderDto topupOrderDto:topupOrderDtoList){
-                    productOption += ("<br/>" + topupOrderDto.getProductOption());
+            if(type.equals(ApiType.TUGE.name())){
+                //TUGE일경우 활성화된, 충전내역을 표기해줘야함.
+                if(!model.getAttribute("crrentActivity").equals("main")){
+                    productOption =  "<p style=\"color: #b3b3b3;\">"+ productOption+"</p>";
+                }else{
+                    productOption =  "<p>"+ productOption+"</p>";
+                }
+
+                if(topupOrderDtoList.size()>0){
+                    productOption += "<br/>(충전 내역)<br/>";
+                    for(TopupOrderDto topupOrderDto:topupOrderDtoList){
+                        if(topupOrderDto.getTopupOrderNo().equals(model.getAttribute("crrentActivity"))){
+                            productOption += ("<p>"+topupOrderDto.getProductOption()+"</p>");
+                        }else{
+                            productOption += ("<p style=\"color: #b3b3b3;\">"+topupOrderDto.getProductOption()+"</p>");
+                        }
+                    }
+                }
+
+            }else{
+                if(topupOrderDtoList.size()>0){
+                    productOption += "<br/><br/>(충전 내역)";
+                    for(TopupOrderDto topupOrderDto:topupOrderDtoList){
+                        productOption += ("<br/>" + topupOrderDto.getProductOption());
+                    }
                 }
             }
-
             model.addAttribute("title",productOption);
+
+
             return active + "/" + type;
         }catch (Exception e){
             e.printStackTrace();
