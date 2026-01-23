@@ -165,3 +165,15 @@ payApp:
   kakaoSuccessKey: ESIM_CHARGE_SUCCESS
   kakaoFailKey: ESIM_CHARGE_FAIL
   kakaoFail2Key: ESIM_CHARGE_FAIL2
+
+payup:
+  merchantId: esimcity
+  #redirectUrl: http://192.168.219.102:8080/external/payup/success #testURL
+  #baseUrl: https://standard.testpayup.co.kr #testURL
+  redirectUrl: https://www.esimcity.co.kr/api/external/payup/success #운영URL
+  baseUrl: https://standard.payup.co.kr #운영URL
+  authTokenURI: /auth/v1/accessToken
+  comfirmURI: /api/v1/payment
+  cancelURI: /api/v1/cancel
+  apiKey: 47d91df9012f4213b7d8acfb85e8e70a
+

@@ -8,6 +8,7 @@ import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
 import com.naver.naverspabackend.service.order.OrderService;
 import com.naver.naverspabackend.service.papal.PaypalService;
 import com.naver.naverspabackend.service.payapp.PayAppService;
+import com.naver.naverspabackend.service.payup.PayUpService;
 import com.naver.naverspabackend.service.portone.PortOneService;
 import com.naver.naverspabackend.service.store.StoreService;
 import com.naver.naverspabackend.util.*;
@@ -45,6 +46,11 @@ public class ExternalController {
 
     @Autowired
     private PortOneService portOneService;
+
+
+    @Autowired
+    private PayUpService payUpService;
+
     @Value("${spring.profiles.active}")
     private String active;
     @Value("${paypal.comfirmUrl}")
@@ -200,5 +206,14 @@ public class ExternalController {
     public String payappCompletePage(Model model,  HttpServletResponse response) throws Exception {
 
         return active + "/payappSuccess";
+    }
+
+    @PostMapping("/payup/success")
+    public String paypalSuccess(Model model, @RequestParam Map<String, String> data ,HttpServletResponse response) {
+        payUpService.captureOrder(model,data.get("transactionId"),data.get("orderNumber"),data.get("amount"));
+        if(model.getAttribute("topupType")!=null && model.getAttribute("topupType").equals(ApiType.TUGE.name())){
+            return active + "/payappSuccess";
+        }
+        return active +  "/paypalSuccess"; // confirm 페이지 렌더링
     }
 }

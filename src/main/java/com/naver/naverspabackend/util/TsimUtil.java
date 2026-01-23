@@ -3,10 +3,12 @@ package com.naver.naverspabackend.util;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.naver.naverspabackend.dto.ApiPurchaseItemDto;
+import com.naver.naverspabackend.dto.EsimPriceDto;
 import com.naver.naverspabackend.dto.TopupOrderDto;
 import com.naver.naverspabackend.enums.ApiType;
 import com.naver.naverspabackend.enums.EsimApiIngSteLogsType;
 import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
+import com.naver.naverspabackend.service.esimPrice.EsimPriceService;
 import com.naver.naverspabackend.service.esimapiingsteplogs.EsimApiIngStepLogsService;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.http.*;
@@ -33,14 +35,18 @@ public class TsimUtil {
 
     public static EsimApiIngStepLogsService esimApiIngStepLogsService;
 
+    public static EsimPriceService esimPriceService;
+
     public static ApiPurchaseItemService apiPurchaseItemService;
-    public TsimUtil(ApiPurchaseItemService apiPurchaseItemService, String tsimAccount, String tsimSecret, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService, String active){
+
+    public TsimUtil(ApiPurchaseItemService apiPurchaseItemService, String tsimAccount, String tsimSecret, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService, EsimPriceService esimPriceService, String active){
         this.tsimAccount = tsimAccount;
         this.tsimSecret = tsimSecret;
         this.baseUrl = baseUrl;
         this.esimApiIngStepLogsService = esimApiIngStepLogsService;
         this.active = active;
         this.apiPurchaseItemService = apiPurchaseItemService;
+        this.esimPriceService = esimPriceService;
     }
 
 
@@ -184,11 +190,39 @@ public class TsimUtil {
                     param.setApiPurchaseItemType(ApiType.TSIM.name());
                     List<ApiPurchaseItemDto> apiPurchaseItemDtoList = apiPurchaseItemService.selectApiPurchaseItemListForTopup(param);
                     List<Map<String,String>> apiPurchaseItemList = new ArrayList<>();
+
+                    EsimPriceDto esimPriceParam = new EsimPriceDto();
+                    esimPriceParam.setType(ApiType.TSIM.name());
+                    EsimPriceDto esimPriceDto = esimPriceService.findById(esimPriceParam);
+                    Double weight1 = esimPriceDto.getWeight1();
+                    Double weight2 = esimPriceDto.getWeight2();
+                    Double weight3 = esimPriceDto.getWeight3();
+                    Double weight4 = esimPriceDto.getWeight4();
+                    Double weight5 = esimPriceDto.getWeight5();
+
                     for(ApiPurchaseItemDto apiPurchaseItemDto : apiPurchaseItemDtoList){
+
+                        Double krwPrice = Double.valueOf(apiPurchaseItemDto.getApiPurchaseKrwPrice());
+                        double apiPrice =  krwPrice;
+                        double priceWeight = 0;
+                        //금액으로인한 가중치
+                        if(apiPrice<= 5000){
+                            priceWeight = weight1;
+                        }else if(apiPrice<= 10000){
+                            priceWeight = weight2;
+                        }else if(apiPrice<= 15000){
+                            priceWeight = weight3;
+                        }else if(apiPrice<= 20000){
+                            priceWeight = weight4;
+                        }else{
+                            priceWeight = weight5;
+                        }
+                        double price = Math.round(apiPrice * priceWeight / 100.0) * 100;
+
                         Map<String,String> apiPurchaseItem = new HashMap<>();
                         apiPurchaseItem.put("channel_dataplan_id",apiPurchaseItemDto.getApiPurchaseItemProcutId());
                         apiPurchaseItem.put("channel_dataplan_day",apiPurchaseItemDto.getApiPurchaseItemDays() +"일" );
-                        apiPurchaseItem.put("channel_dataplan_data",apiPurchaseItemDto.getApiPurchaseDataTotal() );
+                        apiPurchaseItem.put("channel_dataplan_data",apiPurchaseItemDto.getApiPurchaseDataTotal()  + " 저속 무제한" + " (" + ( (int) Math.round(price) ) + "원)" );
                         apiPurchaseItemList.add(apiPurchaseItem);
                     }
                     model.addAttribute("apiPurchaseItemList",apiPurchaseItemList);//충전 가능리스트
@@ -265,7 +299,7 @@ public class TsimUtil {
 
 
                 //TODO 충전기능 오픈전까지 충전불가 아래삭제
-                model.addAttribute("chargeYN","N");//충전불가
+                //model.addAttribute("chargeYN","N");//충전불가
             }
         }else{
             throw new Exception();
@@ -368,6 +402,7 @@ public class TsimUtil {
         Map<String,Object> jsonObject = new HashMap<>();
         jsonObject.put("device_ids",topupParam.get("deviceId"));
         jsonObject.put("channel_dataplan_id",topupParam.get("apiPurchaseItemProcutId"));
+        jsonObject.put("is_clear","1"); //1: 기존요금제 즉시정지, 0: 기존요금제 종료후 바로 이어받음
 
         esimApiIngStepLogsService.insertRest(headers,jsonObject, topupOrderDto.getOrderId());
 

@@ -9,6 +9,7 @@ import com.naver.naverspabackend.enums.EsimApiIngSteLogsType;
 import com.naver.naverspabackend.security.TugeRedisRepository;
 import com.naver.naverspabackend.security.token.TugeRedisToken;
 import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
+import com.naver.naverspabackend.service.esimPrice.EsimPriceService;
 import com.naver.naverspabackend.service.esimapiingsteplogs.EsimApiIngStepLogsService;
 import com.naver.naverspabackend.service.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +53,10 @@ public class TugeUtil {
 
     public static ApiPurchaseItemService apiPurchaseItemService;
 
+    public static EsimPriceService esimPriceService;
 
     public static OrderService orderService;
-    public TugeUtil(String accountId,String signKey, String secretkey, String vector, String version, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService, TugeRedisRepository tugeRedisRepository,OrderService orderService,ApiPurchaseItemService apiPurchaseItemService,String active){
+    public TugeUtil(String accountId,String signKey, String secretkey, String vector, String version, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService, TugeRedisRepository tugeRedisRepository,OrderService orderService,ApiPurchaseItemService apiPurchaseItemService,EsimPriceService esimPriceService,String active){
         this.accountId = accountId;
         this.signKey = signKey;
         this.secretkey = secretkey;
@@ -66,6 +68,7 @@ public class TugeUtil {
         this.orderService = orderService;
         this.apiPurchaseItemService = apiPurchaseItemService;
         this.active = active;
+        this.esimPriceService = esimPriceService;
 
     }
 
@@ -193,8 +196,7 @@ public class TugeUtil {
                         apiPurchaseItem.put("channel_dataplan_data",
                                 data.getApiPurchaseDataTotal().equals("Unlimited") ?"무제한":
                                         (
-                                            (data.isApiPurchaseItemIsDaily()?"매일 ":"총 ") + data.getApiPurchaseDataTotal() +
-                                            (data.getApiPurchaseSlowSpeed()!=null?" + 저속 무제한":"")
+                                            (data.isApiPurchaseItemIsDaily()?"매일 ":"총 ") + data.getApiPurchaseDataTotal()
                                     )
                         );
                         apiPurchaseItemList.add(apiPurchaseItem);
@@ -405,16 +407,42 @@ public class TugeUtil {
 
                     List<ApiPurchaseItemDto> apiPurchaseItemDtoList = apiPurchaseItemService.selectApiPurchaseItemListForTopupWithTuge(apiPurchaseItemDto);
                     List<Map<String,String>> apiPurchaseItemList = new ArrayList<>();
+
+                    EsimPriceDto esimPriceParam = new EsimPriceDto();
+                    esimPriceParam.setType(ApiType.TUGE.name());
+                    EsimPriceDto esimPriceDto = esimPriceService.findById(esimPriceParam);
+                    Double weight1 = esimPriceDto.getWeight1();
+                    Double weight2 = esimPriceDto.getWeight2();
+                    Double weight3 = esimPriceDto.getWeight3();
+                    Double weight4 = esimPriceDto.getWeight4();
+                    Double weight5 = esimPriceDto.getWeight5();
+
                     for(ApiPurchaseItemDto data : apiPurchaseItemDtoList){
+                        Double krwPrice = Double.valueOf(apiPurchaseItemDto.getApiPurchaseKrwPrice());
+                        double apiPrice =  krwPrice;
+                        double priceWeight = 0;
+                        //금액으로인한 가중치
+                        if(apiPrice<= 5000){
+                            priceWeight = weight1;
+                        }else if(apiPrice<= 10000){
+                            priceWeight = weight2;
+                        }else if(apiPrice<= 15000){
+                            priceWeight = weight3;
+                        }else if(apiPrice<= 20000){
+                            priceWeight = weight4;
+                        }else{
+                            priceWeight = weight5;
+                        }
+                        double price = Math.round(apiPrice * priceWeight / 100.0) * 100;
+
                         Map<String,String> apiPurchaseItem = new HashMap<>();
                         apiPurchaseItem.put("channel_dataplan_id",data.getApiPurchaseItemProcutId());
                         apiPurchaseItem.put("channel_dataplan_day",data.getApiPurchaseItemDays() +"일" );
                         apiPurchaseItem.put("channel_dataplan_data",
-                                data.getApiPurchaseDataTotal().equals("Unlimited") ?"무제한":
+                                (data.getApiPurchaseDataTotal().equals("Unlimited") ?"무제한":
                                         (
-                                                (data.isApiPurchaseItemIsDaily()?"매일 ":"총 ") + data.getApiPurchaseDataTotal() +
-                                                        (data.getApiPurchaseSlowSpeed()!=null?" + 저속 무제한":"")
-                                        )
+                                                (data.isApiPurchaseItemIsDaily()?"매일 ":"총 ") + data.getApiPurchaseDataTotal()
+                                        ))   + (" (" + ( (int) Math.round(price) ) + "원)")
                         );
                         apiPurchaseItemList.add(apiPurchaseItem);
                     }

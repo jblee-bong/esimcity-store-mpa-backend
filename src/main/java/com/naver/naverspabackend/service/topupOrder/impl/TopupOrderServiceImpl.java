@@ -51,4 +51,10 @@ public class TopupOrderServiceImpl implements TopupOrderService {
     public TopupOrderDto findById(TopupOrderDto param) {
         return topupOrderMapper.findById(param);
     }
+
+    @Override
+    public void updateTransactionId(TopupOrderDto topupOrderDto) {
+        topupOrderMapper.updateTransactionId(topupOrderDto);
+
+    }
 }

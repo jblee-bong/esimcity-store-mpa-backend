@@ -5,6 +5,7 @@ import com.naver.naverspabackend.dto.StoreDto;
 import com.naver.naverspabackend.mybatis.mapper.OrderMapper;
 import com.naver.naverspabackend.security.TugeRedisRepository;
 import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
+import com.naver.naverspabackend.service.esimPrice.EsimPriceService;
 import com.naver.naverspabackend.service.esimapiingsteplogs.EsimApiIngStepLogsService;
 import com.naver.naverspabackend.service.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +84,14 @@ public class EsimUtil {
     }
 
 
+    static EsimPriceService esimPriceService;
+    @Autowired
+    public void setEsimPriceService(EsimPriceService esimPriceService) {
+        this.esimPriceService = esimPriceService;
+    }
+
+
+
     static OrderService orderService;
     @Autowired
     public void setOrderService(OrderService orderService) {
@@ -116,11 +125,11 @@ public class EsimUtil {
 
 
     public static TsimUtil getTsimUtil(ApiPurchaseItemService apiPurchaseItemService, StoreDto storeDto, String active)  {
-        return new TsimUtil(apiPurchaseItemService,storeDto.getEsimApiTsimAccount(), storeDto.getEsimApiTsimSecret(), tsimBaseUri, esimApiIngStepLogsService, active);
+        return new TsimUtil(apiPurchaseItemService,storeDto.getEsimApiTsimAccount(), storeDto.getEsimApiTsimSecret(), tsimBaseUri, esimApiIngStepLogsService,esimPriceService, active);
     }
 
     public static TugeUtil getTugeUtil(StoreDto storeDto, String active)  {
-        return new TugeUtil(storeDto.getEsimApiTugeAccount(), storeDto.getEsimApiTugeSign(), storeDto.getEsimApiTugeSecret(),storeDto.getEsimApiTugeVector(),tugeVersion,tugeBaseUrl, esimApiIngStepLogsService,tugeRedisRepository,orderService,apiPurchaseItemService, active);
+        return new TugeUtil(storeDto.getEsimApiTugeAccount(), storeDto.getEsimApiTugeSign(), storeDto.getEsimApiTugeSecret(),storeDto.getEsimApiTugeVector(),tugeVersion,tugeBaseUrl, esimApiIngStepLogsService,tugeRedisRepository,orderService,apiPurchaseItemService,esimPriceService, active);
     }
 
     public static WorldMoveUtil getWorldMoveUtil(StoreDto storeDto)  {
@@ -136,7 +145,7 @@ public class EsimUtil {
     }
 
     public static EsimAccessUtil getEsimAccess(StoreDto storeDto)  {
-        return new EsimAccessUtil(storeDto.getEsimApiEsimaccessClientId(), storeDto.getEsimApiEsimaccessClientSecret(), esimAccessBaseUrl, esimApiIngStepLogsService, apiPurchaseItemService,orderMapper);
+        return new EsimAccessUtil(storeDto.getEsimApiEsimaccessClientId(), storeDto.getEsimApiEsimaccessClientSecret(), esimAccessBaseUrl, esimApiIngStepLogsService, apiPurchaseItemService,orderMapper,esimPriceService);
     }
 
 }

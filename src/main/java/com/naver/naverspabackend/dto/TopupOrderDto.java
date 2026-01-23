@@ -39,4 +39,6 @@ public class TopupOrderDto extends BaseDto {
 
 
     private String topupOrderNo; //충전주문번호
+    private String topupTransactionId; //충전트랜잭션ID
+
 }

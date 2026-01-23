@@ -89,7 +89,8 @@
             api_purchase_apn,
             api_purchase_is_charge,
             api_purchase_item_card_type,
-            api_purchase_item_period_type
+            api_purchase_item_period_type,
+            api_purchase_operator
         )VALUES
              (
                #{apiPurchaseItemProcutId},
@@ -111,7 +112,8 @@
                #{apiPurchaseApn},
                #{apiPurchaseIsCharge},
                #{apiPurchaseItemCardType},
-               #{apiPurchaseItemPeriodType}
+               #{apiPurchaseItemPeriodType},
+               #{apiPurchaseOperator}
              );
     </insert>
 

@@ -45,6 +45,8 @@ public class ApiPurchaseItemDto extends BaseDto {
 
     private boolean apiPurchaseIsCharge;//충전가능상품유무
 
+    private String apiPurchaseOperator; // 통신사
+
 
     private String apiPurchaseItemCardType; // 카드타입
     private Integer apiPurchaseItemPeriodType; // 일자계산타입 0: 활성화후 24시간, 1: 카드타입별 타임존 00시

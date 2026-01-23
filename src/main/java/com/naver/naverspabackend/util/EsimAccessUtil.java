@@ -3,12 +3,14 @@ package com.naver.naverspabackend.util;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.naver.naverspabackend.dto.ApiPurchaseItemDto;
+import com.naver.naverspabackend.dto.EsimPriceDto;
 import com.naver.naverspabackend.dto.OrderDto;
 import com.naver.naverspabackend.dto.TopupOrderDto;
 import com.naver.naverspabackend.enums.ApiType;
 import com.naver.naverspabackend.enums.EsimApiIngSteLogsType;
 import com.naver.naverspabackend.mybatis.mapper.OrderMapper;
 import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
+import com.naver.naverspabackend.service.esimPrice.EsimPriceService;
 import com.naver.naverspabackend.service.esimapiingsteplogs.EsimApiIngStepLogsService;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.http.*;
@@ -41,13 +43,16 @@ public class EsimAccessUtil {
 
     public static ApiPurchaseItemService apiPurchaseItemService;
     public static OrderMapper orderMapper;
-    public EsimAccessUtil(String clientId, String clientSecret, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService,ApiPurchaseItemService apiPurchaseItemService, OrderMapper orderMapper){
+    public static EsimPriceService esimPriceService;
+
+    public EsimAccessUtil(String clientId, String clientSecret, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService,ApiPurchaseItemService apiPurchaseItemService, OrderMapper orderMapper, EsimPriceService esimPriceService){
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.baseUrl = baseUrl;
         this.esimApiIngStepLogsService = esimApiIngStepLogsService;
         this.apiPurchaseItemService = apiPurchaseItemService;
         this.orderMapper = orderMapper;
+        this.esimPriceService = esimPriceService;
     }
 
 
@@ -153,8 +158,38 @@ public class EsimAccessUtil {
                     List<Map<String,Object>> topupList  = getEsimTopupPackages(iccid,apiPurchaseItemDto.getApiPurchaseCoverDomainCode(), null);
 
                     List<Map<String,String>> apiPurchaseItemList = new ArrayList<>();
+
+                    EsimPriceDto esimPriceParam = new EsimPriceDto();
+                    esimPriceParam.setType(ApiType.ESIMACCESS.name());
+                    EsimPriceDto esimPriceDto = esimPriceService.findById(esimPriceParam);
+                    Double weight1 = esimPriceDto.getWeight1();
+                    Double weight2 = esimPriceDto.getWeight2();
+                    Double weight3 = esimPriceDto.getWeight3();
+                    Double weight4 = esimPriceDto.getWeight4();
+                    Double weight5 = esimPriceDto.getWeight5();
+
+                    Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
+
                     //총데이터만 충전가능. 충전시 기존거 + 새로운거로 데이터 확인가능
                     for(Map<String,Object> topup : topupList){
+                        String usdPrice = topup.get("price").toString();//달러
+                        Double krwPrice = echangeRate *(Double.parseDouble(usdPrice)/10000); //만을나누는이유는 esimaccess는 달러에 10000 곱해서 줌
+                        double apiPrice =  krwPrice;
+                        double priceWeight = 0;
+                        //금액으로인한 가중치
+                        if(apiPrice<= 5000){
+                            priceWeight = weight1;
+                        }else if(apiPrice<= 10000){
+                            priceWeight = weight2;
+                        }else if(apiPrice<= 15000){
+                            priceWeight = weight3;
+                        }else if(apiPrice<= 20000){
+                            priceWeight = weight4;
+                        }else{
+                            priceWeight = weight5;
+                        }
+                        double price = Math.round(apiPrice * priceWeight / 100.0) * 100;
+
                         Map<String,String> apiPurchaseItem = new HashMap<>();
                         apiPurchaseItem.put("channel_dataplan_id",topup.get("packageCode").toString() + "|^|"+topup.get("volume").toString()+ "|^|"+topup.get("price").toString()+ "|^|"+topup.get("duration").toString());
                         apiPurchaseItem.put("channel_dataplan_day",((Integer) topup.get("duration")) +"일");
@@ -164,11 +199,11 @@ public class EsimAccessUtil {
                         if (chargeBytes >= gbBoundary) {
                             // GB로 변환 (소수점 둘째자리까지)
                             double gbValue = (double) chargeBytes / gbBoundary;
-                            apiPurchaseItem.put("channel_dataplan_data",String.format("%.2f GB", gbValue) );
+                            apiPurchaseItem.put("channel_dataplan_data",(String.format("%.2f GB", gbValue))  + " (" + ( (int) Math.round(price) ) + "원)" );
                         } else {
                             // MB로 변환 (소수점 둘째자리까지)
                             double mbValue = (double) chargeBytes / (1024 * 1024);
-                            apiPurchaseItem.put("channel_dataplan_data",String.format("%.2f MB", mbValue) );
+                            apiPurchaseItem.put("channel_dataplan_data",(String.format("%.2f MB", mbValue))  + " (" + ( (int) Math.round(price) ) + "원)" );
                         }
 
                         apiPurchaseItemList.add(apiPurchaseItem);

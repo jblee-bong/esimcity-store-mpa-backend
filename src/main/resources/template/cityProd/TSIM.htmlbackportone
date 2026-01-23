@@ -9,9 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="/assets/img/esimcity/favicon.svg">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <!--<script src="https://standard.testpayup.co.kr/assets/js/payup_standard_dev-1.0.js "></script>  테스트서버-->
-  <script src="https://standard.payup.co.kr/assets/js/payup_standard-1.0.js "></script> <!-- 운영서버-->
-
+  <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
   <style>
     * {
       margin: 0;
@@ -775,458 +773,449 @@
   </style>
 </head>
 <body>
-<header class="top-header">
-  <div class="container">
-    <div class="header-inner">
-      <a th:href="${esimLogoLink}" class="logo-link">
-        <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="brand-logo">
-      </a>
+  <header class="top-header">
+    <div class="container">
+      <div class="header-inner">
+        <a th:href="${esimLogoLink}" class="logo-link">
+          <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="brand-logo">
+        </a>
+      </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<section class="status-alert" th:if="${end}">
-  <div class="container">
-    <div class="status-alert-content">
-      <svg class="status-icon" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-      </svg>
-      <span>서비스가 만료되었습니다</span>
+  <section class="status-alert" th:if="${end}">
+    <div class="container">
+      <div class="status-alert-content">
+        <svg class="status-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        <span>서비스가 만료되었습니다</span>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<main>
-  <div class="container">
-    <section class="hero-section">
-      <h1 class="hero-title">데이터 사용량</h1>
-      <p class="hero-subtitle">현재 eSIM 사용 현황을 확인하세요</p>
-    </section>
+  <main>
+    <div class="container">
+      <section class="hero-section">
+        <h1 class="hero-title">데이터 사용량</h1>
+        <p class="hero-subtitle">현재 eSIM 사용 현황을 확인하세요</p>
+      </section>
 
-    <section class="usage-card-wrapper">
-      <div class="usage-card">
-        <div class="usage-header">
-          <span class="usage-label" >데이터</span>
-          <span class="usage-total" th:text="${totalUsageTxt}"></span>
-        </div>
-        <div class="usage-header-reset">
-          <span class="usage-charge" th:utext="${resetTxt}"></span>
-        </div>
-
-        <div class="usage-visual">
-          <div class="usage-stats">
-            <div class="usage-current">
-              <div class="usage-current-label">사용량</div>
-              <div class="usage-current-value" id="usage-amount" th:text="${usageTxt}">0 MB</div>
+      <section class="usage-card-wrapper">
+        <div class="usage-card">
+          <div class="usage-header">
+            <span class="usage-label" >데이터</span>
+            <span class="usage-total" th:text="${totalUsageTxt}"></span>
+          </div>
+          <div class="usage-header-reset">
+            <span class="usage-charge" th:utext="${resetTxt}"></span>
+          </div>
+          
+          <div class="usage-visual">
+            <div class="usage-stats">
+              <div class="usage-current">
+                <div class="usage-current-label">사용량</div>
+                <div class="usage-current-value" id="usage-amount" th:text="${usageTxt}">0 MB</div>
+              </div>
+              <div class="usage-remaining">
+                <div class="usage-remaining-label">남은 용량</div>
+                <div class="usage-remaining-value" id="remaining-amount">-</div>
+              </div>
             </div>
-            <div class="usage-remaining">
-              <div class="usage-remaining-label">남은 용량</div>
-              <div class="usage-remaining-value" id="remaining-amount">-</div>
+            <div class="usage-bar-container">
+              <div class="usage-bar" id="usage-bar" style="width: 0%"></div>
+            </div>
+            <div class="usage-percentage-text">
+              사용률: <span class="usage-percentage-value" id="usage-percentage">0%</span>
             </div>
           </div>
-          <div class="usage-bar-container">
-            <div class="usage-bar" id="usage-bar" style="width: 0%"></div>
+        </div>
+      </section>
+
+      <section class="info-section">
+        <div class="info-cards-grid">
+          <div class="info-card info-card-full">
+            <div class="info-card-title">구매상품</div>
+            <div class="info-card-value" th:text="${title}"></div>
           </div>
-          <div class="usage-percentage-text">
-            사용률: <span class="usage-percentage-value" id="usage-percentage">0%</span>
+
+          <div class="info-card info-card-full">
+            <div class="info-card-title">사용기간(한국시간)</div>
+            <div class="info-card-value" th:if="${useStartDate != null && !#strings.isEmpty(useStartDate)}"
+                 th:text="${useStartDate + ' ~ ' + useEndDate}"></div>
+            <div class="info-card-value" th:unless="${useStartDate != null && !#strings.isEmpty(useStartDate)}">
+              활성화 전
+            </div>
+          </div>
+
+
+          <div class="info-card info-card-full">
+            <div class="info-card-title">ICCID 번호</div>
+            <div class="info-card-value" th:text="${iccid}"></div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="info-section">
-      <div class="info-cards-grid">
-        <div class="info-card info-card-full">
-          <div class="info-card-title">구매상품</div>
-          <div class="info-card-value" th:utext="${title}"></div>
+      <section class="cta-wrapper" th:if="${chargeYN!='NONE'}">
+        <button th:if="${chargeYN=='Y'}" id="chargeBtn" class="cta-button" th:text="${chargeBtnTxt}" style="width:100%"></button>
+        <a th:if="${chargeYN=='N'}" class="cta-button-none" style="width:100%">충전 불가 상품</a>
+      </section>
+      <section class="cta-wrapper">
+        <a th:href="${esimQuestLink}" class="cta-button">고객 지원 문의하기</a>
+      </section>
+    </div>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="footer-logo">
+        <p class="footer-tagline">Connect Anywhere, Anytime</p>
+        <div class="footer-divider"></div>
+        <div class="footer-bottom">
+          <p class="footer-copyright" th:text="${esimCopyWrite}"></p>
         </div>
-
-        <div class="info-card info-card-full">
-          <div class="info-card-title">사용기간(한국시간)</div>
-          <div class="info-card-value" th:if="${useStartDate != null && !#strings.isEmpty(useStartDate)}"
-               th:text="${useStartDate + ' ~ ' + useEndDate}"></div>
-          <div class="info-card-value" th:unless="${useStartDate != null && !#strings.isEmpty(useStartDate)}">
-            활성화 전
-          </div>
-        </div>
-
-
-        <div class="info-card info-card-full">
-          <div class="info-card-title">ICCID 번호</div>
-          <div class="info-card-value" th:text="${iccid}"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="cta-wrapper" th:if="${chargeYN!='NONE'}">
-      <button th:if="${chargeYN=='Y'}" id="chargeBtn" class="cta-button" th:text="${chargeBtnTxt}" style="width:100%"></button>
-      <a th:if="${chargeYN=='N'}" class="cta-button-none" style="width:100%">충전 불가 상품</a>
-    </section>
-    <section class="cta-wrapper">
-      <a th:href="${esimQuestLink}" class="cta-button">고객 지원 문의하기</a>
-    </section>
-  </div>
-</main>
-
-<footer class="main-footer">
-  <div class="container">
-    <div class="footer-inner">
-      <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="footer-logo">
-      <p class="footer-tagline">Connect Anywhere, Anytime</p>
-      <div class="footer-divider"></div>
-      <div class="footer-bottom">
-        <p class="footer-copyright" th:text="${esimCopyWrite}"></p>
       </div>
     </div>
-  </div>
-</footer>
+  </footer>
 
-<!-- Popup Modal for Charge Item Selection -->
-<div id="chargePopup" class="popup-overlay">
-  <div class="popup-modal">
-    <button class="popup-back-button" id="popupBackBtn" onclick="goBackToDaysStep()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      뒤로
-    </button>
-    <div class="popup-header">
-      <div class="popup-step-indicator">
-        <div class="popup-step" id="step1Indicator">
-          <div class="popup-step-number">1</div>
-          <span>일수 선택</span>
+  <!-- Popup Modal for Charge Item Selection -->
+  <div id="chargePopup" class="popup-overlay">
+    <div class="popup-modal">
+      <button class="popup-back-button" id="popupBackBtn" onclick="goBackToDaysStep()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        뒤로
+      </button>
+      <div class="popup-header">
+        <div class="popup-step-indicator">
+          <div class="popup-step" id="step1Indicator">
+            <div class="popup-step-number">1</div>
+            <span>일수 선택</span>
+          </div>
+          <div class="popup-step-divider"></div>
+          <div class="popup-step" id="step2Indicator">
+            <div class="popup-step-number">2</div>
+            <span>용량 선택</span>
+          </div>
         </div>
-        <div class="popup-step-divider"></div>
-        <div class="popup-step" id="step2Indicator">
-          <div class="popup-step-number">2</div>
-          <span>용량 선택</span>
-        </div>
+        <div class="popup-title" id="popupTitle">일수 선택</div>
+        <div class="popup-subtitle" id="popupSubtitle">충전할 일수를 선택해주세요</div>
       </div>
-      <div class="popup-title" id="popupTitle">일수 선택</div>
-      <div class="popup-subtitle" id="popupSubtitle">충전할 일수를 선택해주세요</div>
-    </div>
-    <div class="popup-item-list" id="popupItemList">
-      <!-- Items will be populated by JavaScript -->
-    </div>
-    <div class="popup-actions">
-      <button class="popup-button popup-button-cancel" onclick="closeChargePopup()">취소</button>
-      <button class="popup-button popup-button-confirm" id="popupConfirmBtn" onclick="confirmChargeSelection()" disabled>다음</button>
+      <div class="popup-item-list" id="popupItemList">
+        <!-- Items will be populated by JavaScript -->
+      </div>
+      <div class="popup-actions">
+        <button class="popup-button popup-button-cancel" onclick="closeChargePopup()">취소</button>
+        <button class="popup-button popup-button-confirm" id="popupConfirmBtn" onclick="confirmChargeSelection()" disabled>다음</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script th:inline="javascript">
-  var totalUsage = [[${totalUsage}]];
-  var usage = '[[${usage}]]';
+  <script th:inline="javascript">
+    var totalUsage = [[${totalUsage}]];
+    var usage = '[[${usage}]]';
 
-  var chargeBtnTxt = /*[[${chargeBtnTxt}]]*/ '';
-  var deviceId = /*[[${deviceId}]]*/ null;
-  var iccid = /*[[${iccid}]]*/ null;
-  var realOrderId = /*[[${realOrderId}]]*/ null;
-  var apiPurchaseItemList = /*[[${apiPurchaseItemList}]]*/ [];
-  var selectedChannelDataplanId = null;
-  var selectedDays = null;
-  var selectedData = null;
-  var uniqueDays = []; // 중복 제거된 일수 목록
-  var uniqueDataList = []; // 선택한 일수에 해당하는 중복 제거된 데이터 목록
-  var currentStep = 1; // 1: 일수 선택, 2: 용량 선택
+    var chargeBtnTxt = /*[[${chargeBtnTxt}]]*/ '';
+    var deviceId = /*[[${deviceId}]]*/ null;
+    var iccid = /*[[${iccid}]]*/ null;
+    var realOrderId = /*[[${realOrderId}]]*/ null;
+    var apiPurchaseItemList = /*[[${apiPurchaseItemList}]]*/ [];
+    var selectedChannelDataplanId = null;
+    var selectedDays = null;
+    var selectedData = null;
+    var uniqueDays = []; // 중복 제거된 일수 목록
+    var uniqueDataList = []; // 선택한 일수에 해당하는 중복 제거된 데이터 목록
+    var currentStep = 1; // 1: 일수 선택, 2: 용량 선택
 
-  // 중복 제거된 일수 목록 생성
-  function getUniqueDays() {
-    var daysSet = new Set();
-    apiPurchaseItemList.forEach(function(item) {
-      if (item.channel_dataplan_day) {
-        daysSet.add(item.channel_dataplan_day);
-      }
-    });
-    uniqueDays = Array.from(daysSet).sort(function(a, b) {
-      var numA = parseInt(a.replace('일', ''));
-      var numB = parseInt(b.replace('일', ''));
-      return numA - numB;
-    });
-  }
-
-  // 선택한 일수에 해당하는 중복 제거된 데이터 목록 생성
-  function getUniqueDataForDays(days) {
-    var dataSet = new Set();
-    apiPurchaseItemList.forEach(function(item) {
-      if (item.channel_dataplan_day === days && item.channel_dataplan_data) {
-        dataSet.add(item.channel_dataplan_data);
-      }
-    });
-    uniqueDataList = Array.from(dataSet).sort(function(a, b) {
-      // GB, MB 단위를 고려한 정렬
-      var aNum = parseFloat(a.replace(/[GB|MB]/gi, ''));
-      var bNum = parseFloat(b.replace(/[GB|MB]/gi, ''));
-      var aUnit = a.toUpperCase().indexOf('GB') > -1 ? 1024 : 1;
-      var bUnit = b.toUpperCase().indexOf('GB') > -1 ? 1024 : 1;
-      return (aNum * aUnit) - (bNum * bUnit);
-    });
-  }
-
-  // 선택한 일수와 데이터로 channel_dataplan_id 찾기
-  function findChannelDataplanId(days, data) {
-    for (var i = 0; i < apiPurchaseItemList.length; i++) {
-      var item = apiPurchaseItemList[i];
-      if (item.channel_dataplan_day === days && item.channel_dataplan_data === data) {
-        return item.channel_dataplan_id;
-      }
+    // 중복 제거된 일수 목록 생성
+    function getUniqueDays() {
+      var daysSet = new Set();
+      apiPurchaseItemList.forEach(function(item) {
+        if (item.channel_dataplan_day) {
+          daysSet.add(item.channel_dataplan_day);
+        }
+      });
+      uniqueDays = Array.from(daysSet).sort(function(a, b) {
+        var numA = parseInt(a.replace('일', ''));
+        var numB = parseInt(b.replace('일', ''));
+        return numA - numB;
+      });
     }
-    return null;
-  }
 
-  // 충전 실행 함수 (기존 로직을 함수로 분리)
-  function executeCharge(selectedChannelDataplanId) {
-    // 1. AJAX로 백엔드에 결제 키 생성 요청 (POST 방식)
-    if(selectedChannelDataplanId==undefined || selectedChannelDataplanId==null || selectedChannelDataplanId==''){
-      return;
+    // 선택한 일수에 해당하는 중복 제거된 데이터 목록 생성
+    function getUniqueDataForDays(days) {
+      var dataSet = new Set();
+      apiPurchaseItemList.forEach(function(item) {
+        if (item.channel_dataplan_day === days && item.channel_dataplan_data) {
+          dataSet.add(item.channel_dataplan_data);
+        }
+      });
+      uniqueDataList = Array.from(dataSet).sort(function(a, b) {
+        // GB, MB 단위를 고려한 정렬
+        var aNum = parseFloat(a.replace(/[GB|MB]/gi, ''));
+        var bNum = parseFloat(b.replace(/[GB|MB]/gi, ''));
+        var aUnit = a.toUpperCase().indexOf('GB') > -1 ? 1024 : 1;
+        var bUnit = b.toUpperCase().indexOf('GB') > -1 ? 1024 : 1;
+        return (aNum * aUnit) - (bNum * bUnit);
+      });
     }
-    $.ajax({
-      url: "/api/external/payup/ready",
-      type: "POST",
-      contentType: "application/json",
-      data: JSON.stringify({
-        'deviceId': deviceId,
-        'apiPurchaseItemProcutId': selectedChannelDataplanId,
-        'iccid': iccid,
-        'realOrderId': realOrderId ,
-        type:'TUGE'
-      }),
-      beforeSend: function() {
-        $("#chargeBtn").text("처리 중...").prop("disabled", true);
-      },
-      success: function(data) {
-        if (data.result) {
-          openOutlink(data);
-        } else {
-          alert("결제 주소를 생성하지 못했습니다.");
+
+    // 선택한 일수와 데이터로 channel_dataplan_id 찾기
+    function findChannelDataplanId(days, data) {
+      for (var i = 0; i < apiPurchaseItemList.length; i++) {
+        var item = apiPurchaseItemList[i];
+        if (item.channel_dataplan_day === days && item.channel_dataplan_data === data) {
+          return item.channel_dataplan_id;
+        }
+      }
+      return null;
+    }
+
+    // 충전 실행 함수 (기존 로직을 함수로 분리)
+    function executeCharge(selectedChannelDataplanId) {
+      // 1. AJAX로 백엔드에 결제 키 생성 요청 (POST 방식)
+      if(selectedChannelDataplanId==undefined || selectedChannelDataplanId==null || selectedChannelDataplanId==''){
+       return;
+      }
+      $.ajax({
+        url: "/external/portone/ready",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ 
+          'deviceId': deviceId,
+          'apiPurchaseItemProcutId': selectedChannelDataplanId,
+          'iccid': iccid, 
+          'realOrderId': realOrderId ,
+          type:'TSIM'
+        }),
+        beforeSend: function() {
+          $("#chargeBtn").text("처리 중...").prop("disabled", true);
+        },
+        success: function(data) {
+          if (data.result) {
+            openOutlink(data);
+          } else {
+            alert("결제 주소를 생성하지 못했습니다.");
+            resetButton();
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error("에러 발생:", error);
+          alert("서버 통신 중 오류가 발생했습니다.");
           resetButton();
         }
-      },
-      error: function(xhr, status, error) {
-        console.error("에러 발생:", error);
-        alert("서버 통신 중 오류가 발생했습니다.");
-        resetButton();
-      }
-    });
-  }
-
-  // 팝업 열기 (1단계: 일수 선택)
-  function openChargePopup() {
-    if (!apiPurchaseItemList || apiPurchaseItemList.length === 0) {
-      return;
+      });
     }
 
-    getUniqueDays();
-    showDaysStep();
-    $('#chargePopup').addClass('show');
-  }
+    // 팝업 열기 (1단계: 일수 선택)
+    function openChargePopup() {
+      if (!apiPurchaseItemList || apiPurchaseItemList.length === 0) {
+        return;
+      }
 
-  // 1단계: 일수 선택 화면 표시
-  function showDaysStep() {
-    currentStep = 1;
-    selectedDays = null;
-    selectedData = null;
-    selectedChannelDataplanId = null;
+      getUniqueDays();
+      showDaysStep();
+      $('#chargePopup').addClass('show');
+    }
 
-    // 단계 표시 업데이트
-    $('#step1Indicator').addClass('active');
-    $('#step2Indicator').removeClass('active');
-    $('#popupBackBtn').removeClass('show');
+    // 1단계: 일수 선택 화면 표시
+    function showDaysStep() {
+      currentStep = 1;
+      selectedDays = null;
+      selectedData = null;
+      selectedChannelDataplanId = null;
+      
+      // 단계 표시 업데이트
+      $('#step1Indicator').addClass('active');
+      $('#step2Indicator').removeClass('active');
+      $('#popupBackBtn').removeClass('show');
+      
+      // 제목 및 설명 업데이트
+      $('#popupTitle').text('일수 선택');
+      $('#popupSubtitle').text('충전할 일수를 선택해주세요');
+      
+      // 일수 목록 생성
+      var daysListHtml = '';
+      uniqueDays.forEach(function(days) {
+        // 해당 일수에 몇 개의 데이터 옵션이 있는지 확인
+        var dataCount = 0;
+        apiPurchaseItemList.forEach(function(item) {
+          if (item.channel_dataplan_day === days) {
+            dataCount++;
+          }
+        });
+        
+        daysListHtml += '<div class="popup-item" data-days="' + days + '" onclick="selectDays(this)">';
+        daysListHtml += '<div class="popup-item-name">' + days + '</div>';
+        daysListHtml += '<div class="popup-item-id">' + dataCount + '개 용량 옵션</div>';
+        daysListHtml += '</div>';
+      });
+      
+      $('#popupItemList').html(daysListHtml);
+      $('#popupConfirmBtn').text('다음').prop('disabled', true);
+    }
 
-    // 제목 및 설명 업데이트
-    $('#popupTitle').text('일수 선택');
-    $('#popupSubtitle').text('충전할 일수를 선택해주세요');
+    // 2단계: 용량 선택 화면 표시
+    function showDataStep() {
+      if (!selectedDays) return;
+      
+      currentStep = 2;
+      selectedData = null;
+      selectedChannelDataplanId = null;
+      
+      getUniqueDataForDays(selectedDays);
+      
+      // 단계 표시 업데이트
+      $('#step2Indicator').addClass('active');
+      $('#popupBackBtn').addClass('show');
+      
+      // 제목 및 설명 업데이트
+      $('#popupTitle').text('용량 선택');
+      $('#popupSubtitle').text(selectedDays + ' 상품의 용량을 선택해주세요');
+      
+      // 용량 목록 생성
+      var dataListHtml = '';
+      uniqueDataList.forEach(function(data) {
+        dataListHtml += '<div class="popup-item" data-data="' + data + '" onclick="selectData(this)">';
+        dataListHtml += '<div class="popup-item-name">' + data + '</div>';
+        dataListHtml += '<div class="popup-item-id">' + selectedDays + ' ' + data + '</div>';
+        dataListHtml += '</div>';
+      });
+      
+      $('#popupItemList').html(dataListHtml);
+      $('#popupConfirmBtn').text('선택').prop('disabled', true);
+    }
 
-    // 일수 목록 생성
-    var daysListHtml = '';
-    uniqueDays.forEach(function(days) {
-      // 해당 일수에 몇 개의 데이터 옵션이 있는지 확인
-      var dataCount = 0;
-      apiPurchaseItemList.forEach(function(item) {
-        if (item.channel_dataplan_day === days) {
-          dataCount++;
+    // 일수 선택
+    function selectDays(element) {
+      $('.popup-item').removeClass('selected');
+      $(element).addClass('selected');
+      selectedDays = $(element).data('days');
+      $('#popupConfirmBtn').prop('disabled', false);
+    }
+
+    // 용량 선택
+    function selectData(element) {
+      $('.popup-item').removeClass('selected');
+      $(element).addClass('selected');
+      selectedData = $(element).data('data');
+      $('#popupConfirmBtn').prop('disabled', false);
+    }
+
+    // 뒤로가기 (일수 선택으로)
+    function goBackToDaysStep() {
+      showDaysStep();
+    }
+
+    // 팝업 닫기
+    function closeChargePopup() {
+      $('#chargePopup').removeClass('show');
+      currentStep = 1;
+      $('.popup-item').removeClass('selected');
+      $('#step1Indicator').removeClass('active');
+      $('#step2Indicator').removeClass('active');
+      $('#popupBackBtn').removeClass('show');
+    }
+
+    // 선택 확인 및 다음 단계 또는 결제 진행
+    function confirmChargeSelection() {
+      if (currentStep === 1) {
+        // 1단계: 일수 선택 완료 -> 2단계로 이동
+        if (selectedDays) {
+          showDataStep();
+        }
+      } else if (currentStep === 2) {
+        // 2단계: 용량 선택 완료 -> channel_dataplan_id 찾아서 결제 진행
+        if (selectedDays && selectedData) {
+          selectedChannelDataplanId = findChannelDataplanId(selectedDays, selectedData);
+          console.log(selectedChannelDataplanId)
+          if (selectedChannelDataplanId) {
+            closeChargePopup();
+            executeCharge(selectedChannelDataplanId);
+          } else {
+            alert('선택한 상품을 찾을 수 없습니다.');
+          }
+        }
+      }
+    }
+
+    // 팝업 외부 클릭 시 닫기
+    $(document).ready(function() {
+      $('#chargePopup').click(function(e) {
+        if ($(e.target).hasClass('popup-overlay')) {
+          closeChargePopup();
         }
       });
 
-      daysListHtml += '<div class="popup-item" data-days="' + days + '" onclick="selectDays(this)">';
-      daysListHtml += '<div class="popup-item-name">' + days + '</div>';
-      daysListHtml += '<div class="popup-item-id">' + dataCount + '개 용량 옵션</div>';
-      daysListHtml += '</div>';
-    });
-
-    $('#popupItemList').html(daysListHtml);
-    $('#popupConfirmBtn').text('다음').prop('disabled', true);
-  }
-
-  // 2단계: 용량 선택 화면 표시
-  function showDataStep() {
-    if (!selectedDays) return;
-
-    currentStep = 2;
-    selectedData = null;
-    selectedChannelDataplanId = null;
-
-    getUniqueDataForDays(selectedDays);
-
-    // 단계 표시 업데이트
-    $('#step2Indicator').addClass('active');
-    $('#popupBackBtn').addClass('show');
-
-    // 제목 및 설명 업데이트
-    $('#popupTitle').text('용량 선택');
-    $('#popupSubtitle').text(selectedDays + ' 상품의 용량을 선택해주세요');
-
-    // 용량 목록 생성
-    var dataListHtml = '';
-    uniqueDataList.forEach(function(data) {
-      dataListHtml += '<div class="popup-item" data-data="' + data + '" onclick="selectData(this)">';
-      dataListHtml += '<div class="popup-item-name">' + data + '</div>';
-      dataListHtml += '<div class="popup-item-id">' + selectedDays + ' ' + data + '</div>';
-      dataListHtml += '</div>';
-    });
-
-    $('#popupItemList').html(dataListHtml);
-    $('#popupConfirmBtn').text('선택').prop('disabled', true);
-  }
-
-  // 일수 선택
-  function selectDays(element) {
-    $('.popup-item').removeClass('selected');
-    $(element).addClass('selected');
-    selectedDays = $(element).data('days');
-    $('#popupConfirmBtn').prop('disabled', false);
-  }
-
-  // 용량 선택
-  function selectData(element) {
-    $('.popup-item').removeClass('selected');
-    $(element).addClass('selected');
-    selectedData = $(element).data('data');
-    $('#popupConfirmBtn').prop('disabled', false);
-  }
-
-  // 뒤로가기 (일수 선택으로)
-  function goBackToDaysStep() {
-    showDaysStep();
-  }
-
-  // 팝업 닫기
-  function closeChargePopup() {
-    $('#chargePopup').removeClass('show');
-    currentStep = 1;
-    $('.popup-item').removeClass('selected');
-    $('#step1Indicator').removeClass('active');
-    $('#step2Indicator').removeClass('active');
-    $('#popupBackBtn').removeClass('show');
-  }
-
-  // 선택 확인 및 다음 단계 또는 결제 진행
-  function confirmChargeSelection() {
-    if (currentStep === 1) {
-      // 1단계: 일수 선택 완료 -> 2단계로 이동
-      if (selectedDays) {
-        showDataStep();
-      }
-    } else if (currentStep === 2) {
-      // 2단계: 용량 선택 완료 -> channel_dataplan_id 찾아서 결제 진행
-      if (selectedDays && selectedData) {
-        selectedChannelDataplanId = findChannelDataplanId(selectedDays, selectedData);
-        if (selectedChannelDataplanId) {
+      // ESC 키로 팝업 닫기
+      $(document).keydown(function(e) {
+        if (e.key === 'Escape' && $('#chargePopup').hasClass('show')) {
           closeChargePopup();
-          executeCharge(selectedChannelDataplanId);
-        } else {
-          alert('선택한 상품을 찾을 수 없습니다.');
         }
-      }
+      });
+
+      // chargeBtn 클릭 이벤트
+      $("#chargeBtn").click(function() {
+        openChargePopup();
+      });
+    });
+    async function openOutlink(data) {
+
+      PortOne.requestPayment({
+        redirectUrl: data.redirectUrl,
+        // Store ID 설정
+        storeId: data.storeId,
+        // 채널 키 설정
+        channelKey: data.channelKey,
+        paymentId: `${data.token}`,
+        orderName: data.orderName,
+        totalAmount: data.totalAmount,
+        currency: "CURRENCY_KRW",
+        payMethod: "CARD",
+      });
+
+
+
+      // 이동 후 버튼 원복 (뒤로가기 대비)
+      setTimeout(resetButton, 10000);
     }
-  }
 
-  // 팝업 외부 클릭 시 닫기
-  $(document).ready(function() {
-    $('#chargePopup').click(function(e) {
-      if ($(e.target).hasClass('popup-overlay')) {
-        closeChargePopup();
-      }
-    });
-
-    // ESC 키로 팝업 닫기
-    $(document).keydown(function(e) {
-      if (e.key === 'Escape' && $('#chargePopup').hasClass('show')) {
-        closeChargePopup();
-      }
-    });
-
-    // 모바일 감지 함수
-    function isMobile() {
-      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    function resetButton() {
+      $("#chargeBtn").text(chargeBtnTxt).prop("disabled", false);
     }
 
-    // chargeBtn 클릭 이벤트
-    $("#chargeBtn").click(function() {
-      if (!isMobile()) {
-        alert("모바일에서만 이용 가능합니다.");
-        return;
-      }
-      openChargePopup();
-    });
-  });
-  async function openOutlink(data) {
-    var data = {
-      merchantId: data.merchantId, // 필수 값
-      itemName: data.orderName, // 필수 값
-      amount: data.totalAmount, // 필수 값
-      userName: data.userName, // 필수 값
-      orderNumber: data.token, // 필수 값
-      taxFlag: "Y", // 복합과세 사용 시 Y
-      taxAmount: "0", // 복합과세 사용 시 필수
-      freeAmount: data.totalAmount, // 복합과세 사용 시 필수
-      returnUrl: data.redirectUrl, // 모바일 환경일 경우에만 필수 값
-    };
-    // 표준 결제창 SDK 실행
-    goPayupPay(data);
 
+    const usageBar = document.getElementById('usage-bar');
+    const usagePercentage = document.getElementById('usage-percentage');
+    const remainingAmount = document.getElementById('remaining-amount');
 
+    function updateProgress() {
+      let percentage = 0;
+      let remaining = 0;
 
-
-
-    // 이동 후 버튼 원복 (뒤로가기 대비)
-    setTimeout(resetButton, 10000);
-  }
-
-  function resetButton() {
-    $("#chargeBtn").text(chargeBtnTxt).prop("disabled", false);
-  }
-
-
-  const usageBar = document.getElementById('usage-bar');
-  const usagePercentage = document.getElementById('usage-percentage');
-  const remainingAmount = document.getElementById('remaining-amount');
-
-  function updateProgress() {
-    let percentage = 0;
-    let remaining = 0;
-    if (totalUsage == "unlimited") {
-      percentage = 100;
-      remainingAmount.textContent = '무제한';
-    } else if (totalUsage && totalUsage != '0' && totalUsage != '0.0') {
-      percentage = Math.min((Number(usage) / Number(totalUsage)) * 100, 100);
-      remaining = Math.max(Number(totalUsage) - Number(usage), 0);
-
-      if (remaining >= 1024) {
-        remainingAmount.textContent = (remaining / 1024).toFixed(2) + ' GB';
+      if (totalUsage == "unlimited") {
+        percentage = 100;
+        remainingAmount.textContent = '무제한';
+      } else if (totalUsage && totalUsage != '0' && totalUsage != '0.0') {
+        percentage = Math.min((Number(usage) / Number(totalUsage)) * 100, 100);
+        remaining = Math.max(Number(totalUsage) - Number(usage), 0);
+        
+        if (remaining >= 1024) {
+          remainingAmount.textContent = (remaining / 1024).toFixed(2) + ' GB';
+        } else {
+          remainingAmount.textContent = remaining.toFixed(2) + ' MB';
+        }
       } else {
-        remainingAmount.textContent = remaining.toFixed(2) + ' MB';
+        remainingAmount.textContent = '-';
       }
-    } else {
-      remainingAmount.textContent = '-';
+      
+      usageBar.style.width = percentage + '%';
+      usagePercentage.textContent = Math.round(percentage) + '%';
     }
 
-    usageBar.style.width = percentage + '%';
-    usagePercentage.textContent = Math.round(percentage) + '%';
-  }
-
-  setTimeout(updateProgress, 300);
-</script>
+    setTimeout(updateProgress, 300);
+  </script>
 </body>
 </html>

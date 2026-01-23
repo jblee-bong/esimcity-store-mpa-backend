@@ -9,6 +9,7 @@ import com.naver.naverspabackend.mybatis.mapper.OrderMapper;
 import com.naver.naverspabackend.mybatis.mapper.StoreMapper;
 import com.naver.naverspabackend.response.ApiResult;
 import com.naver.naverspabackend.service.order.OrderService;
+import com.naver.naverspabackend.service.payup.PayUpService;
 import com.naver.naverspabackend.service.sms.KakaoService;
 import com.naver.naverspabackend.service.sms.MailService;
 import com.naver.naverspabackend.service.store.StoreService;
@@ -18,8 +19,9 @@ import com.naver.naverspabackend.util.PagingUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -39,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private TopupOrderService topupOrderService;
 
+
     @Autowired
     private StoreService storeService;
 
@@ -56,6 +59,30 @@ public class OrderServiceImpl implements OrderService {
     @Value("${payApp.kakaoSuccessKey}")
     private String kakaoSuccessKey;
 
+
+
+    @Value("${payApp.kakaoFailKey}")
+    private String kakaoFailKey;
+
+    @Value("${payApp.kakaoFail2Key}")
+    private String kakaoFail2Key;
+
+
+    @Value("${payup.merchantId}")
+    private String merchantId;
+
+    @Value("${payup.apiKey}")
+    private String apiKey;
+
+    @Value("${payup.baseUrl}")
+    private String baseUrl;
+
+    @Value("${payup.authTokenURI}")
+    private String authTokenURI;
+
+
+    @Value("${payup.cancelURI}")
+    private String cancelURI;
 
     @Override
     public ApiResult<List<OrderDto>> fetchOrderList(Map<String, Object> map, PagingUtil pagingUtil) {
@@ -109,39 +136,37 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ResponseEntity<Map<String, String>> updateTugeItem(Map<String, Object> item) {
         try{
-            if(item.get("code").toString().equals("0000")){
-                HashMap<String,Object> data = (HashMap<String, Object>) item.get("data");
-                int eventType = 1;
+            HashMap<String,Object> data = (HashMap<String, Object>) item.get("data");
+            int eventType = 1;
+            try{
+                eventType = Integer.parseInt(data.get("eventType").toString());
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            if(eventType==2){
+                //충전리턴
+                HashMap<String,Object> orderInfo = (HashMap<String, Object>) data.get("orderInfo");
+                TopupOrderDto param = new TopupOrderDto();
+                param.setId(Long.parseLong(orderInfo.get("channelOrderNo").toString().replace("renewOrderNo_","")));
+                TopupOrderDto topupOrderDto = topupOrderService.findById(param);
+                Map<String, Object> storeParam = new HashMap<>();
+                storeParam.put("id",topupOrderDto.getStoreId());
+                StoreDto storeDto = storeService.findById(storeParam);
+                Map<String, Object> orderParam = new HashMap<>();
+                orderParam.put("id",topupOrderDto.getOrderId());
+                OrderDto orderDto = orderMapper.fetchOrderOnly(orderParam);
 
-                try{
-                    eventType = Integer.parseInt(data.get("eventType").toString());
-                }catch (Exception e){
-                    e.printStackTrace();
+                if(orderDto == null || storeDto == null){
+                    Map<String, String> response = new HashMap<>();
+                    response.put("code", "1");
+                    response.put("msg", item.get("msg").toString());
+                    return ResponseEntity.ok(response);
                 }
-                if(eventType==2){
-                    //충전리턴
-                    HashMap<String,Object> orderInfo = (HashMap<String, Object>) data.get("orderInfo");
+                Map<String, Object> kakaoParameters = new HashMap<>();
+                kakaoParameters.put("orderRealName", Objects.toString(topupOrderDto.getProductOption(), ""));
+                kakaoParameters.put("ordererName",Objects.toString(topupOrderDto.getShippingName(), ""));
 
-                    TopupOrderDto param = new TopupOrderDto();
-                    param.setId(Long.parseLong(orderInfo.get("channelOrderNo").toString().replace("renewOrderNo_","")));
-                    TopupOrderDto topupOrderDto = topupOrderService.findById(param);
-                    Map<String, Object> storeParam = new HashMap<>();
-                    storeParam.put("id",topupOrderDto.getStoreId());
-                    StoreDto storeDto = storeService.findById(storeParam);
-                    Map<String, Object> orderParam = new HashMap<>();
-                    orderParam.put("id",topupOrderDto.getOrderId());
-                    OrderDto orderDto = orderMapper.fetchOrderOnly(orderParam);
-
-                    if(orderDto == null || storeDto == null){
-                        Map<String, String> response = new HashMap<>();
-                        response.put("code", "1");
-                        response.put("msg", item.get("msg").toString());
-                        return ResponseEntity.ok(response);
-                    }
-                    Map<String, Object> kakaoParameters = new HashMap<>();
-                    kakaoParameters.put("orderRealName", Objects.toString(topupOrderDto.getProductOption(), ""));
-                    kakaoParameters.put("ordererName",Objects.toString(topupOrderDto.getShippingName(), ""));
-
+                if(item.get("code").toString().equals("0000")){
                     //충전완료
                     topupOrderDto.setTopupStatus(1);
                     topupOrderService.updateTopupStatus(topupOrderDto);
@@ -191,7 +216,39 @@ public class OrderServiceImpl implements OrderService {
                     response.put("code", item.get("code").toString());
                     response.put("msg", item.get("msg").toString());
                     return ResponseEntity.ok(response);
-                }else{
+                }else if(item.get("code").toString().equals("4010") || item.get("code").toString().equals("4000") || item.get("code").toString().equals("4004")){
+                    //충전실패
+                    topupOrderDto.setTopupStatus(2);
+                    topupOrderService.updateTopupStatus(topupOrderDto);
+
+
+                    String paymentRefundResult =  refundPayment(topupOrderDto.getTopupTransactionId() );
+
+                    if(paymentRefundResult==null || !paymentRefundResult.equals("SUCCESS")) {//결제실패
+                        topupOrderDto.setPaymentStatus(3);
+                        topupOrderService.updatePaypalStatus(topupOrderDto);
+                        try{
+                            System.out.println("충전 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
+                            kakaoService.requestSendKakaoMsg(kakaoParameters, kakaoFailKey,storeDto,orderDto, "N", "Y",false, topupOrderDto.getShippingTel());
+                        }catch (Exception e){
+                        }
+                    }else{
+                        topupOrderDto.setPaymentStatus(4);
+                        topupOrderService.updatePaypalStatus(topupOrderDto);
+                        try{
+                            System.out.println("충전 요청 중 오류가 발생하여, 결제 취소를 하였으나 결제 취소에 실패하였습니다. 고객센터로 문의주세요.");
+                            kakaoService.requestSendKakaoMsg(kakaoParameters, kakaoFail2Key,storeDto,orderDto, "N", "Y",false, topupOrderDto.getShippingTel());
+                        }catch (Exception e){
+                        }
+                    }
+
+                    Map<String, String> response = new HashMap<>();
+                    response.put("code", "0000");
+                    response.put("msg", "success");
+                    return ResponseEntity.ok(response);
+                }
+            }else{
+                if(item.get("code").toString().equals("0000")){
                     //이심리턴
                     HashMap<String,Object> orderInfo = (HashMap<String, Object>) data.get("orderInfo");
                     OrderTugeEsimDto orderTugeEsimDto = new OrderTugeEsimDto();
@@ -260,20 +317,17 @@ public class OrderServiceImpl implements OrderService {
                     response.put("code", item.get("code").toString());
                     response.put("msg", item.get("msg").toString());
                     return ResponseEntity.ok(response);
+
                 }
-            }else{
-                Map<String, String> response = new HashMap<>();
-                response.put("code", "1");
-                response.put("msg", item.get("msg").toString());
-                return ResponseEntity.ok(response);
             }
+
         }catch (Exception e){
             e.printStackTrace();
-            Map<String, String> response = new HashMap<>();
-            response.put("code", "1");
-            response.put("msg", item.get("msg").toString());
-            return ResponseEntity.ok(response);
         }
+        Map<String, String> response = new HashMap<>();
+        response.put("code", "1");
+        response.put("msg", item.get("msg").toString());
+        return ResponseEntity.ok(response);
     }
 
 
@@ -434,4 +488,61 @@ public class OrderServiceImpl implements OrderService {
         return ApiResult.succeed(null, null);
     }
 
+    public String refundPayment(String transactionId) throws Exception {
+        String accessToken = getAccessToken();
+        if(accessToken==null){
+            throw new Exception();
+        }
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            String url =  baseUrl  + cancelURI;
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.add("Authorization",accessToken);
+
+            Map<String,Object> jsonObject = new HashMap<>();
+            jsonObject.put("transactionId",transactionId);
+            jsonObject.put("merchantId",merchantId);
+            jsonObject.put("cancelReason","충전실패");
+            HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
+
+
+            ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
+
+            Map<String, Object> result = response.getBody();
+            return  result.get("status").toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public String getAccessToken(){
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            String url =  baseUrl  + authTokenURI;
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+            Map<String,Object> jsonObject = new HashMap<>();
+            jsonObject.put("merchantId",merchantId);
+            jsonObject.put("apiKey",apiKey);
+            HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
+
+
+            ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
+
+            Map<String, Object> result = response.getBody();
+            if(result.get("status").toString().equals("SUCCESS")){
+                Map<String, Object> data = (Map<String, Object>) result.get("data");
+                return  data.get("accessToken").toString();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

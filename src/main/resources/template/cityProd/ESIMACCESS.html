@@ -9,7 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="/assets/img/esimcity/favicon.svg">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="//lite.payapp.kr/public/api/v2/payapp-lite.js"></script>
+  <!--<script src="https://standard.testpayup.co.kr/assets/js/payup_standard_dev-1.0.js "></script>  테스트서버-->
+  <script src="https://standard.payup.co.kr/assets/js/payup_standard-1.0.js "></script> <!-- 운영서버-->
 
   <style>
     * {
@@ -981,7 +982,7 @@
        return;
       }
       $.ajax({
-        url: "/api/external/payapp/ready",
+        url: "/api/external/payup/ready",
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify({
@@ -1156,33 +1157,34 @@
         }
       });
 
+      // 모바일 감지 함수
+      function isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      }
+
       // chargeBtn 클릭 이벤트
       $("#chargeBtn").click(function() {
+        if (!isMobile()) {
+          alert("모바일에서만 이용 가능합니다.");
+          return;
+        }
         openChargePopup();
       });
     });
     async function openOutlink(data) {
-
-      debugger
-      PayApp.setDefault('userid',     data.userId);
-      PayApp.setDefault('shopname',   data.shopname);
-      PayApp.setParam('goodname', data.orderName);
-      PayApp.setParam('price', data.totalAmount);
-      PayApp.setParam('amount_taxfree', data.totalAmount);
-
-      PayApp.setParam('recvphone', data.recvphone);
-      PayApp.setParam('feedbackurl', data.feedbackurl);
-      PayApp.setParam('checkretry', 'y');
-      PayApp.setParam('returnurl', data.redirectUrl);//결제완료리다이렉트url
-      PayApp.setParam('var1', `${data.token}`);//토큰값파라미터
-      PayApp.setParam('smsuse', 'n');//문자발송없음
-      PayApp.setParam('redirectpay', '1');//결제창바로연결
-      PayApp.setParam('skip_cstpage', 'y');//매출전표이용안함
-      PayApp.payrequest();
-
-
-
-
+      var data = {
+        merchantId: data.merchantId, // 필수 값
+        itemName: data.orderName, // 필수 값
+        amount: data.totalAmount, // 필수 값
+        userName: data.userName, // 필수 값
+        orderNumber: data.token, // 필수 값
+        taxFlag: "Y", // 복합과세 사용 시 Y
+        taxAmount: "0", // 복합과세 사용 시 필수
+        freeAmount: data.totalAmount, // 복합과세 사용 시 필수
+        returnUrl: data.redirectUrl, // 모바일 환경일 경우에만 필수 값
+      };
+      // 표준 결제창 SDK 실행
+      goPayupPay(data);
 
       // 이동 후 버튼 원복 (뒤로가기 대비)
       setTimeout(resetButton, 10000);

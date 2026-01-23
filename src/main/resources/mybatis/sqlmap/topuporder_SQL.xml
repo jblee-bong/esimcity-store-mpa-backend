@@ -69,4 +69,9 @@
             payment_status = #{paymentStatus}
         where id=#{id}
     </update>
+    <update id="updateTransactionId" parameterType="topupOrderDto" >
+        update TB_TOPUP_ORDER set
+            topup_transaction_id = #{topupTransactionId}
+        where id=#{id}
+    </update>
 </mapper>
