@@ -813,7 +813,7 @@
             <span class="usage-charge" th:utext="${resetTxt}"></span>
           </div>
           
-          <div class="usage-visual">
+          <div class="usage-visual" th:hidden="${isDaily}">
             <div class="usage-stats">
               <div class="usage-current">
                 <div class="usage-current-label">사용량</div>
@@ -829,6 +829,14 @@
             </div>
             <div class="usage-percentage-text">
               사용률: <span class="usage-percentage-value" id="usage-percentage">0%</span>
+            </div>
+          </div>
+
+          <div class="usage-visual" th:hidden="${!isDaily}">
+            <div class="usage-stats">
+              <div class="usage-current">
+                <div class="usage-current-value" style="font-size: 15px;">해당 상품의 경우, daily상품은 사용량을 제공하지 않습니다.</div>
+              </div>
             </div>
           </div>
         </div>

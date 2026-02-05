@@ -47,6 +47,13 @@ public class OrderDto extends BaseDto {
     private String totalPaymentAmount; //할인가
 
 
+    @ExcelColumnName(headerName = "원가")
+    private String totalOriginAmount; // 원가
+
+    @ExcelColumnName(headerName = "순이익")
+    private String totalNetProfitAmount; // 순이익
+
+
     // orderName
     @ExcelColumnName(headerName = "구매자")
     private String ordererName;

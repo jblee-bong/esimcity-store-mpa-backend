@@ -56,6 +56,10 @@ public class BulkUtil {
             hashMap.put("rentalNo",bulkDto.getRentalNo());
         else
             hashMap.put("rentalNo","");
+        if (bulkDto.getBulkApn() != null && !bulkDto.getBulkApn().equals("")) {
+            hashMap.put("eSimApnInfo","<li style=\"margin-bottom: 8px;\"><strong style=\"color: #dc2626;\">APN값은 "+bulkDto.getBulkApn()+"입니다. 현지에서 인터넷 오류시에만 확인 부탁드립니다.</strong></li>");
+            hashMap.put("eSimMApnInfo","* APN 값은 " +bulkDto.getBulkApn() + " 입니다. 현지에서 인터넷 오류시에만 확인 부탁드립니다.");
+        }
         esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.PURCHASE_END.getExplain(), orderId);
         return hashMap;
     }

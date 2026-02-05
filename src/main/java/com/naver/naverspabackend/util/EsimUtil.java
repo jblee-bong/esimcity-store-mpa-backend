@@ -8,6 +8,7 @@ import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
 import com.naver.naverspabackend.service.esimPrice.EsimPriceService;
 import com.naver.naverspabackend.service.esimapiingsteplogs.EsimApiIngStepLogsService;
 import com.naver.naverspabackend.service.order.OrderService;
+import com.naver.naverspabackend.service.topupOrder.TopupOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -120,12 +121,19 @@ public class EsimUtil {
         this.esimApiIngStepLogsService = esimApiIngStepLogsService;
     }
 
+    public static TopupOrderService topupOrderService;
+    @Autowired
+    public void setTopupOrderService(TopupOrderService topupOrderService) {
+        this.topupOrderService = topupOrderService;
+    }
+
+
 
 
 
 
     public static TsimUtil getTsimUtil(ApiPurchaseItemService apiPurchaseItemService, StoreDto storeDto, String active)  {
-        return new TsimUtil(apiPurchaseItemService,storeDto.getEsimApiTsimAccount(), storeDto.getEsimApiTsimSecret(), tsimBaseUri, esimApiIngStepLogsService,esimPriceService, active);
+        return new TsimUtil(apiPurchaseItemService,storeDto.getEsimApiTsimAccount(), storeDto.getEsimApiTsimSecret(), tsimBaseUri, esimApiIngStepLogsService,esimPriceService,  topupOrderService,active);
     }
 
     public static TugeUtil getTugeUtil(StoreDto storeDto, String active)  {

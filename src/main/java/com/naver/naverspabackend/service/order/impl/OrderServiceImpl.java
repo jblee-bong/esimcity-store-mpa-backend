@@ -382,6 +382,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<OrderDto> selectListOrderAllList() {
+        return orderMapper.selectListOrderAllList();
+    }
+
+    @Override
+    public void updateTotalOriginAmount(OrderDto orderDto) {
+         orderMapper.updateTotalOriginAmount(orderDto);
+
+    }
+
+    @Override
     public ApiResult<Void> updateOrderMailReTrans(Map<String, Object> paramMap) throws Exception {
 
         OrderDto orderDto = orderMapper.findById(paramMap);

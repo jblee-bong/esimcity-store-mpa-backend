@@ -72,6 +72,7 @@
             bulk_active_code,
             bulk_iccid,
             bulk_title,
+            bulk_apn,
             bulk_open_dt,
             bulk_expired_day,
             bulk_expired_dt
@@ -81,6 +82,7 @@
              #{bulkActiveCode},
              #{bulkIccid},
              #{bulkTitle},
+             #{bulkApn},
              #{bulkOpenDt},
              #{bulkExpiredDay},
              #{bulkExpiredDt}
@@ -90,6 +92,7 @@
             bulk_active_code = #{bulkActiveCode},
             bulk_iccid = #{bulkIccid},
             bulk_title = #{bulkTitle},
+            bulk_apn = #{bulkApn},
             bulk_open_dt = #{bulkOpenDt},
             bulk_expired_day = #{bulkExpiredDay},
             bulk_expired_dt = #{bulkExpiredDt}

@@ -48,4 +48,8 @@ public interface OrderService {
     List<OrderRenewTugeEsimDto> selectListOrderRenewTugeEsimList(OrderRenewTugeEsimDto orderRenewTugeEsimParam);
 
     OrderRenewTugeEsimDto selectOrderRenewTugeEsimByOrderNo(OrderRenewTugeEsimDto orderRenewTugeEsimDtoParam);
+
+    List<OrderDto> selectListOrderAllList();
+
+    void updateTotalOriginAmount(OrderDto orderDto);
 }

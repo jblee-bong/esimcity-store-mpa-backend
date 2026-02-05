@@ -57,4 +57,9 @@ public class TopupOrderServiceImpl implements TopupOrderService {
         topupOrderMapper.updateTransactionId(topupOrderDto);
 
     }
+
+    @Override
+    public TopupOrderDto findByIccidForMaxTopupId(TopupOrderDto topupOrderDtoParam) {
+        return topupOrderMapper.findByIccidForMaxTopupId(topupOrderDtoParam);
+    }
 }

@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -745,7 +747,11 @@ public class NaverSmsTasklet implements Tasklet {
                         esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.OPEN_END.getExplain(), orderDto.getId());
 
 
+                        esimMap.put("usage2Url","");
 
+                        esimMap.put("usageUrl","");
+
+                        esimMap.put("exitem","");
                         esimMap.put("eEsimId","");
                         esimMap.put("eEsimType","");
                         esimMap.put("eEsimOrderId","");
@@ -776,6 +782,8 @@ public class NaverSmsTasklet implements Tasklet {
                             type = "WORLDMOVE";
                         else if(matchInfoDto.getEsimType().equals("07"))
                             type = "ESIMACCESS";
+                        else if(matchInfoDto.getEsimType().equals("99"))
+                            type = "BULK";
                         ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
                         apiPurchaseItemDto.setApiPurchaseItemProcutId(matchInfoDto.getEsimProductId());
                         apiPurchaseItemDto.setApiPurchaseItemType(type);
@@ -788,9 +796,7 @@ public class NaverSmsTasklet implements Tasklet {
                             apiCardTypeDto = apiPurchaseItemMapper.selectCardTypeFindByCardType(param);
                         }
 
-
-
-                        if(apiPurchaseItem.getApiPurchasePrice()!=null && !apiPurchaseItem.getApiPurchasePrice().equals("") && apiPurchaseItem.getApiPurchaseCurrency()!=null && !apiPurchaseItem.getApiPurchaseCurrency().equals("")){
+                        if(apiPurchaseItem!=null && apiPurchaseItem.getApiPurchasePrice()!=null && !apiPurchaseItem.getApiPurchasePrice().equals("") && apiPurchaseItem.getApiPurchaseCurrency()!=null && !apiPurchaseItem.getApiPurchaseCurrency().equals("")){
                             Double allprice = Double.parseDouble(apiPurchaseItem.getApiPurchasePrice()) * orderDto.getQuantity().doubleValue();
                             orderDto.setOrderAllPrice(allprice+"");
                             orderDto.setOrderPriceCurrency(apiPurchaseItem.getApiPurchaseCurrency());
@@ -799,8 +805,6 @@ public class NaverSmsTasklet implements Tasklet {
 
 
                         try{
-
-
                             if(type.equals("TUGE") || type.equals("TSIM")){
                                 esimMap.put("eSimApnInfo",apiPurchaseItem.getApiPurchaseApn()!=null && !apiPurchaseItem.getApiPurchaseApn().equals("")?("<li style=\"margin-bottom: 8px;\"><strong style=\"color: #dc2626;\">APN값은 "+apiPurchaseItem.getApiPurchaseApn()+"입니다. 현지에서 인터넷 오류시에만 확인 부탁드립니다.</strong></li>"):"");
                                 esimMap.put("eSimMApnInfo",apiPurchaseItem.getApiPurchaseApn()!=null && !apiPurchaseItem.getApiPurchaseApn().equals("")?("* APN 값은 " +apiPurchaseItem.getApiPurchaseApn() + " 입니다. 현지에서 인터넷 오류시에만 확인 부탁드립니다."):"");
@@ -823,7 +827,7 @@ public class NaverSmsTasklet implements Tasklet {
                                 esimMap.put("eSimMApnInfo",("* APN 값은 정보가 필요하신 경우 알림톡이나 톡톡을 통해 문의주세요."));
                             }
 
-                            if(apiPurchaseItem.isApiPurchaseIsCharge()){
+                            if(apiPurchaseItem!=null && apiPurchaseItem.isApiPurchaseIsCharge()){
                                 esimMap.put("eSimChargeInfo","<li style=\"margin-bottom: 8px;\"><strong style=\"color: #dc2626;\">이상품은 데이터 충전이 가능한 상품입니다. 아래 버튼을 통해 충전해주세요.</strong></li>");
                                 esimMap.put("eSimMChargeInfo","* 이 상품은 데이터 충전이 가능한 상품입니다. 아래 버튼을 통해 충전해주세요.");
                             }else{
@@ -834,8 +838,14 @@ public class NaverSmsTasklet implements Tasklet {
 
 
 
-                            esimMap.put("eSimResetInfo",MakeResetTimeUtil.makeResetInfoText(apiPurchaseItem,apiCardTypeDto));
-                            esimMap.put("eSimMResetInfo",MakeResetTimeUtil.makeMResetInfoText(apiPurchaseItem,apiCardTypeDto));
+                            if(apiPurchaseItem!=null){
+                                esimMap.put("eSimResetInfo",MakeResetTimeUtil.makeResetInfoText(apiPurchaseItem,apiCardTypeDto));
+                                esimMap.put("eSimMResetInfo",MakeResetTimeUtil.makeMResetInfoText(apiPurchaseItem,apiCardTypeDto));
+                            }else{
+
+                                esimMap.put("eSimResetInfo","");
+                                esimMap.put("eSimMResetInfo","");
+                            }
                         }catch (Exception e){
                         }
                     }
@@ -1153,7 +1163,65 @@ public class NaverSmsTasklet implements Tasklet {
                 kakaoParameters.put("ordererName", orderDto.getOrdererName());
                 kakaoService.requestSendKakaoMsg(kakaoParameters, "ESIM_MAIL_RETRANS",storeDto,orderDto, "N", matchInfoDto.getEKakaoResendFlag(),false, shippingTel1);
             }
+
         }catch (Exception e){
+        }
+        try{
+            boolean esimFlagInfo = "Y".equals(matchInfoDto.getEsimFlag());
+            if (esimFlagInfo) {
+                matchInfoDto.getEsimProductId();
+                String type = "";
+                if (matchInfoDto.getEsimType().equals("01"))
+                    type = "tel25";
+                else if (matchInfoDto.getEsimType().equals("02"))
+                    type = "NIZ";
+                else if (matchInfoDto.getEsimType().equals("03"))
+                    type = "TSIM";
+                else if (matchInfoDto.getEsimType().equals("04"))
+                    type = "AIRALO";
+                else if (matchInfoDto.getEsimType().equals("05"))
+                    type = "TUGE";
+                else if (matchInfoDto.getEsimType().equals("06"))
+                    type = "WORLDMOVE";
+                else if (matchInfoDto.getEsimType().equals("07"))
+                    type = "ESIMACCESS";
+                else if (matchInfoDto.getEsimType().equals("99"))
+                    type = "BULK";
+                ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
+                apiPurchaseItemDto.setApiPurchaseItemProcutId(matchInfoDto.getEsimProductId());
+                apiPurchaseItemDto.setApiPurchaseItemType(type);
+                ApiPurchaseItemDto apiPurchaseItem = apiPurchaseItemMapper.findById(apiPurchaseItemDto);
+                if (apiPurchaseItem != null) {
+                    // 1. 단가는 문자열 그대로 BigDecimal로 생성
+                    BigDecimal unitPrice = new BigDecimal(apiPurchaseItem.getApiPurchaseKrwPrice());
+                    // 2. 수량(Integer)은 BigDecimal.valueOf()로 변환
+                    BigDecimal quantity = BigDecimal.valueOf(orderDto.getQuantity());
+                    // 3. 곱셈 연산
+                    BigDecimal total = unitPrice.multiply(quantity);
+
+                    //ESIMACCESS의경우 day를 *로 늘어나기떄문에 필요
+                    if (type.equals("ESIMACCESS")) {
+                        String productDays = orderDto.getEsimProductDays();
+                        // 2. null 체크 및 빈 문자열 체크 (trim()은 인자 없이 사용)
+                        if (productDays != null && !productDays.trim().isEmpty()) {
+                            BigDecimal discountRate = BigDecimal.valueOf(EsimAccessUtil.discountRatio(productDays));
+                            // 2. 일수(Days) 가져오기
+                            BigDecimal days = new BigDecimal(productDays.trim());
+                            // 3. 연쇄 곱셈 (total = total * 할인율 * 일수)
+                            // total은 이미 (단가 * 수량)인 상태여야 함
+                            total = total.multiply(discountRate).multiply(days);
+                        }
+                    }
+                    // 모든 계산(수량 곱하기, 할인율 적용)이 끝난 후 "최종 딱 한 번" 반올림
+                    long finalPrice = total.setScale(0, RoundingMode.HALF_UP).longValue();
+
+                    orderDto.setTotalOriginAmount(finalPrice + "");
+
+                    orderMapper.updateTotalOriginAmount(orderDto);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
 

@@ -30,6 +30,10 @@ public class BulkDto extends BaseDto {
     @ExcelColumnName(headerName = "title")
     private String bulkTitle; //title
 
+    @ExcelColumnName(headerName = "bulk_apn")
+    private String bulkApn; //title
+
+
     @ExcelColumnName(headerName = "bulkOpenDt")
     private String bulkOpenDt;
 

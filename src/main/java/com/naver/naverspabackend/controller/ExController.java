@@ -156,10 +156,11 @@ public class ExController {
                         model.addAttribute("usageTxt",usage);
                     }else{
                         Double usageDouble = Double.parseDouble(usage);
+                        double formattedUsage = Math.round((usageDouble / 1000.0) * 100.0) / 100.0;
                         if(usageDouble/1000>1){
-                            model.addAttribute("usageTxt",(usageDouble/1000) + "GB");
+                            model.addAttribute("usageTxt",formattedUsage + "GB");
                         }else{
-                            model.addAttribute("usageTxt",(usageDouble) + "MB");
+                            model.addAttribute("usageTxt",formattedUsage + "MB");
                         }
                     }
                 }else {
@@ -218,6 +219,22 @@ public class ExController {
                             productOption += ("<p style=\"color: #b3b3b3;\">"+topupOrderDto.getProductOption()+"</p>");
                         }
                     }
+                }
+
+            }else if(type.equals(ApiType.TSIM.name())){
+                //TSIM일경우 무조건 마지막게 활성화된, 충전내역을 표기해줘야함.
+                if(topupOrderDtoList.size()>0){
+                    productOption =  "<p style=\"color: #b3b3b3;\">"+ productOption+"</p>";
+                    productOption += "<br/>(충전 내역)<br/>";
+                    for(int i=0;i<topupOrderDtoList.size();i++){
+                        if(i == topupOrderDtoList.size()-1){
+                            productOption += ("<p>"+topupOrderDtoList.get(i).getProductOption()+"</p>");
+                        }else{
+                            productOption += ("<p style=\"color: #b3b3b3;\">"+topupOrderDtoList.get(i).getProductOption()+"</p>");
+                        }
+                    }
+                }else{
+                    productOption =  "<p>"+ productOption+"</p>";
                 }
 
             }else{

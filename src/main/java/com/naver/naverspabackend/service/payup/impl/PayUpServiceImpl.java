@@ -289,6 +289,14 @@ public class PayUpServiceImpl implements PayUpService {
                     topupOrderDto.setTopupStatus(1);
                     topupOrderService.updateTopupStatus(topupOrderDto);
                     model.addAttribute("success",true);
+                    try{
+                        HashMap esimMap =(HashMap) resultMap.get("result");
+                        topupOrderDto.setTopupOrderNo(esimMap.get("topup_id").toString());
+                        topupOrderService.updateTopupOrderNo(topupOrderDto);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
                     return;
                 }else{
                 }

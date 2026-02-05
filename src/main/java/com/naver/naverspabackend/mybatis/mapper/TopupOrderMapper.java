@@ -25,4 +25,6 @@ public interface TopupOrderMapper {
     TopupOrderDto findById(TopupOrderDto param);
 
     void updateTransactionId(TopupOrderDto topupOrderDto);
+
+    TopupOrderDto findByIccidForMaxTopupId(TopupOrderDto topupOrderDtoParam);
 }

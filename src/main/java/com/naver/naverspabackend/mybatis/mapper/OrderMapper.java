@@ -113,4 +113,8 @@ public interface OrderMapper {
     List<OrderRenewTugeEsimDto> selectListOrderRenewTugeEsimList(OrderRenewTugeEsimDto orderRenewTugeEsimParam);
 
     OrderRenewTugeEsimDto selectOrderRenewTugeEsimByOrderNo(OrderRenewTugeEsimDto orderRenewTugeEsimDtoParam);
+
+    void updateTotalOriginAmount(OrderDto orderDto);
+
+    List<OrderDto> selectListOrderAllList();
 }

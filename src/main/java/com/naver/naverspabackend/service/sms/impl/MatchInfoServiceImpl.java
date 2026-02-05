@@ -2,6 +2,7 @@ package com.naver.naverspabackend.service.sms.impl;
 
 import com.naver.naverspabackend.dto.ApiPurchaseItemDto;
 import com.naver.naverspabackend.dto.MatchInfoDto;
+import com.naver.naverspabackend.dto.OrderDto;
 import com.naver.naverspabackend.enums.ApiType;
 import com.naver.naverspabackend.mybatis.mapper.ApiPurchaseItemMapper;
 import com.naver.naverspabackend.mybatis.mapper.BulkMapper;
@@ -112,6 +113,11 @@ public class MatchInfoServiceImpl implements MatchInfoService {
     @Override
     public List<MatchInfoDto> selectMatchInfoListAll(MatchInfoDto matchInfoDto) {
         return matchInfoMapper.selectMatchInfoListAll(matchInfoDto);
+    }
+
+    @Override
+    public MatchInfoDto selectMatchInfoByOrder(OrderDto orderDto) {
+        return matchInfoMapper.selectMatchInfoByOrder(orderDto);
     }
 
     @Override

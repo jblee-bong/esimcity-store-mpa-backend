@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 public class MakeResetTimeUtil {
 
-    public static final String[] tsimResetBasing2359 = new String[]{"vmobile.jp", "cmhk", "3gnet", "mobile.three.com.hk", "mobiledata", "mobile", "ctm-mobile","ctexcel"};
+    public static final String[] tsimResetBasing2359 = new String[]{"vmobile.jp", "cmhk", "3gnet", "mobile.three.com.hk", "mobiledata", "mobile", "ctm-mobile","ctexcel", "smartone"};
     public static final String[] tsimResetActive24 = new String[]{"plus","e-ideas","iij"};
     public static final String[] tsimResetChinaTimeAm8 = new String[]{"sl2sfr"};
     public static final String[] tsimResetVetimeTime2359 = new String[]{"m3-world"};

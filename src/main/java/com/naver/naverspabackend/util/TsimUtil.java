@@ -10,6 +10,7 @@ import com.naver.naverspabackend.enums.EsimApiIngSteLogsType;
 import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
 import com.naver.naverspabackend.service.esimPrice.EsimPriceService;
 import com.naver.naverspabackend.service.esimapiingsteplogs.EsimApiIngStepLogsService;
+import com.naver.naverspabackend.service.topupOrder.TopupOrderService;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -39,7 +40,9 @@ public class TsimUtil {
 
     public static ApiPurchaseItemService apiPurchaseItemService;
 
-    public TsimUtil(ApiPurchaseItemService apiPurchaseItemService, String tsimAccount, String tsimSecret, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService, EsimPriceService esimPriceService, String active){
+    public static TopupOrderService topupOrderService;
+
+    public TsimUtil(ApiPurchaseItemService apiPurchaseItemService, String tsimAccount, String tsimSecret, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService, EsimPriceService esimPriceService, TopupOrderService topupOrderService, String active){
         this.tsimAccount = tsimAccount;
         this.tsimSecret = tsimSecret;
         this.baseUrl = baseUrl;
@@ -47,6 +50,7 @@ public class TsimUtil {
         this.active = active;
         this.apiPurchaseItemService = apiPurchaseItemService;
         this.esimPriceService = esimPriceService;
+        this.topupOrderService= topupOrderService;
     }
 
 
@@ -89,7 +93,15 @@ public class TsimUtil {
         Map<String,Object> result = (Map<String, Object>) esimMap.get("result");
 
         if(esimMap.get("msg").toString().equals("Success")){
-            String topupId =  result.get("topup_id").toString();
+            TopupOrderDto topupOrderDtoParam = new TopupOrderDto();
+            topupOrderDtoParam.setEsimIccid(iccid);
+            TopupOrderDto topupOrderDto = topupOrderService.findByIccidForMaxTopupId(topupOrderDtoParam);
+            String topupId = "";
+            if(topupOrderDto!=null)
+                topupId =  topupOrderDto.getTopupOrderNo();
+            else
+                topupId =  result.get("topup_id").toString();
+
             List<String> deviceIds = (List<String>) result.get("device_ids");
             String deviceId = deviceIds.get(0).toString();
             esimMap =  getEsimStatus2(topupId,deviceId);

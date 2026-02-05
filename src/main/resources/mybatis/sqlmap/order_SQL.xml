@@ -547,6 +547,15 @@
 
 
 
+    <update id="updateTotalOriginAmount" parameterType="orderDto">
+        UPDATE TB_ORDER
+        SET
+            total_origin_amount = #{totalOriginAmount},
+            total_net_profit_amount = (CAST(total_payment_amount AS DECIMAL(15,2)) * 0.96) - CAST(#{totalOriginAmount} AS DECIMAL(15,2))
+        WHERE id = #{id};
+    </update>
+
+
 
     <insert id="insertOrderTugeEsim" parameterType="orderTugeEsimDto" >
         insert into TB_ORDER_TUGE_ESIM(
@@ -633,6 +642,10 @@
         from TB_ORDER_RENEW_TUGE_ESIM o where order_no = #{orderNo}
     </select>
 
+
+    <select id="selectListOrderAllList"  resultType="orderDto">
+        select * from TB_ORDER
+    </select>
 
 
 

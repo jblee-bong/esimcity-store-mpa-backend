@@ -102,7 +102,7 @@ public class EsimAccessUtil {
 
             DateTimeFormatter newDtFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
             // String 타입을 Date 타입으로 변환
-            int dataType = (int) esimStatus.get("activeType");
+            int dataType = (int) esimStatus.get("dataType");
             boolean isDaily = dataType!=1;
             long bytes = Long.parseLong(esimStatus.get("totalVolume").toString());
             double totalDataMb = bytes / (1024.0 * 1024.0);
@@ -374,7 +374,7 @@ public class EsimAccessUtil {
             DateTimeFormatter newDtFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
             // String 타입을 Date 타입으로 변환
             Calendar cal = Calendar.getInstance();
-            int dataType = (int) esimStatus.get("activeType");
+            int dataType = (int) esimStatus.get("dataType");
             boolean isDaily = dataType!=1;
             String totalData = esimUsage.get("totalData").toString();
 
@@ -587,7 +587,7 @@ public class EsimAccessUtil {
 
         packageInfo.put("packageCode",esimProductId);
         packageInfo.put("count",1);//몇개구매할껀지
-        packageInfo.put("price",Double.parseDouble(apiPurchaseItemDto.getApiPurchasePrice()) * 10000); //구매가격을 넣어줌 가격이 틀리면 실패 (가격변동막아줌)
+        //packageInfo.put("price",Double.parseDouble(apiPurchaseItemDto.getApiPurchasePrice()) * 10000); //구매가격을 넣어줌 가격이 틀리면 실패 (가격변동막아줌)
         if(esimProductDays!=null && !esimProductDays.trim().equals(""))
             packageInfo.put("periodNum",Integer.parseInt(esimProductDays));
 
@@ -598,7 +598,7 @@ public class EsimAccessUtil {
         jsonObject.put("transactionId",UUID.randomUUID().toString().substring(0,5) + new SimpleDateFormat("yyyyMMddHHmmssSSSS").format(new Date()));
 
 
-        jsonObject.put("amount",getAmount(apiPurchaseItemDto.getApiPurchasePrice(),esimProductDays));
+       // jsonObject.put("amount",getAmount(apiPurchaseItemDto.getApiPurchasePrice(),esimProductDays));
         jsonObject.put("packageInfoList",packageInfoList);
 
         esimApiIngStepLogsService.insertRest(headers,jsonObject, orderId);
@@ -622,21 +622,19 @@ public class EsimAccessUtil {
         }
         return Math.round(finalValue) * Integer.parseInt(esimProductDays);
     }
-    private static Double discountRatio(String daily){
+    public static Double discountRatio(String daily){
         if(daily==null || daily.trim().equals("")){
             return  1.0;
         }
-        Integer dailyCount = Integer.parseInt(daily);
-        if(dailyCount>=1 && dailyCount<=4){
-            return (Double) 0.96;
-        }else if(dailyCount>=5 && dailyCount<=9){
-            return (Double) 0.92;
-        }else if(dailyCount>=10 && dailyCount<=19){
-            return (Double) 0.89;
-        }else if(dailyCount>=20 && dailyCount<=29){
-            return (Double) 0.85;
-        }else{
-            return (Double) 0.82;
+        try {
+            int dailyCount = Integer.parseInt(daily.trim());
+            if (dailyCount >= 1 && dailyCount <= 4) return 0.96;
+            if (dailyCount >= 5 && dailyCount <= 9) return 0.92;
+            if (dailyCount >= 10 && dailyCount <= 19) return 0.89;
+            if (dailyCount >= 20 && dailyCount <= 29) return 0.85;
+            return 0.82;
+        } catch (NumberFormatException e) {
+            return 1.0; // 숫자가 아닐 경우 기본값
         }
     }
 

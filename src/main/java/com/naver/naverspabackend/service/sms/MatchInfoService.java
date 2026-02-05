@@ -1,6 +1,7 @@
 package com.naver.naverspabackend.service.sms;
 
 import com.naver.naverspabackend.dto.MatchInfoDto;
+import com.naver.naverspabackend.dto.OrderDto;
 import com.naver.naverspabackend.response.ApiResult;
 import com.naver.naverspabackend.util.PagingUtil;
 import java.security.NoSuchAlgorithmException;
@@ -26,4 +27,6 @@ public interface MatchInfoService {
     ApiResult<?> fetchListExcelUpload(List<MatchInfoDto> matchInfoDtoList);
 
     List<MatchInfoDto> selectMatchInfoListAll(MatchInfoDto matchInfoDto);
+
+    MatchInfoDto selectMatchInfoByOrder(OrderDto orderDto);
 }
