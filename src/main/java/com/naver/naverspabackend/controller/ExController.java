@@ -171,7 +171,7 @@ public class ExController {
                     String totalUsage  = model.getAttribute("totalUsage").toString();
                     if(totalUsage.equals("unlimited")){
                         model.addAttribute("totalUsageTxt",totalUsage);
-                    }else{
+                    } else {
                         Double totalUsageDouble = Double.parseDouble(totalUsage);
                         if(totalUsageDouble/1024>1){
                             model.addAttribute("totalUsageTxt",(totalUsageDouble/1024) + "GB");

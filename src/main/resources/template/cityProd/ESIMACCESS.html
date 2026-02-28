@@ -892,7 +892,7 @@
   <!-- Popup Modal for Charge Item Selection -->
   <div id="chargePopup" class="popup-overlay">
     <div class="popup-modal">
-      <button class="popup-back-button" id="popupBackBtn" onclick="goBackToDaysStep()">
+      <button class="popup-back-button" id="popupBackBtn" onclick="goBackToDataStep()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
@@ -902,16 +902,16 @@
         <div class="popup-step-indicator">
           <div class="popup-step" id="step1Indicator">
             <div class="popup-step-number">1</div>
-            <span>일수 선택</span>
+            <span>용량 선택</span>
           </div>
           <div class="popup-step-divider"></div>
           <div class="popup-step" id="step2Indicator">
             <div class="popup-step-number">2</div>
-            <span>용량 선택</span>
+            <span>일수 선택</span>
           </div>
         </div>
-        <div class="popup-title" id="popupTitle">일수 선택</div>
-        <div class="popup-subtitle" id="popupSubtitle">충전할 일수를 선택해주세요</div>
+        <div class="popup-title" id="popupTitle">용량 선택</div>
+        <div class="popup-subtitle" id="popupSubtitle">충전할 용량을 선택해주세요</div>
       </div>
       <div class="popup-item-list" id="popupItemList">
         <!-- Items will be populated by JavaScript -->
@@ -935,30 +935,15 @@
     var selectedChannelDataplanId = null;
     var selectedDays = null;
     var selectedData = null;
-    var uniqueDays = []; // 중복 제거된 일수 목록
-    var uniqueDataList = []; // 선택한 일수에 해당하는 중복 제거된 데이터 목록
-    var currentStep = 1; // 1: 일수 선택, 2: 용량 선택
+    var uniqueDays = []; // 선택한 용량에 해당하는 중복 제거된 일수 목록
+    var uniqueDataList = []; // 중복 제거된 용량 목록
+    var currentStep = 1; // 1: 용량 선택, 2: 일수 선택
 
-    // 중복 제거된 일수 목록 생성
-    function getUniqueDays() {
-      var daysSet = new Set();
-      apiPurchaseItemList.forEach(function(item) {
-        if (item.channel_dataplan_day) {
-          daysSet.add(item.channel_dataplan_day);
-        }
-      });
-      uniqueDays = Array.from(daysSet).sort(function(a, b) {
-        var numA = parseInt(a.replace('일', ''));
-        var numB = parseInt(b.replace('일', ''));
-        return numA - numB;
-      });
-    }
-
-    // 선택한 일수에 해당하는 중복 제거된 데이터 목록 생성
-    function getUniqueDataForDays(days) {
+    // 중복 제거된 용량 목록 생성 (모든 용량)
+    function getUniqueData() {
       var dataSet = new Set();
       apiPurchaseItemList.forEach(function(item) {
-        if (item.channel_dataplan_day === days && item.channel_dataplan_data) {
+        if (item.channel_dataplan_data) {
           dataSet.add(item.channel_dataplan_data);
         }
       });
@@ -972,6 +957,21 @@
       });
     }
 
+    // 선택한 용량에 해당하는 중복 제거된 일수 목록 생성
+    function getUniqueDaysForData(data) {
+      var daysSet = new Set();
+      apiPurchaseItemList.forEach(function(item) {
+        if (item.channel_dataplan_data === data && item.channel_dataplan_day) {
+          daysSet.add(item.channel_dataplan_day);
+        }
+      });
+      uniqueDays = Array.from(daysSet).sort(function(a, b) {
+        var numA = parseInt(a.replace('일', ''));
+        var numB = parseInt(b.replace('일', ''));
+        return numA - numB;
+      });
+    }
+
     // 선택한 일수와 데이터로 channel_dataplan_id 찾기
     function findChannelDataplanId(days, data) {
       for (var i = 0; i < apiPurchaseItemList.length; i++) {
@@ -981,6 +981,28 @@
         }
       }
       return null;
+    }
+
+    // 선택한 용량과 일수로 금액 찾기
+    function findPriceForDataAndDays(data, days) {
+      // selectedData에서 용량 부분만 추출 (예: "1.00 GB (5000원)" -> "1.00 GB")
+      var dataOnly = data.split(' (')[0].trim();
+      
+      for (var i = 0; i < apiPurchaseItemList.length; i++) {
+        var item = apiPurchaseItemList[i];
+        // 일수가 일치하고, 용량 부분이 일치하는 항목 찾기
+        if (item.channel_dataplan_day === days) {
+          var itemDataOnly = item.channel_dataplan_data.split(' (')[0].trim();
+          if (itemDataOnly === dataOnly) {
+            // channel_dataplan_data에서 금액 추출 (예: "1.00 GB (5000원)" -> "5000원")
+            var match = item.channel_dataplan_data.match(/\((\d+)원\)/);
+            if (match && match[1]) {
+              return match[1] + '원';
+            }
+          }
+        }
+      }
+      return '';
     }
 
     // 충전 실행 함수 (기존 로직을 함수로 분리)
@@ -1018,19 +1040,19 @@
       });
     }
 
-    // 팝업 열기 (1단계: 일수 선택)
+    // 팝업 열기 (1단계: 용량 선택)
     function openChargePopup() {
       if (!apiPurchaseItemList || apiPurchaseItemList.length === 0) {
         return;
       }
 
-      getUniqueDays();
-      showDaysStep();
+      getUniqueData();
+      showDataStep();
       $('#chargePopup').addClass('show');
     }
 
-    // 1단계: 일수 선택 화면 표시
-    function showDaysStep() {
+    // 1단계: 용량 선택 화면 표시
+    function showDataStep() {
       currentStep = 1;
       selectedDays = null;
       selectedData = null;
@@ -1042,58 +1064,64 @@
       $('#popupBackBtn').removeClass('show');
       
       // 제목 및 설명 업데이트
-      $('#popupTitle').text('일수 선택');
-      $('#popupSubtitle').text('충전할 일수를 선택해주세요');
+      $('#popupTitle').text('용량 선택');
+      $('#popupSubtitle').text('충전할 용량을 선택해주세요');
       
-      // 일수 목록 생성
-      var daysListHtml = '';
-      uniqueDays.forEach(function(days) {
-        // 해당 일수에 몇 개의 데이터 옵션이 있는지 확인
-        var dataCount = 0;
+      // 용량 목록 생성
+      var dataListHtml = '';
+      uniqueDataList.forEach(function(data) {
+        // 해당 용량에 몇 개의 일수 옵션이 있는지 확인
+        var daysCount = 0;
         apiPurchaseItemList.forEach(function(item) {
-          if (item.channel_dataplan_day === days) {
-            dataCount++;
+          if (item.channel_dataplan_data === data) {
+            daysCount++;
           }
         });
         
-        daysListHtml += '<div class="popup-item" data-days="' + days + '" onclick="selectDays(this)">';
-        daysListHtml += '<div class="popup-item-name">' + days + '</div>';
-        daysListHtml += '<div class="popup-item-id">' + dataCount + '개 용량 옵션</div>';
-        daysListHtml += '</div>';
+        dataListHtml += '<div class="popup-item" data-data="' + data + '" onclick="selectData(this)">';
+        dataListHtml += '<div class="popup-item-name">' + data + '</div>';
+        dataListHtml += '<div class="popup-item-id">' + daysCount + '개 일수 옵션</div>';
+        dataListHtml += '</div>';
       });
       
-      $('#popupItemList').html(daysListHtml);
+      $('#popupItemList').html(dataListHtml);
       $('#popupConfirmBtn').text('다음').prop('disabled', true);
     }
 
-    // 2단계: 용량 선택 화면 표시
-    function showDataStep() {
-      if (!selectedDays) return;
+    // 2단계: 일수 선택 화면 표시
+    function showDaysStep() {
+      if (!selectedData) return;
       
       currentStep = 2;
-      selectedData = null;
+      selectedDays = null;
       selectedChannelDataplanId = null;
       
-      getUniqueDataForDays(selectedDays);
+      getUniqueDaysForData(selectedData);
       
       // 단계 표시 업데이트
       $('#step2Indicator').addClass('active');
       $('#popupBackBtn').addClass('show');
       
       // 제목 및 설명 업데이트
-      $('#popupTitle').text('용량 선택');
-      $('#popupSubtitle').text(selectedDays + ' 상품의 용량을 선택해주세요');
+      $('#popupTitle').text('일수 선택');
+      $('#popupSubtitle').text(selectedData + ' 상품의 일수를 선택해주세요');
       
-      // 용량 목록 생성
-      var dataListHtml = '';
-      uniqueDataList.forEach(function(data) {
-        dataListHtml += '<div class="popup-item" data-data="' + data + '" onclick="selectData(this)">';
-        dataListHtml += '<div class="popup-item-name">' + data + '</div>';
-        dataListHtml += '<div class="popup-item-id">' + selectedDays + ' ' + data + '</div>';
-        dataListHtml += '</div>';
+      // 일수 목록 생성
+      var daysListHtml = '';
+      uniqueDays.forEach(function(days) {
+        var price = findPriceForDataAndDays(selectedData, days);
+        daysListHtml += '<div class="popup-item" data-days="' + days + '" onclick="selectDays(this)">';
+        daysListHtml += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">';
+        daysListHtml += '<div class="popup-item-name">' + days + '</div>';
+        if (price) {
+          daysListHtml += '<div style="color: var(--gold-dark); font-weight: 700; font-size: 18px;">' + price + '</div>';
+        }
+        daysListHtml += '</div>';
+        daysListHtml += '<div class="popup-item-id">' + selectedData + ' ' + days + '</div>';
+        daysListHtml += '</div>';
       });
       
-      $('#popupItemList').html(dataListHtml);
+      $('#popupItemList').html(daysListHtml);
       $('#popupConfirmBtn').text('선택').prop('disabled', true);
     }
 
@@ -1131,12 +1159,12 @@
     // 선택 확인 및 다음 단계 또는 결제 진행
     function confirmChargeSelection() {
       if (currentStep === 1) {
-        // 1단계: 일수 선택 완료 -> 2단계로 이동
-        if (selectedDays) {
-          showDataStep();
+        // 1단계: 용량 선택 완료 -> 2단계로 이동
+        if (selectedData) {
+          showDaysStep();
         }
       } else if (currentStep === 2) {
-        // 2단계: 용량 선택 완료 -> channel_dataplan_id 찾아서 결제 진행
+        // 2단계: 일수 선택 완료 -> channel_dataplan_id 찾아서 결제 진행
         if (selectedDays && selectedData) {
           selectedChannelDataplanId = findChannelDataplanId(selectedDays, selectedData);
           console.log(selectedChannelDataplanId)

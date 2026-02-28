@@ -192,18 +192,18 @@ public class EsimAccessUtil {
 
                         Map<String,String> apiPurchaseItem = new HashMap<>();
                         apiPurchaseItem.put("channel_dataplan_id",topup.get("packageCode").toString() + "|^|"+topup.get("volume").toString()+ "|^|"+topup.get("price").toString()+ "|^|"+topup.get("duration").toString());
-                        apiPurchaseItem.put("channel_dataplan_day",((Integer) topup.get("duration")) +"일");
+                        apiPurchaseItem.put("channel_dataplan_day",((Integer) topup.get("duration")) +"일"  + " (" + ( (int) Math.round(price) ) + "원)");
 
                         long chargeBytes = Long.parseLong(topup.get("volume").toString());
                         long gbBoundary = 1024L * 1024 * 1024;
                         if (chargeBytes >= gbBoundary) {
                             // GB로 변환 (소수점 둘째자리까지)
                             double gbValue = (double) chargeBytes / gbBoundary;
-                            apiPurchaseItem.put("channel_dataplan_data",(String.format("%.2f GB", gbValue))  + " (" + ( (int) Math.round(price) ) + "원)" );
+                            apiPurchaseItem.put("channel_dataplan_data",(String.format("%.2f GB", gbValue)) );
                         } else {
                             // MB로 변환 (소수점 둘째자리까지)
                             double mbValue = (double) chargeBytes / (1024 * 1024);
-                            apiPurchaseItem.put("channel_dataplan_data",(String.format("%.2f MB", mbValue))  + " (" + ( (int) Math.round(price) ) + "원)" );
+                            apiPurchaseItem.put("channel_dataplan_data",(String.format("%.2f MB", mbValue)) );
                         }
 
                         apiPurchaseItemList.add(apiPurchaseItem);

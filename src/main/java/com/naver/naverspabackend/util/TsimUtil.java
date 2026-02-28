@@ -233,8 +233,8 @@ public class TsimUtil {
 
                         Map<String,String> apiPurchaseItem = new HashMap<>();
                         apiPurchaseItem.put("channel_dataplan_id",apiPurchaseItemDto.getApiPurchaseItemProcutId());
-                        apiPurchaseItem.put("channel_dataplan_day",apiPurchaseItemDto.getApiPurchaseItemDays() +"일" );
-                        apiPurchaseItem.put("channel_dataplan_data",apiPurchaseItemDto.getApiPurchaseDataTotal()  + " 저속 무제한" + " (" + ( (int) Math.round(price) ) + "원)" );
+                        apiPurchaseItem.put("channel_dataplan_day",apiPurchaseItemDto.getApiPurchaseItemDays() +"일"  + " (" + ( (int) Math.round(price) ) + "원)");
+                        apiPurchaseItem.put("channel_dataplan_data",apiPurchaseItemDto.getApiPurchaseDataTotal()  + " 저속 무제한" );
                         apiPurchaseItemList.add(apiPurchaseItem);
                     }
                     model.addAttribute("apiPurchaseItemList",apiPurchaseItemList);//충전 가능리스트

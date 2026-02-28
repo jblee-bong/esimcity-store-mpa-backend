@@ -155,7 +155,7 @@ public class TugeUtil {
             param.setCardType(apiPurchaseItemDto.getApiPurchaseItemCardType());
             ApiCardTypeDto apiCardTypeDto = apiPurchaseItemService.selectCardTypeFindByCardType(param);
 
-            if(apiCardTypeDto!=null && apiCardTypeDto.isRenewYn() && orderTugeEsimDto.getRenewExpirationTime()!=null ){
+            if(apiCardTypeDto!=null && apiCardTypeDto.isRenewYn() && orderTugeEsimDto.getRenewExpirationTime()!=null && !apiPurchaseItemDto.isApiPurchaseItemIsDaily()){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
                 LocalDateTime localDateTime = LocalDateTime.parse(orderTugeEsimDto.getRenewExpirationTime(), formatter);
@@ -200,7 +200,7 @@ public class TugeUtil {
                     Double weight5 = esimPriceDto.getWeight5();
 
                     for(ApiPurchaseItemDto data : apiPurchaseItemDtoList){
-                        Double krwPrice = Double.valueOf(apiPurchaseItemDto.getApiPurchaseKrwPrice());
+                        Double krwPrice = Double.valueOf(data.getApiPurchaseKrwPrice());
                         double apiPrice =  krwPrice;
                         double priceWeight = 0;
                         //금액으로인한 가중치
@@ -219,12 +219,12 @@ public class TugeUtil {
 
                         Map<String,String> apiPurchaseItem = new HashMap<>();
                         apiPurchaseItem.put("channel_dataplan_id",data.getApiPurchaseItemProcutId());
-                        apiPurchaseItem.put("channel_dataplan_day",data.getApiPurchaseItemDays() +"일" );
+                        apiPurchaseItem.put("channel_dataplan_day",data.getApiPurchaseItemDays() +"일" + (" (" + ( (int) Math.round(price) ) + "원)"));
                         apiPurchaseItem.put("channel_dataplan_data",
                                 (data.getApiPurchaseDataTotal().equals("Unlimited") ?"무제한":
                                         (
                                                 (data.isApiPurchaseItemIsDaily()?"매일 ":"총 ") + data.getApiPurchaseDataTotal()
-                                        ))   + (" (" + ( (int) Math.round(price) ) + "원)")
+                                        ))
                         );
                         apiPurchaseItemList.add(apiPurchaseItem);
                     }
@@ -464,12 +464,12 @@ public class TugeUtil {
 
                         Map<String,String> apiPurchaseItem = new HashMap<>();
                         apiPurchaseItem.put("channel_dataplan_id",data.getApiPurchaseItemProcutId());
-                        apiPurchaseItem.put("channel_dataplan_day",data.getApiPurchaseItemDays() +"일" );
+                        apiPurchaseItem.put("channel_dataplan_day",data.getApiPurchaseItemDays() +"일"  + (" (" + ( (int) Math.round(price) ) + "원)") );
                         apiPurchaseItem.put("channel_dataplan_data",
                                 (data.getApiPurchaseDataTotal().equals("Unlimited") ?"무제한":
                                         (
                                                 (data.isApiPurchaseItemIsDaily()?"매일 ":"총 ") + data.getApiPurchaseDataTotal()
-                                        ))   + (" (" + ( (int) Math.round(price) ) + "원)")
+                                        ))
                         );
                         apiPurchaseItemList.add(apiPurchaseItem);
                     }
