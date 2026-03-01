@@ -259,51 +259,53 @@ public class NaverOrder {
 
             String claimType = Objects.toString(productOrder.get("claimType"), "");
             String claimStatus = Objects.toString(productOrder.get("claimStatus"), "");
-            //발송 상태 0: 미발송, 1: 발신 , 2:부분실패, 3:발송실패, 4: 취소, 5 : 취소요청 ,6: 반품, 7: 반품요청 99: 이전으로 돌리기
-            if(!claimType.equals("") && claimType.equals("CANCEL")){ //취소상태
-                if(!claimStatus.equals("")){
-                    if(claimStatus.equals("CANCEL_REQUEST")){//취소 요청
-                        //cancelOrderDto(orderDto);
-                        orderDto.setSendStatus("5");
-                    }else if(claimStatus.equals("CANCELING")){//취소 처리중
-                        //cancelOrderDto(orderDto);
-                        orderDto.setSendStatus("5");
-                    }else if(claimStatus.equals("CANCEL_DONE") || claimStatus.equals("ADMIN_CANCEL_DONE")){//취소 완료
-                        //cancelOrderDto(orderDto);
-                        orderDto.setSendStatus("4");
-                    }else if(claimStatus.equals("CANCEL_REJECT") || claimStatus.equals("ADMIN_CANCEL_REJECT")){//취소 철회
-                        orderDto.setSendStatus("99");
+            if(Integer.parseInt(remainQuantity)<1){ //부분취소가 아닌경우만 취소 상태로
+                //발송 상태 0: 미발송, 1: 발신 , 2:부분실패, 3:발송실패, 4: 취소, 5 : 취소요청 ,6: 반품, 7: 반품요청 99: 이전으로 돌리기
+                if(!claimType.equals("") && claimType.equals("CANCEL")){ //취소상태
+                    if(!claimStatus.equals("")){
+                        if(claimStatus.equals("CANCEL_REQUEST")){//취소 요청
+                            //cancelOrderDto(orderDto);
+                            orderDto.setSendStatus("5");
+                        }else if(claimStatus.equals("CANCELING")){//취소 처리중
+                            //cancelOrderDto(orderDto);
+                            orderDto.setSendStatus("5");
+                        }else if(claimStatus.equals("CANCEL_DONE") || claimStatus.equals("ADMIN_CANCEL_DONE")){//취소 완료
+                            //cancelOrderDto(orderDto);
+                            orderDto.setSendStatus("4");
+                        }else if(claimStatus.equals("CANCEL_REJECT") || claimStatus.equals("ADMIN_CANCEL_REJECT")){//취소 철회
+                            orderDto.setSendStatus("99");
+                        }
                     }
                 }
-            }
-            if(!claimType.equals("") && claimType.equals("ADMIN_CANCEL")){ //취소상태
-                if(!claimStatus.equals("")){
-                    if(claimStatus.equals("CANCEL_REQUEST")){//취소 요청
-                        //cancelOrderDto(orderDto);
-                        orderDto.setSendStatus("5");
-                    }else if(claimStatus.equals("CANCELING")){//취소 처리중
-                        //cancelOrderDto(orderDto);
-                        orderDto.setSendStatus("5");
-                    }else if(claimStatus.equals("CANCEL_DONE") || claimStatus.equals("ADMIN_CANCEL_DONE")){//취소 완료
-                        //cancelOrderDto(orderDto);
-                        orderDto.setSendStatus("4");
-                    }else if(claimStatus.equals("CANCEL_REJECT") || claimStatus.equals("ADMIN_CANCEL_REJECT")){//취소 철회
-                        orderDto.setSendStatus("99");
+                if(!claimType.equals("") && claimType.equals("ADMIN_CANCEL")){ //취소상태
+                    if(!claimStatus.equals("")){
+                        if(claimStatus.equals("CANCEL_REQUEST")){//취소 요청
+                            //cancelOrderDto(orderDto);
+                            orderDto.setSendStatus("5");
+                        }else if(claimStatus.equals("CANCELING")){//취소 처리중
+                            //cancelOrderDto(orderDto);
+                            orderDto.setSendStatus("5");
+                        }else if(claimStatus.equals("CANCEL_DONE") || claimStatus.equals("ADMIN_CANCEL_DONE")){//취소 완료
+                            //cancelOrderDto(orderDto);
+                            orderDto.setSendStatus("4");
+                        }else if(claimStatus.equals("CANCEL_REJECT") || claimStatus.equals("ADMIN_CANCEL_REJECT")){//취소 철회
+                            orderDto.setSendStatus("99");
+                        }
                     }
                 }
-            }
 
-            if(!claimType.equals("") && claimType.equals("RETURN")){//반품상태
-                if(!claimStatus.equals("")){
+                if(!claimType.equals("") && claimType.equals("RETURN")){//반품상태
+                    if(!claimStatus.equals("")){
 
-                    if(claimStatus.equals("RETURN_REQUEST")){//반품 요청
-                        //cancelOrderDto(orderDto);
-                        orderDto.setSendStatus("7");
-                    }else if(claimStatus.equals("RETURN_DONE")){//반품 완료
-                        //cancelOrderDto(orderDto);
-                        orderDto.setSendStatus("6");
-                    }else if(claimStatus.equals("RETURN_REJECT")){//반품 철회
-                        orderDto.setSendStatus("99");
+                        if(claimStatus.equals("RETURN_REQUEST")){//반품 요청
+                            //cancelOrderDto(orderDto);
+                            orderDto.setSendStatus("7");
+                        }else if(claimStatus.equals("RETURN_DONE")){//반품 완료
+                            //cancelOrderDto(orderDto);
+                            orderDto.setSendStatus("6");
+                        }else if(claimStatus.equals("RETURN_REJECT")){//반품 철회
+                            orderDto.setSendStatus("99");
+                        }
                     }
                 }
             }
