@@ -5,39 +5,35 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.naver.naverspabackend.batch.writer.NaverWritter;
 import com.naver.naverspabackend.dto.OrderDto;
-import com.naver.naverspabackend.dto.ProductDto;
-import com.naver.naverspabackend.dto.ProductOptionDto;
 import com.naver.naverspabackend.dto.StoreDto;
-import com.naver.naverspabackend.mybatis.mapper.ProductMapper;
-import com.naver.naverspabackend.mybatis.mapper.ProductOptionMapper;
+import com.naver.naverspabackend.mybatis.mapper.StoreMapper;
 import com.naver.naverspabackend.security.NaverRedisRepository;
 import com.naver.naverspabackend.security.token.NaverRedisToken;
 import com.naver.naverspabackend.util.ApiUtil;
 import com.naver.naverspabackend.util.CommonUtil;
-import lombok.extern.slf4j.Slf4j;
-import okhttp3.MediaType;
-import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import okhttp3.MediaType;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * 메인 DB에서 batch 관련 설정값을 불러와 ExcuteContext에 저장하는 Step
  *
  */
 
-@Component
-@Slf4j
-public class NaverOrder {
+@SpringBootTest
+public class NaverOrderTest {
 
     @Autowired
     private NaverRedisRepository naverRedisRepository;
@@ -56,6 +52,8 @@ public class NaverOrder {
     @Value("${naver-api.order-detail-info}")
     private String orderDetailInfoUrl;
 
+    @Autowired
+    private StoreMapper storeMapper;
     // 요청량 최대 사이즈
     private final int LIMIT_SIZE = 300;
 
@@ -63,64 +61,71 @@ public class NaverOrder {
     private final int DIFF_TIME = -360;
 
 
-    public void processNaverStore(StoreDto storeDto) {
-        try {
-            Optional<NaverRedisToken> byStoreId = naverRedisRepository.findById(storeDto.getId());
-
-            if (!byStoreId.isPresent()){
-                return;
-            }
-
-            NaverRedisToken naverRedisToken = byStoreId.get();
-
-            Map<String, String> headerMap = naverRedisToken.returnHeaderMap();
-
-            Map<String, Object> paramMap = new HashMap<>();
-
-            paramMap.put("lastChangedFrom", URLEncoder.encode(CommonUtil.naverFormatDate(DIFF_TIME, ChronoUnit.MINUTES), StandardCharsets.UTF_8.name()));
-            //paramMap.put("lastChangedType", "PAYED");
-
-            Map<String, Object> resMap = new HashMap<>();
-
+    @Test
+    void execute() {
+        Map<String,Object> param = new HashMap<>();
+        param.put("userAuthority","ROLE_ADMIN");
+        List<StoreDto> storeDtos = storeMapper.selectStoreList(param);
+        for (StoreDto storeDto : storeDtos) {
             try {
-                resMap = requestOrderNoList(headerMap, paramMap);
-            } catch (Exception e) {
-                log.error(storeDto.getStoreName()+" "   +  e.getMessage());
-                return;
-            }
+                Optional<NaverRedisToken> byStoreId = naverRedisRepository.findById(storeDto.getId());
 
-            // 최종 입력 될 product 상품
-            List<OrderDto> orderDtoList = new ArrayList<>();
-
-            if( resMap.get("data") != null) {
-
-                Map<String, Object> moreMap = (Map<String, Object>) ((Map) resMap.get("data")).get("more");
-                List<Map<String, Object>> orderListMap = (List<Map<String, Object>>) ((Map) resMap.get("data")).get("lastChangeStatuses");
-
-                while (moreMap != null && moreMap.get("moreFrom") != null) {
-                    paramMap.put("lastChangedFrom", URLEncoder.encode((String) moreMap.get("moreFrom"), StandardCharsets.UTF_8.name()));
-                    paramMap.put("moreSequence", moreMap.get("moreSequence"));
-
-                    moreMap = requestOrderNoList(headerMap, paramMap);
-
-                    List<Map<String, Object>> moreOrderListMap = (List<Map<String, Object>>) ((Map) resMap.get("data")).get("lastChangeStatuses");
-
-                    orderListMap.addAll(moreOrderListMap);
+                if (!byStoreId.isPresent()){
+                    return;
                 }
 
-                List<String> productOrderIds = new ArrayList<>();
+                NaverRedisToken naverRedisToken = byStoreId.get();
 
-                productOrderIds = orderListMap.stream().map(e -> e.get("productOrderId") + "").collect(Collectors.toList());
+                Map<String, String> headerMap = naverRedisToken.returnHeaderMap();
 
-                List<Map<String, Object>> orderDetailList = requestOrderDetailList(productOrderIds, headerMap);
+                Map<String, Object> paramMap = new HashMap<>();
 
-                orderDtoList = buildOrderDtoList(orderDetailList, storeDto);
+                paramMap.put("lastChangedFrom", URLEncoder.encode(CommonUtil.naverFormatDate(DIFF_TIME, ChronoUnit.MINUTES), StandardCharsets.UTF_8.name()));
+                //paramMap.put("lastChangedType", "PAYED");
+
+                Map<String, Object> resMap = new HashMap<>();
+
+                try {
+                    resMap = requestOrderNoList(headerMap, paramMap);
+                } catch (Exception e) {
+                    //log.error(storeDto.getStoreName()+" "   +  e.getMessage());
+                    return;
+                }
+
+                // 최종 입력 될 product 상품
+                List<OrderDto> orderDtoList = new ArrayList<>();
+
+                if( resMap.get("data") != null) {
+
+                    Map<String, Object> moreMap = (Map<String, Object>) ((Map) resMap.get("data")).get("more");
+                    List<Map<String, Object>> orderListMap = (List<Map<String, Object>>) ((Map) resMap.get("data")).get("lastChangeStatuses");
+
+                    while (moreMap != null && moreMap.get("moreFrom") != null) {
+                        paramMap.put("lastChangedFrom", URLEncoder.encode((String) moreMap.get("moreFrom"), StandardCharsets.UTF_8.name()));
+                        paramMap.put("moreSequence", moreMap.get("moreSequence"));
+
+                        moreMap = requestOrderNoList(headerMap, paramMap);
+
+                        List<Map<String, Object>> moreOrderListMap = (List<Map<String, Object>>) ((Map) resMap.get("data")).get("lastChangeStatuses");
+
+                        orderListMap.addAll(moreOrderListMap);
+                    }
+
+                    List<String> productOrderIds = new ArrayList<>();
+
+                    productOrderIds = orderListMap.stream().map(e -> e.get("productOrderId") + "").collect(Collectors.toList());
+
+                    List<Map<String, Object>> orderDetailList = requestOrderDetailList(productOrderIds, headerMap);
+
+                    orderDtoList = buildOrderDtoList(orderDetailList, storeDto);
+                }
+
+                //naverWritter.orderWrite(orderDtoList);
+            } catch (Exception e) {
+                // log.error("네이버 스토어 오더 처리 중 오류 발생 - Store ID: {}, Store Name: {}, Error: {}", storeDto.getId(), storeDto.getStoreName(), e.getMessage());
             }
-
-            naverWritter.orderWrite(orderDtoList);
-        } catch (Exception e) {
-            log.error("네이버 스토어 오더 처리 중 오류 발생 - Store ID: {}, Store Name: {}, Error: {}", storeDto.getId(), storeDto.getStoreName(), e.getMessage());
         }
+
     }
 
 
@@ -279,13 +284,13 @@ public class NaverOrder {
             if(!claimType.equals("") && claimType.equals("ADMIN_CANCEL")){ //취소상태
                 if(!claimStatus.equals("")){
                     if(claimStatus.equals("CANCEL_REQUEST")){//취소 요청
-                        //cancelOrderDto(orderDto);
+                        cancelOrderDto(orderDto);
                         orderDto.setSendStatus("5");
                     }else if(claimStatus.equals("CANCELING")){//취소 처리중
-                        //cancelOrderDto(orderDto);
+                        cancelOrderDto(orderDto);
                         orderDto.setSendStatus("5");
                     }else if(claimStatus.equals("CANCEL_DONE") || claimStatus.equals("ADMIN_CANCEL_DONE")){//취소 완료
-                        //cancelOrderDto(orderDto);
+                        cancelOrderDto(orderDto);
                         orderDto.setSendStatus("4");
                     }else if(claimStatus.equals("CANCEL_REJECT") || claimStatus.equals("ADMIN_CANCEL_REJECT")){//취소 철회
                         orderDto.setSendStatus("99");
