@@ -60,7 +60,7 @@ public class NaverOrder {
     private final int LIMIT_SIZE = 300;
 
     // 검색할 diff 시간
-    private final int DIFF_TIME = -360;
+    private final int DIFF_TIME = -60;
 
 
     public void processNaverStore(StoreDto storeDto) {

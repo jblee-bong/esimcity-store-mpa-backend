@@ -63,7 +63,7 @@ public class CoupangOrder {
     private String orderCancelListInfoUrl;
 
 
-    private final int DIFF_TIME = 30; //분
+    private final int DIFF_TIME = 60; //분
 
     /*
     ACCEPT	결제완료

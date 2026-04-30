@@ -97,6 +97,76 @@ public class ApiPurchaseListSchedulerTest {
 
         Map<String,Double> exchangeRate = getExchangeRate();
 
+
+        try{
+            EsimPriceDto param = new EsimPriceDto();
+            param.setType(ApiType.WORLDMOVE.name());
+            EsimPriceDto esimPriceDto = esimPriceService.findById(param);
+            Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
+            ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
+            apiPurchaseItemDto.setApiPurchaseItemType(ApiType.WORLDMOVE.name());
+            List<HashMap<String, Object>> itemList = OriginWorldMoveUtil.contextLoads1();
+            apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
+            for(int j=0;j<itemList.size();j++){
+                apiPurchaseItemDto.setApiPurchaseItemProcutId(null);
+                apiPurchaseItemDto.setApiPurchaseItemDescription(null);
+                apiPurchaseItemDto.setApiPurchaseItemSelectType(null);
+                apiPurchaseItemDto.setApiPurchaseItemDays(null);
+                if(itemList.get(j).get("wmproductId")!=null && !itemList.get(j).get("wmproductId").equals("")){
+                    String wmproductId = itemList.get(j).get("wmproductId").toString();
+                    String wmproductIds[] = wmproductId.split("-");
+                    apiPurchaseItemDto.setApiPurchaseItemProcutId(wmproductId);
+                    if(itemList.get(j).get("productName")!=null)apiPurchaseItemDto.setApiPurchaseItemDescription(itemList.get(j).get("productName").toString());
+                    if(itemList.get(j).get("productSelectType")!=null)apiPurchaseItemDto.setApiPurchaseItemSelectType(itemList.get(j).get("productSelectType").toString());
+                    if(itemList.get(j).get("day")!=null)apiPurchaseItemDto.setApiPurchaseItemDays(itemList.get(j).get("day").toString());
+
+                    //월드무브 충전 불가
+                    apiPurchaseItemDto.setApiPurchaseIsCharge(false);
+
+
+
+
+                    try{
+                        if(wmproductIds.length>4){
+                            String totalString = wmproductIds[wmproductIds.length-2];
+                            boolean dailFlag = totalString.indexOf("T")==-1;
+                            apiPurchaseItemDto.setApiPurchaseItemIsDaily(dailFlag);
+                        }else{
+                            apiPurchaseItemDto.setApiPurchaseItemIsDaily(false);
+                        }
+                    }catch (Exception e){
+
+                    }
+
+
+                    apiPurchaseItemDto.setApiPurchaseCurrency("NT"); //WORLDMOVE 단위 존재안함. 무조건 $임
+
+
+                    if(itemList.get(j).get("productPrice")!=null){
+                        apiPurchaseItemDto.setApiPurchasePrice(itemList.get(j).get("productPrice").toString());
+                        if(echangeRate!=null){
+                            double krwPrice = echangeRate *Double.parseDouble(itemList.get(j).get("productPrice").toString());
+                            apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
+                        }
+                    }
+
+
+                    if(itemList.get(j).get("productRegion")!=null)apiPurchaseItemDto.setApiPurchaseCoverDomainCode(itemList.get(j).get("productRegion").toString());
+
+                }
+                try{
+                    apiPurchaseItemService.insert(apiPurchaseItemDto);
+
+                } catch (Exception e) {
+                    System.out.println("중복아이템" + apiPurchaseItemDto.getApiPurchaseItemProcutId());
+                }
+            }
+        }catch (Exception e){
+        }
+
+
+        if(true)
+            return;
         try{
             ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
             apiPurchaseItemDto.setApiPurchaseItemType(ApiType.ESIMACCESS.name());
@@ -366,72 +436,6 @@ public class ApiPurchaseListSchedulerTest {
                 e.printStackTrace();
             }
 
-                try{
-                    EsimPriceDto param = new EsimPriceDto();
-                    param.setType(ApiType.WORLDMOVE.name());
-                    EsimPriceDto esimPriceDto = esimPriceService.findById(param);
-                    Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
-                    ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
-                    apiPurchaseItemDto.setApiPurchaseItemType(ApiType.WORLDMOVE.name());
-                    List<HashMap<String, Object>> itemList = OriginWorldMoveUtil.contextLoads1();
-                    apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
-                    for(int j=0;j<itemList.size();j++){
-                        apiPurchaseItemDto.setApiPurchaseItemProcutId(null);
-                        apiPurchaseItemDto.setApiPurchaseItemDescription(null);
-                        apiPurchaseItemDto.setApiPurchaseItemSelectType(null);
-                        apiPurchaseItemDto.setApiPurchaseItemDays(null);
-                        if(itemList.get(j).get("wmproductId")!=null && !itemList.get(j).get("wmproductId").equals("")){
-                            String wmproductId = itemList.get(j).get("wmproductId").toString();
-                            String wmproductIds[] = wmproductId.split("-");
-                            apiPurchaseItemDto.setApiPurchaseItemProcutId(wmproductId);
-                            if(itemList.get(j).get("productName")!=null)apiPurchaseItemDto.setApiPurchaseItemDescription(itemList.get(j).get("productName").toString());
-                            if(itemList.get(j).get("productSelectType")!=null)apiPurchaseItemDto.setApiPurchaseItemSelectType(itemList.get(j).get("productSelectType").toString());
-                            if(itemList.get(j).get("day")!=null)apiPurchaseItemDto.setApiPurchaseItemDays(itemList.get(j).get("day").toString());
-
-                            //월드무브 충전 불가
-                            apiPurchaseItemDto.setApiPurchaseIsCharge(false);
-
-
-
-
-                            try{
-                                if(wmproductIds.length>4){
-                                    String totalString = wmproductIds[wmproductIds.length-2];
-                                    boolean dailFlag = totalString.indexOf("T")==-1;
-                                    apiPurchaseItemDto.setApiPurchaseItemIsDaily(dailFlag);
-                                }else{
-                                    apiPurchaseItemDto.setApiPurchaseItemIsDaily(false);
-                                }
-                            }catch (Exception e){
-
-                            }
-
-
-                            apiPurchaseItemDto.setApiPurchaseCurrency("NT"); //WORLDMOVE 단위 존재안함. 무조건 $임
-
-
-                            if(itemList.get(j).get("productPrice")!=null){
-                                apiPurchaseItemDto.setApiPurchasePrice(itemList.get(j).get("productPrice").toString());
-                                if(echangeRate!=null){
-                                    double krwPrice = echangeRate *Double.parseDouble(itemList.get(j).get("productPrice").toString());
-                                    apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
-                                }
-                            }
-
-
-                            if(itemList.get(j).get("productRegion")!=null)apiPurchaseItemDto.setApiPurchaseCoverDomainCode(itemList.get(j).get("productRegion").toString());
-
-                        }
-                        try{
-                            apiPurchaseItemService.insert(apiPurchaseItemDto);
-
-                        } catch (Exception e) {
-                            System.out.println("중복아이템" + apiPurchaseItemDto.getApiPurchaseItemProcutId());
-                        }
-                    }
-                }catch (Exception e){
-                }
-
 
 
 
@@ -459,6 +463,10 @@ public class ApiPurchaseListSchedulerTest {
             List<ProductDto> productDtoList = productService.selectProductList(storeDto);
 
             for(ProductDto productDto:productDtoList){
+                /* 특정 아이디만 리셋하려면 이거 하면됨
+                if(productDto.getOriginProductNo()!=12852375839L){
+                    continue;
+                }*/
                 Map<String, Object> bodyMap = new HashMap<>();
                 Map<String, Object> salePrice = new HashMap<>();
                 salePrice.put("salePrice",productDto.getSalePrice());
@@ -466,6 +474,12 @@ public class ApiPurchaseListSchedulerTest {
                 MatchInfoDto matchInfoParam = new MatchInfoDto();
                 matchInfoParam.setOriginProductNo(productDto.getOriginProductNo());
                 List<MatchInfoDto> matchInfoDtoList = matchInfoService.selectMatchInfoListAll(matchInfoParam);
+                /* 특정 심회사만 처리*/
+                if(matchInfoDtoList.size()>0){
+                    if(matchInfoDtoList.get(0).getMatchInfoName().indexOf("WO")!=0){
+                        continue;
+                    }
+                }
                 List<Map<String,Object>> optionCombinations = new ArrayList<>();
                 for(MatchInfoDto matchInfoDto:matchInfoDtoList){
                     Map<String,Object> optionBodyMap = new HashMap<>();
