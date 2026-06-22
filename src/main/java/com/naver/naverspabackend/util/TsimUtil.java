@@ -197,82 +197,87 @@ public class TsimUtil {
                     model.addAttribute("resetTxt",MakeResetTimeUtil.makeTsimResetText(apiPurchaseItemService.findById(param2)));//종료일 - 매일일경우 리셋일
 
 
-                    ApiPurchaseItemDto param = new ApiPurchaseItemDto();
-                    param.setApiPurchaseItemProcutId(result.get("channel_dataplan_id").toString());
-                    param.setApiPurchaseItemType(ApiType.TSIM.name());
-                    List<ApiPurchaseItemDto> apiPurchaseItemDtoList = apiPurchaseItemService.selectApiPurchaseItemListForTopup(param);
-                    List<Map<String,String>> apiPurchaseItemList = new ArrayList<>();
+                    if(result.get("esim_topup_expire_time")!=null && !result.get("esim_topup_expire_time").toString().equals("")){
 
-                    EsimPriceDto esimPriceParam = new EsimPriceDto();
-                    esimPriceParam.setType(ApiType.TSIM.name());
-                    EsimPriceDto esimPriceDto = esimPriceService.findById(esimPriceParam);
-                    Double weight1 = esimPriceDto.getWeight1();
-                    Double weight2 = esimPriceDto.getWeight2();
-                    Double weight3 = esimPriceDto.getWeight3();
-                    Double weight4 = esimPriceDto.getWeight4();
-                    Double weight5 = esimPriceDto.getWeight5();
+                        ApiPurchaseItemDto param = new ApiPurchaseItemDto();
+                        param.setApiPurchaseItemProcutId(result.get("channel_dataplan_id").toString());
+                        param.setApiPurchaseItemType(ApiType.TSIM.name());
+                        List<ApiPurchaseItemDto> apiPurchaseItemDtoList = apiPurchaseItemService.selectApiPurchaseItemListForTopup(param);
+                        List<Map<String,String>> apiPurchaseItemList = new ArrayList<>();
 
-                    for(ApiPurchaseItemDto apiPurchaseItemDto : apiPurchaseItemDtoList){
+                        EsimPriceDto esimPriceParam = new EsimPriceDto();
+                        esimPriceParam.setType(ApiType.TSIM.name());
+                        EsimPriceDto esimPriceDto = esimPriceService.findById(esimPriceParam);
+                        Double weight1 = esimPriceDto.getWeight1();
+                        Double weight2 = esimPriceDto.getWeight2();
+                        Double weight3 = esimPriceDto.getWeight3();
+                        Double weight4 = esimPriceDto.getWeight4();
+                        Double weight5 = esimPriceDto.getWeight5();
 
-                        Double krwPrice = Double.valueOf(apiPurchaseItemDto.getApiPurchaseKrwPrice());
-                        double apiPrice =  krwPrice;
-                        double priceWeight = 0;
-                        //금액으로인한 가중치
-                        if(apiPrice<= 5000){
-                            priceWeight = weight1;
-                        }else if(apiPrice<= 10000){
-                            priceWeight = weight2;
-                        }else if(apiPrice<= 15000){
-                            priceWeight = weight3;
-                        }else if(apiPrice<= 20000){
-                            priceWeight = weight4;
-                        }else{
-                            priceWeight = weight5;
+                        for(ApiPurchaseItemDto apiPurchaseItemDto : apiPurchaseItemDtoList){
+
+                            Double krwPrice = Double.valueOf(apiPurchaseItemDto.getApiPurchaseKrwPrice());
+                            double apiPrice =  krwPrice;
+                            double priceWeight = 0;
+                            //금액으로인한 가중치
+                            if(apiPrice<= 5000){
+                                priceWeight = weight1;
+                            }else if(apiPrice<= 10000){
+                                priceWeight = weight2;
+                            }else if(apiPrice<= 15000){
+                                priceWeight = weight3;
+                            }else if(apiPrice<= 20000){
+                                priceWeight = weight4;
+                            }else{
+                                priceWeight = weight5;
+                            }
+                            double price = Math.round(apiPrice * priceWeight / 100.0) * 100;
+
+                            Map<String,String> apiPurchaseItem = new HashMap<>();
+                            apiPurchaseItem.put("channel_dataplan_id",apiPurchaseItemDto.getApiPurchaseItemProcutId());
+                            apiPurchaseItem.put("channel_dataplan_day",apiPurchaseItemDto.getApiPurchaseItemDays() +"일"  + " (" + ( (int) Math.round(price) ) + "원)");
+                            apiPurchaseItem.put("channel_dataplan_data",apiPurchaseItemDto.getApiPurchaseDataTotal()  + " 저속 무제한" );
+                            apiPurchaseItemList.add(apiPurchaseItem);
                         }
-                        double price = Math.round(apiPrice * priceWeight / 100.0) * 100;
+                        model.addAttribute("apiPurchaseItemList",apiPurchaseItemList);//충전 가능리스트
 
-                        Map<String,String> apiPurchaseItem = new HashMap<>();
-                        apiPurchaseItem.put("channel_dataplan_id",apiPurchaseItemDto.getApiPurchaseItemProcutId());
-                        apiPurchaseItem.put("channel_dataplan_day",apiPurchaseItemDto.getApiPurchaseItemDays() +"일"  + " (" + ( (int) Math.round(price) ) + "원)");
-                        apiPurchaseItem.put("channel_dataplan_data",apiPurchaseItemDto.getApiPurchaseDataTotal()  + " 저속 무제한" );
-                        apiPurchaseItemList.add(apiPurchaseItem);
-                    }
-                    model.addAttribute("apiPurchaseItemList",apiPurchaseItemList);//충전 가능리스트
+                        // 1. 기존 코드: 중국 시간을 한국 시간으로 변환 (+1시간)
+                        Date topupExpiredDate = newDtFormat.parse(result.get("esim_topup_expire_time").toString());
+                        cal.setTime(topupExpiredDate);
+                        cal.add(Calendar.HOUR, 1); //중국시간이라 +1시간해줘야 한국시간
+                        // 2. ★ 핵심: 충전 가능 시간을 만료 10분 전으로 당김
+                        cal.add(Calendar.MINUTE, -10);
+                        // 3. 현재 시간과의 차이 계산
+                        long limitTimeMillis = cal.getTimeInMillis(); // 이제 이 시간은 '진짜 만료' 10분 전 시간입니다.
+                        long currentTimeMillis = System.currentTimeMillis();
+                        long diffMillis = limitTimeMillis - currentTimeMillis;
 
-                    // 1. 기존 코드: 중국 시간을 한국 시간으로 변환 (+1시간)
-                    Date topupExpiredDate = newDtFormat.parse(result.get("esim_topup_expire_time").toString());
-                    cal.setTime(topupExpiredDate);
-                    cal.add(Calendar.HOUR, 1); //중국시간이라 +1시간해줘야 한국시간
-                    // 2. ★ 핵심: 충전 가능 시간을 만료 10분 전으로 당김
-                    cal.add(Calendar.MINUTE, -10);
-                    // 3. 현재 시간과의 차이 계산
-                    long limitTimeMillis = cal.getTimeInMillis(); // 이제 이 시간은 '진짜 만료' 10분 전 시간입니다.
-                    long currentTimeMillis = System.currentTimeMillis();
-                    long diffMillis = limitTimeMillis - currentTimeMillis;
+                        if (diffMillis > 0) {
+                            // 10분 전 시점까지 아직 시간이 남은 경우
+                            long days = diffMillis / (24 * 60 * 60 * 1000);
+                            long hours = (diffMillis % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000);
+                            long minutes = (diffMillis % (60 * 60 * 1000)) / (60 * 1000);
+                            String displayTime = null;
+                            if (days > 0) {
+                                // 1일 이상 남았을 때: "1일 5시간 남음"
+                                displayTime = String.format("%d일 %d시간", days, hours);
+                            } else if (hours > 0) {
+                                // 1일 미만, 1시간 이상: "5시간 30분 남음"
+                                displayTime = String.format("%d시간 %d분", hours, minutes);
+                            } else {
+                                // 1시간 미만: "25분 남음"
+                                displayTime = String.format("%d분", minutes);
+                            }
 
-                    if (diffMillis > 0) {
-                        // 10분 전 시점까지 아직 시간이 남은 경우
-                        long days = diffMillis / (24 * 60 * 60 * 1000);
-                        long hours = (diffMillis % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000);
-                        long minutes = (diffMillis % (60 * 60 * 1000)) / (60 * 1000);
-                        String displayTime = null;
-                        if (days > 0) {
-                            // 1일 이상 남았을 때: "1일 5시간 남음"
-                            displayTime = String.format("%d일 %d시간", days, hours);
-                        } else if (hours > 0) {
-                            // 1일 미만, 1시간 이상: "5시간 30분 남음"
-                            displayTime = String.format("%d시간 %d분", hours, minutes);
+                            model.addAttribute("chargeBtnTxt","충전하기 (남은 시간: " + displayTime + ")");//충전버튼
+                            model.addAttribute("chargeYN","Y");//충전가능
+                            model.addAttribute("deviceId",deviceId);//충전파라미터
+
+
                         } else {
-                            // 1시간 미만: "25분 남음"
-                            displayTime = String.format("%d분", minutes);
+                            model.addAttribute("chargeYN","N");//충전불가
                         }
-
-                        model.addAttribute("chargeBtnTxt","충전하기 (남은 시간: " + displayTime + ")");//충전버튼
-                        model.addAttribute("chargeYN","Y");//충전가능
-                        model.addAttribute("deviceId",deviceId);//충전파라미터
-
-
-                    } else {
+                    }else{
                         model.addAttribute("chargeYN","N");//충전불가
                     }
 

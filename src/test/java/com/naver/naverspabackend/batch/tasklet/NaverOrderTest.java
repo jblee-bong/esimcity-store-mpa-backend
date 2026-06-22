@@ -223,7 +223,21 @@ public class NaverOrderTest {
             String unitPrice = Objects.toString(productOrder.get("unitPrice"), "");
 
             String deliveryFeeAmount = Objects.toString(productOrder.get("deliveryFeeAmount"), ""); //택배비
-            String totalPaymentAmount = Objects.toString(productOrder.get("totalPaymentAmount"), "");//판매가
+
+            String remainProductAmount = Objects.toString(productOrder.get("remainProductAmount"), "0");//판매가
+            String remainSellerBurdenDiscountAmount = Objects.toString(productOrder.get("remainSellerBurdenDiscountAmount"), "0");//판매가
+
+            //String totalPaymentAmount = Objects.toString(productOrder.get("totalPaymentAmount"), "");//판매가
+            String totalPaymentAmount = "0";
+            try{
+                if(remainProductAmount.equals(""))
+                    remainProductAmount = "0";
+                if(remainSellerBurdenDiscountAmount.equals(""))
+                    remainSellerBurdenDiscountAmount = "0";
+                totalPaymentAmount = (Integer.parseInt(remainProductAmount) - Integer.parseInt(remainSellerBurdenDiscountAmount)) + "";
+            }catch (Exception e){
+                e.printStackTrace();
+            }
 
             orderDto.setProductName(productName);
             orderDto.setProductOption(productOption);

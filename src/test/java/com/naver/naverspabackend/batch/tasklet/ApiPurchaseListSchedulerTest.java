@@ -98,75 +98,132 @@ public class ApiPurchaseListSchedulerTest {
         Map<String,Double> exchangeRate = getExchangeRate();
 
 
+        // 흠위에꺼를 쓰고싶은데 현재 환율데로 하면, 충전금액에 대해 비용의 차이가 발생하네. 충전한 달러로 차감하니까 티심, 투지는 그래서 티심 투지의 같은경우 지정해야할듯
         try{
+            List<String> cardTypeList = new ArrayList<>();
+            List<Boolean> cardRenewList = new ArrayList<>();
+
             EsimPriceDto param = new EsimPriceDto();
-            param.setType(ApiType.WORLDMOVE.name());
+            param.setType(ApiType.TUGE.name());
             EsimPriceDto esimPriceDto = esimPriceService.findById(param);
             Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
             ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
-            apiPurchaseItemDto.setApiPurchaseItemType(ApiType.WORLDMOVE.name());
-            List<HashMap<String, Object>> itemList = OriginWorldMoveUtil.contextLoads1();
+            apiPurchaseItemDto.setApiPurchaseItemType(ApiType.TUGE.name());
+            List<HashMap<String, Object>> itemList = OriginTugeUtil.contextLoads1();
             apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
+            apiPurchaseItemService.deleteWithApiCardType();
             for(int j=0;j<itemList.size();j++){
                 apiPurchaseItemDto.setApiPurchaseItemProcutId(null);
                 apiPurchaseItemDto.setApiPurchaseItemDescription(null);
                 apiPurchaseItemDto.setApiPurchaseItemSelectType(null);
                 apiPurchaseItemDto.setApiPurchaseItemDays(null);
-                if(itemList.get(j).get("wmproductId")!=null && !itemList.get(j).get("wmproductId").equals("")){
-                    String wmproductId = itemList.get(j).get("wmproductId").toString();
-                    String wmproductIds[] = wmproductId.split("-");
-                    apiPurchaseItemDto.setApiPurchaseItemProcutId(wmproductId);
+                if(cardTypeList.indexOf(itemList.get(j).get("cardType").toString())==-1){
+                    HashMap<String, Object> cartType = OriginTugeUtil.contextLoads6(itemList.get(j).get("cardType").toString());
+                    if(cartType!=null){
+                        cardTypeList.add(cartType.get("cardType").toString());
+                        if(cartType.get("renewFlag")!=null)
+                            cardRenewList.add((Boolean) cartType.get("renewFlag"));
+                        else
+                            cardRenewList.add(false);
+
+
+                        ApiCardTypeDto apiCardTypeDto = new ApiCardTypeDto();
+                        apiCardTypeDto.setCardType(cartType.get("cardType").toString());
+                        if(cartType.get("timeZone")!=null)apiCardTypeDto.setTimeZone(cartType.get("timeZone").toString());
+                        if(cartType.get("renewFlag")!=null)apiCardTypeDto.setRenewYn((Boolean) cartType.get("renewFlag"));
+                        if(cartType.get("supportGetUsage")!=null)apiCardTypeDto.setSupportGetUsageYn((Boolean) cartType.get("supportGetUsage"));
+                        if(cartType.get("renewCount")!=null)apiCardTypeDto.setRenewCount((Integer) cartType.get("renewCount"));
+                        apiPurchaseItemService.insertCardType(apiCardTypeDto);
+                    }else{
+                        cardTypeList.add(itemList.get(j).get("cardType").toString());
+                        cardRenewList.add(false);
+                    }
+
+                }
+
+
+
+                if(itemList.get(j).get("countryCodeList")!=null){
+                    List<String> contryCodeList = (List<String>) itemList.get(j).get("countryCodeList");
+                    String contryCode = "";
+                    for(String contry : contryCodeList){
+                        if(contryCode.equals("")){
+                            contryCode = contry;
+                        }else{
+                            contryCode += ","+contry;
+                        }
+                    }
+                    apiPurchaseItemDto.setApiPurchaseCoverDomainCode(contryCode);
+                }
+                if(itemList.get(j).get("cardType")!=null)apiPurchaseItemDto.setApiPurchaseItemCardType(itemList.get(j).get("cardType").toString());
+                apiPurchaseItemDto.setApiPurchaseItemPeriodType((Integer) itemList.get(j).get("periodType"));
+                apiPurchaseItemDto.setApiPurchaseItemDays(itemList.get(j).get("usagePeriod").toString());
+
+                if(itemList.get(j).get("productCode")!=null && !itemList.get(j).get("productCode").equals("")){
+                    apiPurchaseItemDto.setApiPurchaseItemProcutId(itemList.get(j).get("productCode").toString());
                     if(itemList.get(j).get("productName")!=null)apiPurchaseItemDto.setApiPurchaseItemDescription(itemList.get(j).get("productName").toString());
                     if(itemList.get(j).get("productSelectType")!=null)apiPurchaseItemDto.setApiPurchaseItemSelectType(itemList.get(j).get("productSelectType").toString());
                     if(itemList.get(j).get("day")!=null)apiPurchaseItemDto.setApiPurchaseItemDays(itemList.get(j).get("day").toString());
 
-                    //월드무브 충전 불가
-                    apiPurchaseItemDto.setApiPurchaseIsCharge(false);
-
-
-
-
-                    try{
-                        if(wmproductIds.length>4){
-                            String totalString = wmproductIds[wmproductIds.length-2];
-                            boolean dailFlag = totalString.indexOf("T")==-1;
-                            apiPurchaseItemDto.setApiPurchaseItemIsDaily(dailFlag);
-                        }else{
-                            apiPurchaseItemDto.setApiPurchaseItemIsDaily(false);
-                        }
-                    }catch (Exception e){
-
-                    }
-
-
-                    apiPurchaseItemDto.setApiPurchaseCurrency("NT"); //WORLDMOVE 단위 존재안함. 무조건 $임
-
-
-                    if(itemList.get(j).get("productPrice")!=null){
-                        apiPurchaseItemDto.setApiPurchasePrice(itemList.get(j).get("productPrice").toString());
+                    if(itemList.get(j).get("netPrice")!=null){
+                        apiPurchaseItemDto.setApiPurchasePrice(itemList.get(j).get("netPrice").toString());
                         if(echangeRate!=null){
-                            double krwPrice = echangeRate *Double.parseDouble(itemList.get(j).get("productPrice").toString());
+                            double krwPrice = echangeRate *Double.parseDouble(itemList.get(j).get("netPrice").toString());
                             apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
                         }
                     }
 
+                    if(itemList.get(j).get("activeType")!=null){
+                        // ACTIVEDBYDEVICE, ACTIVEDBYORDER 이둘중하나인데 어떤걸 써야하는지 확인필요. 뭐냐면 사고 사용자가 활성화하면 개통되는건지 아닌지 //AUTO_ACTIVATE이거사용해야함
+                        System.out.println(itemList.get(j).get("activeType").toString());
+                    }
 
-                    if(itemList.get(j).get("productRegion")!=null)apiPurchaseItemDto.setApiPurchaseCoverDomainCode(itemList.get(j).get("productRegion").toString());
+
+                    apiPurchaseItemDto.setApiPurchaseCurrency("$"); //TUGE 단위 존재안함. 무조건 $임
+
+
+
+                    if(itemList.get(j).get("productType")!=null){
+                        apiPurchaseItemDto.setApiPurchaseProductType(itemList.get(j).get("productType").toString());
+                        apiPurchaseItemDto.setApiPurchaseItemIsDaily(itemList.get(j).get("productType").toString().equals("DAILY_PACK"));
+                    }
+                    // 이건안보임 if(itemList.get(j).get("cover_domain_code")!=null)apiPurchaseItemDto.setApiPurchaseCoverDomainCode(itemList.get(j).get("cover_domain_code").toString());
+                    if(itemList.get(j).get("apnDesc")!=null)apiPurchaseItemDto.setApiPurchaseApn(itemList.get(j).get("apnDesc").toString());
+
+                    if(!itemList.get(j).get("productType").toString().equals("DAILY_PACK")){
+                        if(itemList.get(j).get("dataTotal")!=null && itemList.get(j).get("dataUnit")!=null){
+                            apiPurchaseItemDto.setApiPurchaseDataTotal(itemList.get(j).get("dataTotal").toString()+itemList.get(j).get("dataUnit").toString());
+                        }
+                    }else{
+                        if(itemList.get(j).get("highSpeed")!=null){
+                            apiPurchaseItemDto.setApiPurchaseDataTotal(itemList.get(j).get("highSpeed").toString());
+                        }
+                    }
+
+                    if(itemList.get(j).get("limitSpeed")!=null)apiPurchaseItemDto.setApiPurchaseSlowSpeed(itemList.get(j).get("limitSpeed").toString());
+
+                    if(itemList.get(j).get("cardType")!=null && cardTypeList.indexOf(itemList.get(j).get("cardType").toString()) >-1 && cardRenewList.get(cardTypeList.indexOf(itemList.get(j).get("cardType").toString()))
+                            && itemList.get(j).get("productType")!=null && !itemList.get(j).get("productType").toString().equals("DAILY_PACK")
+                    ){
+                        apiPurchaseItemDto.setApiPurchaseIsCharge(true);
+                    }else{
+                        apiPurchaseItemDto.setApiPurchaseIsCharge(false);
+
+                    }
+
+
+
+
 
                 }
-                try{
-                    apiPurchaseItemService.insert(apiPurchaseItemDto);
-
-                } catch (Exception e) {
-                    System.out.println("중복아이템" + apiPurchaseItemDto.getApiPurchaseItemProcutId());
-                }
+                apiPurchaseItemService.insert(apiPurchaseItemDto);
             }
+
         }catch (Exception e){
+            e.printStackTrace();
         }
 
 
-        if(true)
-            return;
         try{
             ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
             apiPurchaseItemDto.setApiPurchaseItemType(ApiType.ESIMACCESS.name());
@@ -239,6 +296,9 @@ public class ApiPurchaseListSchedulerTest {
             e.printStackTrace();
         }
 
+
+        if(true)
+            return;
         try{
             EsimPriceDto param = new EsimPriceDto();
             param.setType(ApiType.TSIM.name());
@@ -310,131 +370,76 @@ public class ApiPurchaseListSchedulerTest {
             e.printStackTrace();
         }
 
+        try{
+            EsimPriceDto param = new EsimPriceDto();
+            param.setType(ApiType.WORLDMOVE.name());
+            EsimPriceDto esimPriceDto = esimPriceService.findById(param);
+            Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
+            ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
+            apiPurchaseItemDto.setApiPurchaseItemType(ApiType.WORLDMOVE.name());
+            List<HashMap<String, Object>> itemList = OriginWorldMoveUtil.contextLoads1();
+            apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
+            for(int j=0;j<itemList.size();j++){
+                apiPurchaseItemDto.setApiPurchaseItemProcutId(null);
+                apiPurchaseItemDto.setApiPurchaseItemDescription(null);
+                apiPurchaseItemDto.setApiPurchaseItemSelectType(null);
+                apiPurchaseItemDto.setApiPurchaseItemDays(null);
+                if(itemList.get(j).get("wmproductId")!=null && !itemList.get(j).get("wmproductId").equals("")){
+                    String wmproductId = itemList.get(j).get("wmproductId").toString();
+                    String wmproductIds[] = wmproductId.split("-");
+                    apiPurchaseItemDto.setApiPurchaseItemProcutId(wmproductId);
+                    if(itemList.get(j).get("productName")!=null)apiPurchaseItemDto.setApiPurchaseItemDescription(itemList.get(j).get("productName").toString());
+                    if(itemList.get(j).get("productSelectType")!=null)apiPurchaseItemDto.setApiPurchaseItemSelectType(itemList.get(j).get("productSelectType").toString());
+                    if(itemList.get(j).get("day")!=null)apiPurchaseItemDto.setApiPurchaseItemDays(itemList.get(j).get("day").toString());
 
-        // 흠위에꺼를 쓰고싶은데 현재 환율데로 하면, 충전금액에 대해 비용의 차이가 발생하네. 충전한 달러로 차감하니까 티심, 투지는 그래서 티심 투지의 같은경우 지정해야할듯
-            try{
-                List<String> cardTypeList = new ArrayList<>();
-                List<Boolean> cardRenewList = new ArrayList<>();
-
-                EsimPriceDto param = new EsimPriceDto();
-                param.setType(ApiType.TUGE.name());
-                EsimPriceDto esimPriceDto = esimPriceService.findById(param);
-                Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
-                ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
-                apiPurchaseItemDto.setApiPurchaseItemType(ApiType.TUGE.name());
-                List<HashMap<String, Object>> itemList = OriginTugeUtil.contextLoads1();
-                apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
-                apiPurchaseItemService.deleteWithApiCardType();
-                for(int j=0;j<itemList.size();j++){
-                    apiPurchaseItemDto.setApiPurchaseItemProcutId(null);
-                    apiPurchaseItemDto.setApiPurchaseItemDescription(null);
-                    apiPurchaseItemDto.setApiPurchaseItemSelectType(null);
-                    apiPurchaseItemDto.setApiPurchaseItemDays(null);
-                    if(cardTypeList.indexOf(itemList.get(j).get("cardType").toString())==-1){
-                        HashMap<String, Object> cartType = OriginTugeUtil.contextLoads6(itemList.get(j).get("cardType").toString());
-                        if(cartType!=null){
-                            cardTypeList.add(cartType.get("cardType").toString());
-                            if(cartType.get("renewFlag")!=null)
-                                cardRenewList.add((Boolean) cartType.get("renewFlag"));
-                            else
-                                cardRenewList.add(false);
+                    //월드무브 충전 불가
+                    apiPurchaseItemDto.setApiPurchaseIsCharge(false);
 
 
-                            ApiCardTypeDto apiCardTypeDto = new ApiCardTypeDto();
-                            apiCardTypeDto.setCardType(cartType.get("cardType").toString());
-                            if(cartType.get("timeZone")!=null)apiCardTypeDto.setTimeZone(cartType.get("timeZone").toString());
-                            if(cartType.get("renewFlag")!=null)apiCardTypeDto.setRenewYn((Boolean) cartType.get("renewFlag"));
-                            if(cartType.get("supportGetUsage")!=null)apiCardTypeDto.setSupportGetUsageYn((Boolean) cartType.get("supportGetUsage"));
-                            if(cartType.get("renewCount")!=null)apiCardTypeDto.setRenewCount((Integer) cartType.get("renewCount"));
-                            apiPurchaseItemService.insertCardType(apiCardTypeDto);
+
+
+                    try{
+                        if(wmproductIds.length>4){
+                            String totalString = wmproductIds[wmproductIds.length-2];
+                            boolean dailFlag = totalString.indexOf("T")==-1;
+                            apiPurchaseItemDto.setApiPurchaseItemIsDaily(dailFlag);
                         }else{
-                            cardTypeList.add(itemList.get(j).get("cardType").toString());
-                            cardRenewList.add(false);
+                            apiPurchaseItemDto.setApiPurchaseItemIsDaily(false);
                         }
+                    }catch (Exception e){
 
                     }
 
 
+                    apiPurchaseItemDto.setApiPurchaseCurrency("NT"); //WORLDMOVE 단위 존재안함. 무조건 $임
 
-                    if(itemList.get(j).get("countryCodeList")!=null){
-                        List<String> contryCodeList = (List<String>) itemList.get(j).get("countryCodeList");
-                        String contryCode = "";
-                        for(String contry : contryCodeList){
-                            if(contryCode.equals("")){
-                                contryCode = contry;
-                            }else{
-                                contryCode += ","+contry;
-                            }
+
+                    if(itemList.get(j).get("productPrice")!=null){
+                        apiPurchaseItemDto.setApiPurchasePrice(itemList.get(j).get("productPrice").toString());
+                        if(echangeRate!=null){
+                            double krwPrice = echangeRate *Double.parseDouble(itemList.get(j).get("productPrice").toString());
+                            apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
                         }
-                        apiPurchaseItemDto.setApiPurchaseCoverDomainCode(contryCode);
                     }
-                    if(itemList.get(j).get("cardType")!=null)apiPurchaseItemDto.setApiPurchaseItemCardType(itemList.get(j).get("cardType").toString());
-                    apiPurchaseItemDto.setApiPurchaseItemPeriodType((Integer) itemList.get(j).get("periodType"));
-                    apiPurchaseItemDto.setApiPurchaseItemDays(itemList.get(j).get("usagePeriod").toString());
-
-                    if(itemList.get(j).get("productCode")!=null && !itemList.get(j).get("productCode").equals("")){
-                        apiPurchaseItemDto.setApiPurchaseItemProcutId(itemList.get(j).get("productCode").toString());
-                        if(itemList.get(j).get("productName")!=null)apiPurchaseItemDto.setApiPurchaseItemDescription(itemList.get(j).get("productName").toString());
-                        if(itemList.get(j).get("productSelectType")!=null)apiPurchaseItemDto.setApiPurchaseItemSelectType(itemList.get(j).get("productSelectType").toString());
-                        if(itemList.get(j).get("day")!=null)apiPurchaseItemDto.setApiPurchaseItemDays(itemList.get(j).get("day").toString());
-
-                        if(itemList.get(j).get("netPrice")!=null){
-                            apiPurchaseItemDto.setApiPurchasePrice(itemList.get(j).get("netPrice").toString());
-                            if(echangeRate!=null){
-                                double krwPrice = echangeRate *Double.parseDouble(itemList.get(j).get("netPrice").toString());
-                                apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
-                            }
-                        }
-
-                        if(itemList.get(j).get("activeType")!=null){
-                            // ACTIVEDBYDEVICE, ACTIVEDBYORDER 이둘중하나인데 어떤걸 써야하는지 확인필요. 뭐냐면 사고 사용자가 활성화하면 개통되는건지 아닌지 //AUTO_ACTIVATE이거사용해야함
-                            System.out.println(itemList.get(j).get("activeType").toString());
-                        }
 
 
-                        apiPurchaseItemDto.setApiPurchaseCurrency("$"); //TUGE 단위 존재안함. 무조건 $임
+                    if(itemList.get(j).get("productRegion")!=null)apiPurchaseItemDto.setApiPurchaseCoverDomainCode(itemList.get(j).get("productRegion").toString());
 
-
-
-                        if(itemList.get(j).get("productType")!=null){
-                            apiPurchaseItemDto.setApiPurchaseProductType(itemList.get(j).get("productType").toString());
-                            apiPurchaseItemDto.setApiPurchaseItemIsDaily(itemList.get(j).get("productType").toString().equals("DAILY_PACK"));
-                        }
-                        // 이건안보임 if(itemList.get(j).get("cover_domain_code")!=null)apiPurchaseItemDto.setApiPurchaseCoverDomainCode(itemList.get(j).get("cover_domain_code").toString());
-                        if(itemList.get(j).get("apnDesc")!=null)apiPurchaseItemDto.setApiPurchaseApn(itemList.get(j).get("apnDesc").toString());
-
-                        if(!itemList.get(j).get("productType").toString().equals("DAILY_PACK")){
-                            if(itemList.get(j).get("dataTotal")!=null && itemList.get(j).get("dataUnit")!=null){
-                                apiPurchaseItemDto.setApiPurchaseDataTotal(itemList.get(j).get("dataTotal").toString()+itemList.get(j).get("dataUnit").toString());
-                            }
-                        }else{
-                            if(itemList.get(j).get("highSpeed")!=null){
-                                apiPurchaseItemDto.setApiPurchaseDataTotal(itemList.get(j).get("highSpeed").toString());
-                            }
-                        }
-
-                        if(itemList.get(j).get("limitSpeed")!=null)apiPurchaseItemDto.setApiPurchaseSlowSpeed(itemList.get(j).get("limitSpeed").toString());
-
-                        if(itemList.get(j).get("cardType")!=null && cardTypeList.indexOf(itemList.get(j).get("cardType").toString()) >-1 && cardRenewList.get(cardTypeList.indexOf(itemList.get(j).get("cardType").toString()))
-                                && itemList.get(j).get("productType")!=null && !itemList.get(j).get("productType").toString().equals("DAILY_PACK")
-                        ){
-                            apiPurchaseItemDto.setApiPurchaseIsCharge(true);
-                        }else{
-                            apiPurchaseItemDto.setApiPurchaseIsCharge(false);
-
-                        }
-
-
-
-
-
-                    }
-                    apiPurchaseItemService.insert(apiPurchaseItemDto);
                 }
+                try{
+                    apiPurchaseItemService.insert(apiPurchaseItemDto);
 
-            }catch (Exception e){
-                e.printStackTrace();
+                } catch (Exception e) {
+                    System.out.println("중복아이템" + apiPurchaseItemDto.getApiPurchaseItemProcutId());
+                }
             }
+        }catch (Exception e){
+        }
+
+
+
+
+
 
 
 
@@ -476,7 +481,7 @@ public class ApiPurchaseListSchedulerTest {
                 List<MatchInfoDto> matchInfoDtoList = matchInfoService.selectMatchInfoListAll(matchInfoParam);
                 /* 특정 심회사만 처리*/
                 if(matchInfoDtoList.size()>0){
-                    if(matchInfoDtoList.get(0).getMatchInfoName().indexOf("WO")!=0){
+                    if(matchInfoDtoList.get(0).getMatchInfoName().indexOf("TG")!=0){
                         continue;
                     }
                 }

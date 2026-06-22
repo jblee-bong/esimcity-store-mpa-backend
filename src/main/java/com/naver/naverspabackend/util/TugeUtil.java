@@ -12,6 +12,7 @@ import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
 import com.naver.naverspabackend.service.esimPrice.EsimPriceService;
 import com.naver.naverspabackend.service.esimapiingsteplogs.EsimApiIngStepLogsService;
 import com.naver.naverspabackend.service.order.OrderService;
+import com.naver.naverspabackend.service.topupOrder.TopupOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -56,7 +57,10 @@ public class TugeUtil {
     public static EsimPriceService esimPriceService;
 
     public static OrderService orderService;
-    public TugeUtil(String accountId,String signKey, String secretkey, String vector, String version, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService, TugeRedisRepository tugeRedisRepository,OrderService orderService,ApiPurchaseItemService apiPurchaseItemService,EsimPriceService esimPriceService,String active){
+
+    public static TopupOrderService topupOrderService;
+
+    public TugeUtil(String accountId,String signKey, String secretkey, String vector, String version, String baseUrl, EsimApiIngStepLogsService esimApiIngStepLogsService, TugeRedisRepository tugeRedisRepository,OrderService orderService,ApiPurchaseItemService apiPurchaseItemService,EsimPriceService esimPriceService, TopupOrderService topupOrderService,String active){
         this.accountId = accountId;
         this.signKey = signKey;
         this.secretkey = secretkey;
@@ -69,6 +73,7 @@ public class TugeUtil {
         this.apiPurchaseItemService = apiPurchaseItemService;
         this.active = active;
         this.esimPriceService = esimPriceService;
+        this.topupOrderService= topupOrderService;
 
     }
 
@@ -102,10 +107,26 @@ public class TugeUtil {
     public static void contextLoads4(String orderId, String iccid, Model model, ApiPurchaseItemDto apiPurchaseItemDto) throws Exception {
         System.setProperty("https.protocols","TLSv1.2");
 
+
+
         HashMap esimResult =  getEsimStatus(orderId);
         HashMap esimResult2 =  getEsimStatus2(orderId);
 
+        boolean renew = false;
         Gson gson = new Gson();
+
+        if(!esimResult.get("code").toString().equals("0000") && esimResult2.get("code").toString().equals("0000")){
+            TopupOrderDto topupOrderDtoParam = new TopupOrderDto();
+            topupOrderDtoParam.setEsimIccid(iccid);
+            TopupOrderDto topupOrderDto = topupOrderService.findByIccidForMaxTopupId(topupOrderDtoParam);
+            if(topupOrderDto!=null){
+                orderId =  topupOrderDto.getTopupOrderNo();
+                esimResult =  getEsimStatus(orderId);
+                esimResult2 =  getEsimStatus2(orderId);
+                renew = true;
+
+            }
+        }
         if(esimResult.get("code").toString().equals("0000") && esimResult2.get("code").toString().equals("0000") ){
             HashMap<String,Object> esimMap = (HashMap<String, Object>) esimResult.get("data");
             HashMap<String,Object> esimMap2 = (HashMap<String, Object>) esimResult2.get("data");
@@ -136,6 +157,11 @@ public class TugeUtil {
             }
             model.addAttribute("crrentActivity","main");
 
+            if(renew){
+
+                model.addAttribute("crrentActivity",orderId);
+            }
+
 
             if(orderData.get("orderStatus")!=null && !orderData.get("orderStatus").equals("NOTACTIVE")){
                 // ISO 8601 문자열을 한국 시간 객체로 바로 변환
@@ -155,10 +181,15 @@ public class TugeUtil {
             param.setCardType(apiPurchaseItemDto.getApiPurchaseItemCardType());
             ApiCardTypeDto apiCardTypeDto = apiPurchaseItemService.selectCardTypeFindByCardType(param);
 
-            if(apiCardTypeDto!=null && apiCardTypeDto.isRenewYn() && orderTugeEsimDto.getRenewExpirationTime()!=null && !apiPurchaseItemDto.isApiPurchaseItemIsDaily()){
+            if(apiCardTypeDto!=null && apiCardTypeDto.isRenewYn() && orderData.get("renewExpirationTime")!=null && !apiPurchaseItemDto.isApiPurchaseItemIsDaily()){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-                LocalDateTime localDateTime = LocalDateTime.parse(orderTugeEsimDto.getRenewExpirationTime(), formatter);
+
+                // ISO 8601 문자열을 한국 시간 객체로 바로 변환
+                ZonedDateTime renewExpirationTime = ZonedDateTime.parse(orderData.get("renewExpirationTime").toString()).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+
+
+                LocalDateTime localDateTime = renewExpirationTime.toLocalDateTime();
 
                 // 현재 시간과의 차이 계산
                 long limitTimeMillis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();; // 이제 이 시간은 '진짜 만료' 10분 전 시간입니다.

@@ -137,7 +137,7 @@ public class EsimUtil {
     }
 
     public static TugeUtil getTugeUtil(StoreDto storeDto, String active)  {
-        return new TugeUtil(storeDto.getEsimApiTugeAccount(), storeDto.getEsimApiTugeSign(), storeDto.getEsimApiTugeSecret(),storeDto.getEsimApiTugeVector(),tugeVersion,tugeBaseUrl, esimApiIngStepLogsService,tugeRedisRepository,orderService,apiPurchaseItemService,esimPriceService, active);
+        return new TugeUtil(storeDto.getEsimApiTugeAccount(), storeDto.getEsimApiTugeSign(), storeDto.getEsimApiTugeSecret(),storeDto.getEsimApiTugeVector(),tugeVersion,tugeBaseUrl, esimApiIngStepLogsService,tugeRedisRepository,orderService,apiPurchaseItemService,esimPriceService, topupOrderService,active);
     }
 
     public static WorldMoveUtil getWorldMoveUtil(StoreDto storeDto)  {
