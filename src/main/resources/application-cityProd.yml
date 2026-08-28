@@ -111,7 +111,7 @@ coupang-api:
 
 sms:
   api:
-    domain: https://api-sms.cloud.toast.com
+    domain: https://sms.api.nhncloudservice.com
     mmsSendUrl: /sms/v3.0/appKeys/{appKey}/sender/mms
     smsSendUrl: /sms/v3.0/appKeys/{appKey}/sender/sms
     # nhn sms service api 정보
@@ -120,7 +120,7 @@ sms:
 
 kakao:
   api:
-    domain: https://api-alimtalk.cloud.toast.com
+    domain: https://kakaotalk-bizmessage.api.nhncloudservice.com
     ## 메세지 치환 발송 api
     messagesUrl: /alimtalk/v2.2/appkeys/{appkey}/messages
     ## 템플릿 검색

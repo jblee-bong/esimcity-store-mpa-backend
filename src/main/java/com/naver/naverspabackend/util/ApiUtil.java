@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.FormBody;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -149,6 +150,36 @@ public class ApiUtil {
                 throw new RestClientResponseException(response.body().string(), response.code(), HttpStatus.valueOf(response.code()).name(), null, null,null);
             }
 
+            return response.body().string();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * POST application/x-www-form-urlencoded (파라미터를 Request body로 전송)
+     * 네이버 커머스 oauth2/token 표준 규격용
+     */
+    public static String postFormUrlEncoded(String url, Map<String, Object> param) {
+        FormBody.Builder formBuilder = new FormBody.Builder();
+        if (param != null) {
+            for (Map.Entry<String, Object> entry : param.entrySet()) {
+                if (entry.getValue() != null) {
+                    formBuilder.add(entry.getKey(), String.valueOf(entry.getValue()));
+                }
+            }
+        }
+        RequestBody requestBody = formBuilder.build();
+        Request request = new Request.Builder()
+            .url(url)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .post(requestBody)
+            .build();
+        try (Response response = staticOkHttpClient.newCall(request).execute()) {
+            if(response.code() != HttpStatus.OK.value()){
+                throw new RestClientResponseException(response.body().string(), response.code(), HttpStatus.valueOf(response.code()).name(), null, null,null);
+            }
             return response.body().string();
         } catch (IOException e) {
             log.error(e.getMessage(), e);

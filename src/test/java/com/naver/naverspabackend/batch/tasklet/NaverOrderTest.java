@@ -91,7 +91,8 @@ public class NaverOrderTest {
                     //log.error(storeDto.getStoreName()+" "   +  e.getMessage());
                     return;
                 }
-
+                if(true)
+                    return;
                 // 최종 입력 될 product 상품
                 List<OrderDto> orderDtoList = new ArrayList<>();
 
@@ -122,7 +123,7 @@ public class NaverOrderTest {
 
                 //naverWritter.orderWrite(orderDtoList);
             } catch (Exception e) {
-                // log.error("네이버 스토어 오더 처리 중 오류 발생 - Store ID: {}, Store Name: {}, Error: {}", storeDto.getId(), storeDto.getStoreName(), e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -213,6 +214,8 @@ public class NaverOrderTest {
             String productOption = Objects.toString(productOrder.get("productOption"), "");
             String originalProductId = Objects.toString(productOrder.get("originalProductId"), "");
             String optionCode = Objects.toString(productOrder.get("optionCode"), "");
+            if(optionCode.equals(""))
+                optionCode =Objects.toString(productOrder.get("itemNo"), "");
             String productOrderId = Objects.toString(productOrder.get("productOrderId"), "");
             String shippingMemo = Objects.toString(productOrder.get("shippingMemo"), "");
 

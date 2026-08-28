@@ -139,7 +139,7 @@ public class NaverSetting {
         bodyMap.put("grant_type", "client_credentials");
         bodyMap.put("type", "SELF");
 
-        String res = ApiUtil.postWithQueryParam(baseUrl + tokenUrl, bodyMap, null, false);
+        String res = ApiUtil.postFormUrlEncoded(baseUrl + tokenUrl, bodyMap);
 
         ObjectMapper objectMapper = new ObjectMapper();
 

@@ -140,24 +140,59 @@ public class KakaoServiceImpl implements KakaoService {
         int cnt = 0;
 
         Map<String, Object> res = new HashMap<>();
-        try {
-            // 메세지 발송
-            Map<String, String> paramHeader = new HashMap<>();
-            paramHeader.put("X-Secret-Key", storeDto.getNhnKakaoSecretKey());
+        // 메세지 발송 (DNS/네트워크 간헐 실패 대비 재시도)
+        Map<String, String> paramHeader = new HashMap<>();
+        paramHeader.put("X-Secret-Key", storeDto.getNhnKakaoSecretKey());
 
-            Map<String, Object> pathParam = new HashMap<>();
-            pathParam.put("appkey", storeDto.getNhnKakaoAppKey());
+        Map<String, Object> pathParam = new HashMap<>();
+        pathParam.put("appkey", storeDto.getNhnKakaoAppKey());
 
-            String post = ApiUtil.post(kakaoDomain + kakaoMessagesUrl, paramHeader,  body, pathParam, okhttp3.MediaType.parse("application/json; charset=UTF-8"));
-            ObjectMapper objectMapper = new ObjectMapper();
-            res = objectMapper.readValue(post, new TypeReference<Map<String, Object>>() {
-            });
-            cnt = insertKakaoMsgLog(res, templateKey, copyKakaoParameters);
-        }catch (Exception e){
-            throw e;
+        final int maxRetry = 10;
+        Exception lastException = null;
+        for (int attempt = 1; attempt <= maxRetry; attempt++) {
+            try {
+                String post = ApiUtil.post(kakaoDomain + kakaoMessagesUrl, paramHeader, body, pathParam, okhttp3.MediaType.parse("application/json; charset=UTF-8"));
+                ObjectMapper objectMapper = new ObjectMapper();
+                res = objectMapper.readValue(post, new TypeReference<Map<String, Object>>() {
+                });
+                cnt = insertKakaoMsgLog(res, templateKey, copyKakaoParameters);
+                lastException = null;
+                break;
+            } catch (Exception e) {
+                lastException = e;
+                if (!isRetryableNetworkError(e) || attempt == maxRetry) {
+                    throw e;
+                }
+                log.warn("e-kakao 발송 네트워크 오류, 재시도 {}/{} : {}", attempt, maxRetry, e.getMessage());
+                try {
+                    Thread.sleep(5000L);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+            }
+        }
+        if (lastException != null) {
+            throw lastException;
         }
 
         return cnt;
+    }
+
+    /** DNS 실패(UnknownHostException) 등 일시적 네트워크 오류인지 여부 */
+    private boolean isRetryableNetworkError(Throwable e) {
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause instanceof java.net.UnknownHostException
+                    || cause instanceof java.net.SocketTimeoutException
+                    || cause instanceof java.net.ConnectException
+                    || cause instanceof java.net.NoRouteToHostException
+                    || cause instanceof IOException) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 
     @Override

@@ -8,6 +8,8 @@ import lombok.Setter;
 public class EsimPriceDto {
 
     private String type;
+
+    private Double exchangeOriginRate;
     private Double exchangeRate;
     private Double exchangeWeight;
     private Double weight1;

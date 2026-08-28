@@ -1193,7 +1193,7 @@ public class NaverSmsTasklet implements Tasklet {
                 ApiPurchaseItemDto apiPurchaseItem = apiPurchaseItemMapper.findById(apiPurchaseItemDto);
                 if (apiPurchaseItem != null) {
                     // 1. 단가는 문자열 그대로 BigDecimal로 생성
-                    BigDecimal unitPrice = new BigDecimal(apiPurchaseItem.getApiPurchaseKrwPrice());
+                    BigDecimal unitPrice = new BigDecimal(apiPurchaseItem.getApiPurchaseOriginKrwPrice());
                     // 2. 수량(Integer)은 BigDecimal.valueOf()로 변환
                     BigDecimal quantity = BigDecimal.valueOf(orderDto.getQuantity());
                     // 3. 곱셈 연산

@@ -26,6 +26,15 @@
             unit_price,
             delivery_fee_amount,
             total_payment_amount,
+
+            commission_rating_type,
+            commission_pre_pay_status,
+            payment_commission,
+            sale_commission,
+            channel_commission,
+            knowledge_shopping_selling_interlock_commission,
+            expected_settlement_amount,
+
             shipping_base_address,
             shipping_zip_code,
             shipping_detailed_address,
@@ -59,6 +68,15 @@
              #{unitPrice},
              #{deliveryFeeAmount},
              #{totalPaymentAmount},
+
+            #{commissionRatingType},
+            #{commissionPrePayStatus},
+            #{paymentCommission},
+            #{saleCommission},
+            #{channelCommission},
+            #{knowledgeShoppingSellingInterlockCommission},
+            #{expectedSettlementAmount},
+
              #{shippingBaseAddress},
              #{shippingZipCode},
              #{shippingDetailedAddress},
@@ -87,6 +105,15 @@
             unit_price = #{unitPrice},
             delivery_fee_amount = #{deliveryFeeAmount},
             total_payment_amount = #{totalPaymentAmount},
+
+            commission_rating_type = #{commissionRatingType},
+            commission_pre_pay_status = #{commissionPrePayStatus},
+            payment_commission = #{paymentCommission},
+            sale_commission = #{saleCommission},
+            channel_commission = #{channelCommission},
+            knowledge_shopping_selling_interlock_commission = #{knowledgeShoppingSellingInterlockCommission},
+            expected_settlement_amount = #{expectedSettlementAmount},
+
             modify_dt = now(),
             shipping_base_address = #{shippingBaseAddress},
             shipping_zip_code = #{shippingZipCode},
@@ -551,7 +578,7 @@
         UPDATE TB_ORDER
         SET
             total_origin_amount = #{totalOriginAmount},
-            total_net_profit_amount = (CAST(total_payment_amount AS DECIMAL(15,2)) * 0.96) - CAST(#{totalOriginAmount} AS DECIMAL(15,2))
+            total_net_profit_amount = CAST(expected_settlement_amount AS DECIMAL(15,2)) - CAST(#{totalOriginAmount} AS DECIMAL(15,2))
         WHERE id = #{id};
     </update>
 

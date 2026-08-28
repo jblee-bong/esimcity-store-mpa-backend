@@ -22,6 +22,7 @@ public class ApiPurchaseItemDto extends BaseDto {
 
 
     private String apiPurchasePrice; // 가격
+    private String apiPurchaseOriginKrwPrice; // 한국진짜구매가격
     private String apiPurchaseKrwPrice; // 한국가격
     private String apiPurchaseCurrency; // 단위
 

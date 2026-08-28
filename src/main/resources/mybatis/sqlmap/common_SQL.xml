@@ -38,6 +38,6 @@
 
     <!-- n분 전 시간 조회 -->
     <sql id="thirtyMinutesAgo">
-        INTERVAL -60 MINUTE
+        INTERVAL -360 MINUTE
     </sql>
 </mapper>

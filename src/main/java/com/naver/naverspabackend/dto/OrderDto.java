@@ -47,6 +47,36 @@ public class OrderDto extends BaseDto {
     private String totalPaymentAmount; //할인가
 
 
+
+
+    @ExcelColumnName(headerName = "수수료 과금 구분(결제 수수료/(구)판매 수수료/채널 수수료). 250바이트 내외")
+    private String commissionRatingType; //수수료 과금 구분
+
+
+    @ExcelColumnName(headerName = "수수료 선결제 상태 구분")
+    private String commissionPrePayStatus; //수수료 선결제 상태 구분
+    //GENERAL_PRD	일반 상품
+    //PRE_PAY_PRD_NO_PAY	선차감(차감 전)
+    //PRE_PAY_PRD_PAYED	선차감(차감 후)
+
+    @ExcelColumnName(headerName = "결제 수수료")
+    private String paymentCommission; //결제 수수료
+
+    @ExcelColumnName(headerName = "(구)판매 수수료")
+    private String saleCommission; //(구)판매 수수료
+
+
+    @ExcelColumnName(headerName = "채널 수수료")
+    private String channelCommission; //채널 수수료
+
+
+    @ExcelColumnName(headerName = "네이버 쇼핑 매출 연동 수수료")
+    private String knowledgeShoppingSellingInterlockCommission; //네이버 쇼핑 매출 연동 수수료
+
+    @ExcelColumnName(headerName = "정산 예정 금액")
+    private String expectedSettlementAmount; //정산 예정 금액
+
+
     @ExcelColumnName(headerName = "원가")
     private String totalOriginAmount; // 원가
 

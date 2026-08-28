@@ -60,7 +60,7 @@ public class NaverOrder {
     private final int LIMIT_SIZE = 300;
 
     // 검색할 diff 시간
-    private final int DIFF_TIME = -30;
+    private final int DIFF_TIME = -360;
 
 
     public void processNaverStore(StoreDto storeDto) {
@@ -208,6 +208,8 @@ public class NaverOrder {
             String productOption = Objects.toString(productOrder.get("productOption"), "");
             String originalProductId = Objects.toString(productOrder.get("originalProductId"), "");
             String optionCode = Objects.toString(productOrder.get("optionCode"), "");
+            if(optionCode.equals(""))
+                optionCode =Objects.toString(productOrder.get("itemNo"), "");
             String productOrderId = Objects.toString(productOrder.get("productOrderId"), "");
             String shippingMemo = Objects.toString(productOrder.get("shippingMemo"), "");
 
@@ -250,6 +252,34 @@ public class NaverOrder {
             orderDto.setUnitPrice(unitPrice);
             orderDto.setDeliveryFeeAmount(deliveryFeeAmount);
             orderDto.setTotalPaymentAmount(totalPaymentAmount);
+
+            try{
+                //수수료 테스트
+                String commissionRatingType = Objects.toString(productOrder.get("commissionRatingType"), "");
+                String commissionPrePayStatus = Objects.toString(productOrder.get("commissionPrePayStatus"), "");
+                String paymentCommission = Objects.toString(productOrder.get("paymentCommission"), "");
+                String saleCommission = Objects.toString(productOrder.get("saleCommission"), "");
+                String expectedSettlementAmount = Objects.toString(productOrder.get("expectedSettlementAmount"), "");
+
+                String channelCommission = Objects.toString(productOrder.get("channelCommission"), "");
+                String knowledgeShoppingSellingInterlockCommission = Objects.toString(productOrder.get("knowledgeShoppingSellingInterlockCommission"), "");
+
+
+                orderDto.setCommissionRatingType(commissionRatingType);
+                orderDto.setCommissionPrePayStatus(commissionPrePayStatus);
+                orderDto.setPaymentCommission(paymentCommission);
+                orderDto.setSaleCommission(saleCommission);
+                orderDto.setExpectedSettlementAmount(expectedSettlementAmount);
+
+                orderDto.setChannelCommission(channelCommission);
+                orderDto.setKnowledgeShoppingSellingInterlockCommission(knowledgeShoppingSellingInterlockCommission);
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+
 
             String ordererId = Objects.toString(order.get("ordererId"), "");
             String ordererName = Objects.toString(order.get("ordererName"), "");
