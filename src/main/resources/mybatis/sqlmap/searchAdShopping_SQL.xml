@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.SearchAdShoppingMapper">
+
+    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO TB_SEARCH_AD_SHOPPING (
+            ncc_ad_id,
+            ad_name,
+            use_yn,
+            target_position,
+            min_bid,
+            max_bid,
+            memo,
+            regist_dt,
+            modify_dt,
+            del_yn
+        ) VALUES (
+            #{nccAdId},
+            #{adName},
+            IFNULL(#{useYn}, 'Y'),
+            #{targetPosition},
+            #{minBid},
+            #{maxBid},
+            #{memo},
+            NOW(),
+            NOW(),
+            'N'
+        )
+    </insert>
+
+    <update id="update" parameterType="map">
+        UPDATE TB_SEARCH_AD_SHOPPING
+        SET ncc_ad_id       = #{nccAdId},
+            ad_name         = #{adName},
+            use_yn          = IFNULL(#{useYn}, use_yn),
+            target_position = #{targetPosition},
+            min_bid         = #{minBid},
+            max_bid         = #{maxBid},
+            memo            = #{memo},
+            modify_dt       = NOW()
+        WHERE id = #{id}
+          AND del_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="map">
+        UPDATE TB_SEARCH_AD_SHOPPING
+        SET del_yn = 'Y',
+            modify_dt = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectList" parameterType="map" resultType="searchAdShoppingDto">
+        SELECT *
+        FROM TB_SEARCH_AD_SHOPPING
+        WHERE del_yn = 'N'
+        <if test="adName != null and adName != ''">
+            AND ad_name LIKE CONCAT('%', #{adName}, '%')
+        </if>
+        <if test="nccAdId != null and nccAdId != ''">
+            AND ncc_ad_id = #{nccAdId}
+        </if>
+        <if test="useYn != null and useYn != ''">
+            AND use_yn = #{useYn}
+        </if>
+        ORDER BY id DESC
+        <include refid="common.pagingFooter"/>
+    </select>
+
+    <select id="selectListCnt" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_SEARCH_AD_SHOPPING
+        WHERE del_yn = 'N'
+        <if test="adName != null and adName != ''">
+            AND ad_name LIKE CONCAT('%', #{adName}, '%')
+        </if>
+        <if test="nccAdId != null and nccAdId != ''">
+            AND ncc_ad_id = #{nccAdId}
+        </if>
+        <if test="useYn != null and useYn != ''">
+            AND use_yn = #{useYn}
+        </if>
+    </select>
+
+    <select id="selectDetail" parameterType="map" resultType="searchAdShoppingDto">
+        SELECT *
+        FROM TB_SEARCH_AD_SHOPPING
+        WHERE id = #{id}
+          AND del_yn = 'N'
+    </select>
+
+    <select id="selectActiveList" resultType="searchAdShoppingDto">
+        SELECT *
+        FROM TB_SEARCH_AD_SHOPPING
+        WHERE del_yn = 'N'
+          AND use_yn = 'Y'
+        ORDER BY id ASC
+    </select>
+
+    <update id="updateBidStatus" parameterType="map">
+        UPDATE TB_SEARCH_AD_SHOPPING
+        SET current_bid     = #{currentBid},
+            estimate_bid    = #{estimateBid},
+            avg_rnk         = #{avgRnk},
+            last_imp_cnt    = #{lastImpCnt},
+            prev_imp_cnt    = #{prevImpCnt},
+            prev_avg_rnk    = #{prevAvgRnk},
+            delta_rnk       = #{deltaRnk},
+            last_checked_dt = NOW(),
+            modify_dt       = NOW()
+        WHERE id = #{id}
+          AND del_yn = 'N'
+    </update>
+
+    <insert id="insertHist" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO TB_SEARCH_AD_SHOPPING_HIST (
+            shopping_id,
+            ncc_ad_id,
+            ad_name,
+            action,
+            before_bid,
+            after_bid,
+            target_position,
+            avg_rnk,
+            delta_rnk,
+            last_imp_cnt,
+            delta_imp,
+            regist_dt
+        ) VALUES (
+            #{shoppingId},
+            #{nccAdId},
+            #{adName},
+            #{action},
+            #{beforeBid},
+            #{afterBid},
+            #{targetPosition},
+            #{avgRnk},
+            #{deltaRnk},
+            #{lastImpCnt},
+            #{deltaImp},
+            NOW()
+        )
+    </insert>
+
+    <select id="selectHistList" parameterType="map" resultType="searchAdShoppingHistDto">
+        SELECT *
+        FROM TB_SEARCH_AD_SHOPPING_HIST
+        WHERE shopping_id = #{shoppingId}
+        ORDER BY id DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

@@ -33,6 +33,10 @@
         <typeAlias type="com.naver.naverspabackend.dto.ApiCardTypeDto" alias="apiCardTypeDto"/>
         <typeAlias type="com.naver.naverspabackend.dto.EsimApiIngStepLogsDto" alias="esimApiIngStepLogsDto"/>
         <typeAlias type="com.naver.naverspabackend.dto.OrderRetransMailInfoDto" alias="orderRetransMailInfoDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.SearchAdKeywordDto" alias="searchAdKeywordDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.SearchAdShoppingDto" alias="searchAdShoppingDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.SearchAdKeywordHistDto" alias="searchAdKeywordHistDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.SearchAdShoppingHistDto" alias="searchAdShoppingHistDto"/>
 
 
     </typeAliases>

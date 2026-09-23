@@ -71,7 +71,7 @@ public class NaverOrderTasklet implements Tasklet {
         {
             return null;
         }
-        log.error("*************************************************** 주문가져오기 2 ***************************************************");
+        log.info("*************************************************** 주문가져오기 2 ***************************************************");
 
         Map<String,Object> param = new HashMap<>();
         param.put("userAuthority","ROLE_ADMIN");

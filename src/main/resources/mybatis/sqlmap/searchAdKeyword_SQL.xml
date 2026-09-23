@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.SearchAdKeywordMapper">
+
+    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO TB_SEARCH_AD_KEYWORD (
+            ncc_keyword_id,
+            keyword,
+            use_yn,
+            target_position,
+            min_bid,
+            max_bid,
+            memo,
+            regist_dt,
+            modify_dt,
+            del_yn
+        ) VALUES (
+            #{nccKeywordId},
+            #{keyword},
+            IFNULL(#{useYn}, 'Y'),
+            #{targetPosition},
+            #{minBid},
+            #{maxBid},
+            #{memo},
+            NOW(),
+            NOW(),
+            'N'
+        )
+    </insert>
+
+    <update id="update" parameterType="map">
+        UPDATE TB_SEARCH_AD_KEYWORD
+        SET ncc_keyword_id  = #{nccKeywordId},
+            keyword         = #{keyword},
+            use_yn          = IFNULL(#{useYn}, use_yn),
+            target_position = #{targetPosition},
+            min_bid         = #{minBid},
+            max_bid         = #{maxBid},
+            memo            = #{memo},
+            modify_dt       = NOW()
+        WHERE id = #{id}
+          AND del_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="map">
+        UPDATE TB_SEARCH_AD_KEYWORD
+        SET del_yn = 'Y',
+            modify_dt = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectList" parameterType="map" resultType="searchAdKeywordDto">
+        SELECT *
+        FROM TB_SEARCH_AD_KEYWORD
+        WHERE del_yn = 'N'
+        <if test="keyword != null and keyword != ''">
+            AND keyword LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="nccKeywordId != null and nccKeywordId != ''">
+            AND ncc_keyword_id = #{nccKeywordId}
+        </if>
+        <if test="useYn != null and useYn != ''">
+            AND use_yn = #{useYn}
+        </if>
+        ORDER BY id DESC
+        <include refid="common.pagingFooter"/>
+    </select>
+
+    <select id="selectListCnt" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_SEARCH_AD_KEYWORD
+        WHERE del_yn = 'N'
+        <if test="keyword != null and keyword != ''">
+            AND keyword LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="nccKeywordId != null and nccKeywordId != ''">
+            AND ncc_keyword_id = #{nccKeywordId}
+        </if>
+        <if test="useYn != null and useYn != ''">
+            AND use_yn = #{useYn}
+        </if>
+    </select>
+
+    <select id="selectDetail" parameterType="map" resultType="searchAdKeywordDto">
+        SELECT *
+        FROM TB_SEARCH_AD_KEYWORD
+        WHERE id = #{id}
+          AND del_yn = 'N'
+    </select>
+
+    <select id="selectActiveList" resultType="searchAdKeywordDto">
+        SELECT *
+        FROM TB_SEARCH_AD_KEYWORD
+        WHERE del_yn = 'N'
+          AND use_yn = 'Y'
+        ORDER BY id ASC
+    </select>
+
+    <update id="updateBidStatus" parameterType="map">
+        UPDATE TB_SEARCH_AD_KEYWORD
+        SET current_bid     = #{currentBid},
+            estimate_bid    = #{estimateBid},
+            avg_rnk         = #{avgRnk},
+            last_imp_cnt    = #{lastImpCnt},
+            prev_imp_cnt    = #{prevImpCnt},
+            prev_avg_rnk    = #{prevAvgRnk},
+            delta_rnk       = #{deltaRnk},
+            last_checked_dt = NOW(),
+            modify_dt       = NOW()
+        WHERE id = #{id}
+          AND del_yn = 'N'
+    </update>
+
+    <insert id="insertHist" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO TB_SEARCH_AD_KEYWORD_HIST (
+            keyword_id,
+            ncc_keyword_id,
+            keyword,
+            action,
+            before_bid,
+            after_bid,
+            target_position,
+            avg_rnk,
+            delta_rnk,
+            last_imp_cnt,
+            delta_imp,
+            regist_dt
+        ) VALUES (
+            #{keywordId},
+            #{nccKeywordId},
+            #{keyword},
+            #{action},
+            #{beforeBid},
+            #{afterBid},
+            #{targetPosition},
+            #{avgRnk},
+            #{deltaRnk},
+            #{lastImpCnt},
+            #{deltaImp},
+            NOW()
+        )
+    </insert>
+
+    <select id="selectHistList" parameterType="map" resultType="searchAdKeywordHistDto">
+        SELECT *
+        FROM TB_SEARCH_AD_KEYWORD_HIST
+        WHERE keyword_id = #{keywordId}
+        ORDER BY id DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

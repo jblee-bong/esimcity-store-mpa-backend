@@ -96,6 +96,44 @@
         <appender-ref ref="ROLLFILE"/>
     </logger>
 
+    <!-- importNaverJob 1~6 + 검색광고 자동입찰 (운영 모니터링용 INFO) -->
+    <logger name="com.naver.naverspabackend.batch.tasklet.NaverProductTasklet" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="com.naver.naverspabackend.batch.tasklet.NaverOrderTasklet" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="com.naver.naverspabackend.batch.tasklet.NaverOrderingStatusTasklet" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="com.naver.naverspabackend.batch.tasklet.NaverSmsTasklet" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="com.naver.naverspabackend.batch.tasklet.NaverCancelIccidTasklet" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="com.naver.naverspabackend.batch.tasklet.NaverChangeStatusTasklet" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="com.naver.naverspabackend.batch.tasklet.NaverSearchAdAutoBidScheduler" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="com.naver.naverspabackend.batch.tasklet.NaverSearchAdAutoBidJob" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="com.naver.naverspabackend.batch.tasklet.NaverSearchAdShoppingAutoBidJob" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+
     <!-- Framework Section -->
     <logger name="egovframework" level="error" additivity="false">
         <appender-ref ref="CONSOLE"/>

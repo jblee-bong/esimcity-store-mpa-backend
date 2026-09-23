@@ -78,7 +78,7 @@ public class NaverProductTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 
-        log.error("*************************************************** STEP START 0 ***************************************************");
+        log.info("*************************************************** STEP START 0 ***************************************************");
         if(testMode.equals("true"))
         {
             return null;
@@ -126,7 +126,7 @@ public class NaverProductTasklet implements Tasklet {
             e.printStackTrace();
         }
 
-        log.error("*************************************************** 상품 동기화 1 ***************************************************");
+        log.info("*************************************************** 상품 동기화 1 ***************************************************");
 
 
 

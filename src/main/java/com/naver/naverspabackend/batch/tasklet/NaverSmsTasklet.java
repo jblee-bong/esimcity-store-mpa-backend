@@ -95,7 +95,7 @@ public class NaverSmsTasklet implements Tasklet {
         {
             return null;
         }
-        log.error("*************************************************** 이심 구매 및 발송 4 ***************************************************");
+        log.info("*************************************************** 이심 구매 및 발송 4 ***************************************************");
 
         Map<String,Object> param = new HashMap<>();
         param.put("userAuthority","ROLE_ADMIN");

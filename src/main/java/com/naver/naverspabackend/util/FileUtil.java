@@ -44,7 +44,7 @@ public class FileUtil {
         String mainPath = env.equals("cityProd")?"/city/":"";
         String path = "";
         if (!"dev".equals(env)) {
-            path = "/home/apache-tomcat-9.0.82/webapps" + mainPath;
+            path = "/opt/tomcat9/webapps" + mainPath;
         }else{
             path = "C:\\geneuin\\developer\\esimcity\\esimcity-store-mpa-backend\\build\\libs";
         }

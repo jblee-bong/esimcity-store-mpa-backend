@@ -55,7 +55,7 @@ public class NaverOrderingStatusTasklet implements Tasklet {
         {
             return null;
         }
-        log.error("*************************************************** 발주처리 3 ***************************************************");
+        log.info("*************************************************** 발주처리 3 ***************************************************");
 
         Map<String,Object> param = new HashMap<>();
         param.put("userAuthority","ROLE_ADMIN");

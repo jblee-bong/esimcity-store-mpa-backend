@@ -13,8 +13,10 @@ import java.util.Arrays;
 
 public class MakeResetTimeUtil {
 
-    public static final String[] tsimResetBasing2359 = new String[]{"vmobile.jp", "cmhk", "3gnet", "mobile.three.com.hk", "mobiledata", "mobile", "ctm-mobile","ctexcel", "smartone"};
-    public static final String[] tsimResetActive24 = new String[]{"plus","e-ideas","iij"};
+    public static final String[] tsimResetBasing2359 = new String[]{"my3g","bicsapn","vmobile.jp", "cmhk","cmlink", "3gnet", "mobile.three.com.hk", "mobiledata", "mobile", "ctm-mobile","ctexcel", "smartone"};
+    public static final String[] tsimResetBasing23592 = new String[]{"plus.4g"};
+
+    public static final String[] tsimResetActive24 = new String[]{"plus","e-ideas","iij","internetipv6"};
     public static final String[] tsimResetChinaTimeAm8 = new String[]{"sl2sfr"};
     public static final String[] tsimResetVetimeTime2359 = new String[]{"m3-world"};
 
@@ -36,6 +38,8 @@ public class MakeResetTimeUtil {
                         apn = apn.toLowerCase();
                         if(Arrays.asList(tsimResetBasing2359).indexOf(apn)>-1){
                             result = " 01:00(한국 시간) 충전되며, 이용 일수는 활성화 시점부터 24시간 단위로 계산됩니다.";
+                        }else if(Arrays.asList(tsimResetBasing23592).indexOf(apn)>-1){
+                            result = " 00:00(한국 시간) 충전되며, 이용 일수는 활성화 시점부터 24시간 단위로 계산됩니다.";
                         }else if(Arrays.asList(tsimResetActive24).indexOf(apn)>-1){
                             result = " 활성화 시점부터 24시간 단위로 충전 되며, 이용 일수는 활성화 시점부터 24시간 단위로 계산됩니다.";
                         }else if(Arrays.asList(tsimResetChinaTimeAm8).indexOf(apn)>-1){
@@ -86,6 +90,8 @@ public class MakeResetTimeUtil {
                     if(apn!=null){
                         apn = apn.toLowerCase();
                         if(Arrays.asList(tsimResetBasing2359).indexOf(apn)>-1){
+                            result = " 활성화 시점부터 24시간 단위로 계산됩니다.";
+                        }else if(Arrays.asList(tsimResetBasing23592).indexOf(apn)>-1){
                             result = " 활성화 시점부터 24시간 단위로 계산됩니다.";
                         }else if(Arrays.asList(tsimResetActive24).indexOf(apn)>-1){
                             result = " 활성화 시점부터 24시간 단위로 계산됩니다.";
@@ -156,6 +162,8 @@ public class MakeResetTimeUtil {
                         apn = apn.toLowerCase();
                         if(Arrays.asList(tsimResetBasing2359).indexOf(apn)>-1){
                             result = " 01:00(한국 시간) 충전되며, 이용 일수는 활성화 시점부터 24시간 단위로 계산됩니다.";
+                        }else if(Arrays.asList(tsimResetBasing23592).indexOf(apn)>-1){
+                            result = " 00:00(한국 시간) 충전되며, 이용 일수는 활성화 시점부터 24시간 단위로 계산됩니다.";
                         }else if(Arrays.asList(tsimResetActive24).indexOf(apn)>-1){
                             result = " 활성화 시점부터 24시간 단위 충전로 되며, 이용 일수는 활성화 시점부터 24시간 단위로 계산됩니다.";
                         }else if(Arrays.asList(tsimResetChinaTimeAm8).indexOf(apn)>-1){
@@ -202,6 +210,8 @@ public class MakeResetTimeUtil {
                     if(apn!=null){
                         apn = apn.toLowerCase();
                         if(Arrays.asList(tsimResetBasing2359).indexOf(apn)>-1){
+                            result = " 활성화 시점부터 24시간 단위로 계산됩니다.";
+                        }else if(Arrays.asList(tsimResetBasing23592).indexOf(apn)>-1){
                             result = " 활성화 시점부터 24시간 단위로 계산됩니다.";
                         }else if(Arrays.asList(tsimResetActive24).indexOf(apn)>-1){
                             result = " 활성화 시점부터 24시간 단위로 계산됩니다.";
@@ -266,6 +276,8 @@ public class MakeResetTimeUtil {
                     apn = apn.toLowerCase();
                     if(Arrays.asList(tsimResetBasing2359).indexOf(apn)>-1){
                         result = "데이터 충전: 01:00(한국 시간)<br/>이용 일수: 활성화 시점부터 24시간";
+                    }else if(Arrays.asList(tsimResetBasing23592).indexOf(apn)>-1){
+                        result = "데이터 충전: 00:00(한국 시간)<br/>이용 일수: 활성화 시점부터 24시간";
                     }else if(Arrays.asList(tsimResetActive24).indexOf(apn)>-1){
                         result = "데이터 충전: 활성화 시점부터 24시간<br/>이용 일수: 활성화 시점부터 24시간";
                     }else if(Arrays.asList(tsimResetChinaTimeAm8).indexOf(apn)>-1){
@@ -280,6 +292,8 @@ public class MakeResetTimeUtil {
                     if(apn!=null){
                         apn = apn.toLowerCase();
                         if(Arrays.asList(tsimResetBasing2359).indexOf(apn)>-1){
+                            result = "이용 일수: 활성화 시점부터 24시간";
+                        }else if(Arrays.asList(tsimResetBasing23592).indexOf(apn)>-1){
                             result = "이용 일수: 활성화 시점부터 24시간";
                         }else if(Arrays.asList(tsimResetActive24).indexOf(apn)>-1){
                             result = "이용 일수: 활성화 시점부터 24시간";

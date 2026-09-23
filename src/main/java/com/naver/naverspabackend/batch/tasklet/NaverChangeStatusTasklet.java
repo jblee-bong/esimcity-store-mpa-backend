@@ -61,7 +61,7 @@ public class NaverChangeStatusTasklet implements Tasklet {
         {
             return null;
         }
-        log.error("*************************************************** 발송완료처리 6 ***************************************************");
+        log.info("*************************************************** 발송완료처리 6 ***************************************************");
 
         Map<String,Object> param = new HashMap<>();
         param.put("userAuthority","ROLE_ADMIN");

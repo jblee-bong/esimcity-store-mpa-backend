@@ -20,7 +20,7 @@ usage2-uri: /api/ex/data
 testEmail: jblee6110@gmail.com
 testTel: 01097716110
 
-fileSavePath: /home/file/
+fileSavePath: /opt/file/
 
 api:
   tsim:
@@ -144,3 +144,18 @@ portOne:
   checkUrl: https://api.portone.io/payments
   redirectUrl: http://192.168.219.102:8080/external/portone/complete
   cancelUrl: https://api.portone.io//payments/{token}/cancel
+
+naver-search-ad:
+  enabled: false
+  base-url: https://api.searchad.naver.com
+  access-license: "01000000002f4d75b50d59f321600a4ca75f4bffffaf74367877d675e5697488ce34446534"
+  secret-key: "AQAAAAAvTXW1DVnzIWAKTKdfS///DtV2LFTR7LWcXuKytroXYA=="
+  customer-id: ""
+  target-position: 3
+  device: MOBILE
+  min-bid: 70
+  max-bid: 50000
+  bid-tolerance: 10
+  rank-tolerance: 0.3
+  bid-step: 50
+  min-delta-imp: 20

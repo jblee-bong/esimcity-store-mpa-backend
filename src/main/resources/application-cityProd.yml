@@ -1,14 +1,13 @@
 spring:
   datasource:
-    url: jdbc:mariadb://114.207.112.85:3306/naver2?useUnicode=true&charaterEncoding=utf-8
-    username: simvillage
-    password: simvillage2024!@
+    url: jdbc:mariadb://211.233.204.211:3306/naver2?useUnicode=true&charaterEncoding=utf-8
+    username: esimcity
+    password: esimcity2026@!
     driver-class-name: org.mariadb.jdbc.Driver
   redis:
-    host: 114.207.112.85
+    host: 127.0.0.1
     port: 6379
-    password: esimvil2025!
-testMode: false
+testMode: true
 
 logging:
   config: classpath:logback-prod.xml
@@ -20,7 +19,7 @@ usage2-uri: /api/ex/data
 testEmail: jblee6110@gmail.com
 testTel: 01097716110
 
-fileSavePath: /home/file/
+fileSavePath: /opt/file/
 
 api:
   tsim:
@@ -176,4 +175,21 @@ payup:
   comfirmURI: /api/v1/payment
   cancelURI: /api/v1/cancel
   apiKey: 47d91df9012f4213b7d8acfb85e8e70a
+
+# 검색광고 자동입찰
+# 파워링크/쇼핑 모두 추정입찰(average-position-bid) ±bidStep
+naver-search-ad:
+  enabled: true
+  base-url: https://api.searchad.naver.com
+  access-license: "01000000002f4d75b50d59f321600a4ca75f4bffffaf74367877d675e5697488ce34446534"
+  secret-key: "AQAAAAAvTXW1DVnzIWAKTKdfS///DtV2LFTR7LWcXuKytroXYA=="
+  customer-id: "4232033"
+  target-position: 3
+  device: MOBILE
+  min-bid: 70
+  max-bid: 50000
+  bid-tolerance: 10
+  rank-tolerance: 0.3
+  bid-step: 50
+  min-delta-imp: 20
 

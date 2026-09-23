@@ -61,7 +61,7 @@ public class NaverCancelIccidTasklet implements Tasklet {
         {
             return null;
         }
-        log.error("*************************************************** 취소 오더중 iccid 없는값(esim 결제됬으나 취소) iccid 있으면 추가 5***************************************************");
+        log.info("*************************************************** 취소 오더중 iccid 없는값(esim 결제됬으나 취소) iccid 있으면 추가 5***************************************************");
 
         Map<String,Object> param = new HashMap<>();
         param.put("userAuthority","ROLE_ADMIN");
