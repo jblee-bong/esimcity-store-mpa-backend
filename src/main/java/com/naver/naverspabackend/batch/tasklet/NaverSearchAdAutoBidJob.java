@@ -65,7 +65,7 @@ public class NaverSearchAdAutoBidJob {
         }
         if (!StringUtils.hasText(target.getKeyword()) || !StringUtils.hasText(target.getNccKeywordId())) {
             log.warn("skip invalid target (need keyword + nccKeywordId): id={}", target.getId());
-            return;`
+            return;
         }
 
         int targetPos = target.getTargetPosition() != null

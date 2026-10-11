@@ -650,33 +650,15 @@ public class TugeUtil {
         String serviceName = "eSIMApi/v2/order/create";
         String url = baseUrl +serviceName;
 
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(5000); // 커넥션 최대 시간
-        factory.setReadTimeout(45000); // 읽기 최대 시간
-
-        RestTemplate restTemplate = new RestTemplate(factory);
-
-        // create headers
-        HttpHeaders headers = getToken(tugeRedisRepository);
-        String requestId = UUID.randomUUID().toString();
-        Gson gson = new Gson();
-        Map<String,Object> data = new HashMap<>();
-
-
         Map<String,Object> jsonObject = new HashMap<>();
         jsonObject.put("productCode",esimProductId);
         jsonObject.put("channelOrderNo",orderIdWithQuantityNumber);
-        jsonObject.put("idempotencyKey",requestId);
+        jsonObject.put("idempotencyKey",UUID.randomUUID().toString());
 
-        esimApiIngStepLogsService.insertRest(headers,jsonObject, orderId);
+        HashMap body = postJsonWithTokenRetry(url, jsonObject, orderId, true);
+        esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.PURCHASE_END0.getExplain() + body, orderId);
 
-        HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
-
-        ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
-        esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.PURCHASE_END0.getExplain() + response.getBody(), orderId);
-
-        return response.getBody();
+        return body;
     }
 
 
@@ -687,34 +669,19 @@ public class TugeUtil {
         String serviceName = "eSIMApi/v2/order/renew";
         String url = baseUrl +serviceName;
 
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(5000); // 커넥션 최대 시간
-        factory.setReadTimeout(45000); // 읽기 최대 시간
-
-        RestTemplate restTemplate = new RestTemplate(factory);
-
         Gson gson = new Gson();
         HashMap<String,Object> topupParam = gson.fromJson(topupOrderDto.getTopupParamJson(), HashMap.class);
-        // create headers
-        HttpHeaders headers = getToken(tugeRedisRepository);
-        String requestId = UUID.randomUUID().toString();
-
 
         Map<String,Object> jsonObject = new HashMap<>();
         jsonObject.put("productCode",topupParam.get("apiPurchaseItemProcutId"));
         jsonObject.put("iccid",topupOrderDto.getEsimIccid());
         jsonObject.put("channelOrderNo","renewOrderNo_"+topupOrderDto.getId());
-        jsonObject.put("idempotencyKey",requestId);
+        jsonObject.put("idempotencyKey",UUID.randomUUID().toString());
 
-        esimApiIngStepLogsService.insertRest(headers,jsonObject, topupOrderDto.getOrderId());
+        HashMap body = postJsonWithTokenRetry(url, jsonObject, topupOrderDto.getOrderId(), true);
+        esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.TOPUP_END.getExplain() + body, topupOrderDto.getOrderId());
 
-        HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
-
-        ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
-        esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.TOPUP_END.getExplain() + response.getBody(), topupOrderDto.getOrderId());
-
-        return response.getBody();
+        return body;
     }
 
 
@@ -724,29 +691,12 @@ public class TugeUtil {
     private static HashMap getEsimStatus(String orderId) throws Exception {
 
         String serviceName = "eSIMApi/v2/order/usage";
-
         String url = baseUrl +  serviceName;
-
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(5000); // 커넥션 최대 시간
-        factory.setReadTimeout(45000); // 읽기 최대 시간
-
-        RestTemplate restTemplate = new RestTemplate(factory);
-
-        HttpHeaders headers = getToken(tugeRedisRepository);
-
 
         Map<String,Object> jsonObject = new HashMap<>();
         jsonObject.put("orderNo",orderId);
 
-
-        HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
-
-
-        ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
-        return response.getBody();
-
+        return postJsonWithTokenRetry(url, jsonObject, null, false);
     }
 
 
@@ -755,29 +705,60 @@ public class TugeUtil {
     private static HashMap getEsimStatus2(String orderId) throws Exception {
 
         String serviceName = "eSIMApi/v2/order/orders";
-
         String url = baseUrl  + serviceName;
-
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(5000); // 커넥션 최대 시간
-        factory.setReadTimeout(45000); // 읽기 최대 시간
-
-        RestTemplate restTemplate = new RestTemplate(factory);
-
-        HttpHeaders headers = getToken(tugeRedisRepository);
-
 
         Map<String,Object> jsonObject = new HashMap<>();
         jsonObject.put("orderNo", orderId);
 
+        return postJsonWithTokenRetry(url, jsonObject, null, false);
+    }
 
-        HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
+    private static RestTemplate createTugeRestTemplate() {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setConnectionRequestTimeout(5000);
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(45000);
+        return new RestTemplate(factory);
+    }
 
+    private static boolean isTokenInvalid(HashMap body) {
+        if (body == null || body.get("code") == null) {
+            return false;
+        }
+        return "2003".equals(body.get("code").toString());
+    }
 
+    private static void clearCachedToken() {
+        if (tugeRedisRepository != null && accountId != null) {
+            tugeRedisRepository.deleteById(accountId);
+        }
+    }
+
+    /**
+     * Token invalid(2003) 시 Redis 토큰 삭제 후 1회 재시도.
+     * 재시도 시 동일 body(idempotencyKey 포함)를 유지한다.
+     */
+    private static HashMap postJsonWithTokenRetry(String url, Map<String, Object> jsonObject, Long orderId, boolean logRest) {
+        RestTemplate restTemplate = createTugeRestTemplate();
+        HttpHeaders headers = getToken(tugeRedisRepository);
+        if (logRest && orderId != null) {
+            esimApiIngStepLogsService.insertRest(headers, jsonObject, orderId);
+        }
+        HttpEntity<String> entity = new HttpEntity<>(new Gson().toJson(jsonObject), headers);
         ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
-        return response.getBody();
+        HashMap body = response.getBody();
 
+        if (isTokenInvalid(body)) {
+            clearCachedToken();
+            headers = getToken(tugeRedisRepository);
+            if (logRest && orderId != null) {
+                esimApiIngStepLogsService.insertRest(headers, jsonObject, orderId);
+            }
+            entity = new HttpEntity<>(new Gson().toJson(jsonObject), headers);
+            response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
+            body = response.getBody();
+        }
+        return body;
     }
 
     public static HttpHeaders getToken(TugeRedisRepository tugeRedisRepository){
@@ -807,6 +788,7 @@ public class TugeUtil {
             existToken = false;
         }
         if(!existToken){
+            tugeRedisRepository.deleteById(accountId);
             String serviceName = "oauth/token";
             String url = baseUrl +  serviceName;
             HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();

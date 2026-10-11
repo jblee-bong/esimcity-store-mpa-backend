@@ -179,7 +179,7 @@ payup:
 # 검색광고 자동입찰
 # 파워링크/쇼핑 모두 추정입찰(average-position-bid) ±bidStep
 naver-search-ad:
-  enabled: true
+  enabled: false
   base-url: https://api.searchad.naver.com
   access-license: "01000000002f4d75b50d59f321600a4ca75f4bffffaf74367877d675e5697488ce34446534"
   secret-key: "AQAAAAAvTXW1DVnzIWAKTKdfS///DtV2LFTR7LWcXuKytroXYA=="

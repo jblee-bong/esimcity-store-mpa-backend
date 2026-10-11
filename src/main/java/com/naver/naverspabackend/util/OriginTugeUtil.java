@@ -141,6 +141,7 @@ public class OriginTugeUtil {
             existToken = false;
         }
         if(!existToken){
+            tugeRedisRepository.deleteById(accountId);
             String serviceName = "oauth/token";
             String url = base2Url +  serviceName;
             HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
@@ -190,63 +191,67 @@ public class OriginTugeUtil {
 
 
 
+    private static RestTemplate createTugeRestTemplate() {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setConnectionRequestTimeout(5000);
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(45000);
+        return new RestTemplate(factory);
+    }
+
+    private static boolean isTokenInvalid(HashMap body) {
+        if (body == null || body.get("code") == null) {
+            return false;
+        }
+        return "2003".equals(body.get("code").toString());
+    }
+
+    private static void clearCachedToken() {
+        if (tugeRedisRepository != null && accountId != null) {
+            tugeRedisRepository.deleteById(accountId);
+        }
+    }
+
+    private static HashMap postJsonWithTokenRetry(String url, Map<String, Object> jsonObject) {
+        RestTemplate restTemplate = createTugeRestTemplate();
+        HttpHeaders headers = getToken(tugeRedisRepository);
+        HttpEntity<String> entity = new HttpEntity<>(new Gson().toJson(jsonObject), headers);
+        ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
+        HashMap body = response.getBody();
+
+        if (isTokenInvalid(body)) {
+            clearCachedToken();
+            headers = getToken(tugeRedisRepository);
+            entity = new HttpEntity<>(new Gson().toJson(jsonObject), headers);
+            response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
+            body = response.getBody();
+        }
+        return body;
+    }
+
     public static HashMap getEsimPackages(int page) throws Exception {
 
         String serviceName = "eSIMApi/v2/products/list";
-
         String url = base2Url  + serviceName;
-
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(5000); // 커넥션 최대 시간
-        factory.setReadTimeout(45000); // 읽기 최대 시간
-
-        RestTemplate restTemplate = new RestTemplate(factory);
-
-        // create headers
-        HttpHeaders headers = getToken(tugeRedisRepository);
-
 
         Map<String,Object> jsonObject = new HashMap<>();
         jsonObject.put("pageSize",100);
         jsonObject.put("pageNum",page);
         jsonObject.put("lang","en");
 
-        HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
-
-
-        ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
-        return response.getBody();
-
+        return postJsonWithTokenRetry(url, jsonObject);
     }
 
 
     public static HashMap getEsimCardType(String cardType) throws Exception {
 
         String serviceName = "eSIMApi/v2/card";
-
         String url = base2Url  + serviceName;
-
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(5000); // 커넥션 최대 시간
-        factory.setReadTimeout(45000); // 읽기 최대 시간
-
-        RestTemplate restTemplate = new RestTemplate(factory);
-
-        // create headers
-        HttpHeaders headers = getToken(tugeRedisRepository);
-
 
         Map<String,Object> jsonObject = new HashMap<>();
         jsonObject.put("cardType",cardType);
 
-        HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
-
-
-        ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
-        return response.getBody();
-
+        return postJsonWithTokenRetry(url, jsonObject);
     }
 
 
