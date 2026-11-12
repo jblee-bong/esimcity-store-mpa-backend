@@ -7,9 +7,12 @@ import lombok.Setter;
 @Setter
 public class EsimPriceDto {
 
+    /** TB_ESIM_PRICE 조회용 (TUGE/TSIM/...) */
     private String type;
 
-    private Double exchangeOriginRate;
+    /** TB_ESIM_PRICE_PRODUCT 조회용. 있으면 PRODUCT 우선 */
+    private Long originProductNo;
+
     private Double exchangeRate;
     private Double exchangeWeight;
     private Double weight1;

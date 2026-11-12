@@ -40,15 +40,6 @@ api:
     merchantId: b0000b5test
     deptId: '0000d2'
     token: 1f3749ae75154a54f7097cc6b4841473test
-  niz:
-    nizId: X1XK8II40NENI4PN0MM19Stest
-    nizPass: 4NZG5JPOSY2FKKK5UP66D1test
-    nizPartnerCode: '000200000test'
-    baseUrl: https://simapi.simgonow.com
-  airalo:
-    clientId: a17f9843e9e8df7f2d5e1d38823442f6test
-    clientSecret: MK11yYutJTa2lR32zqsh3kaF0D3rlHn0PE8vlsiXtest
-    baseUrl: https://partners-api.airalo.com
 
 
 # 인증 토큰 발급 요청

@@ -188,19 +188,6 @@ public class FileUtil {
         return qrImageUrl;
     }
 
-    public String makeQrCodeNiz(HashMap esimMap) {
-        esimMap.put("activation_code", esimMap.get("actReqESIMActivationCode").toString());
-        esimMap.put("lpaCode", "LPA1:$" + esimMap.get("actReqESIMSMDPAddress").toString() + "$" + esimMap.get("actReqESIMActivationCode").toString());
-        esimMap.put("qrImageUrl", esimMap.get("qrcodeURL").toString());
-        esimMap.put("smdp",esimMap.get("actReqESIMSMDPAddress").toString());
-        try{
-            esimMap.put("iccid",esimMap.get("simno").toString());
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        return esimMap.get("qrcodeURL").toString();
-    }
     public void makeQrCodeTsim(HashMap esimMap) throws IOException, WriterException {
 
 
@@ -260,25 +247,6 @@ public class FileUtil {
 
     }
 
-    public void makeQrCodeAirAlo(Map<String, Object> esimMap, OrderDto orderDto) throws IOException, WriterException {
-        try{
-            HashMap sharingMap = (HashMap) esimMap.get("sharing");
-            esimMap.put("cloudLink",sharingMap.get("link").toString());
-            esimMap.put("accessCode",sharingMap.get("access_code").toString());
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        esimMap.put("iccid", esimMap.get("iccid"));
-
-
-        String[] lapSplits = esimMap.get("qrcode").toString().split("\\$");
-        esimMap.put("smdp", lapSplits[1]);
-        esimMap.put("activation_code", lapSplits[2]);
-        esimMap.put("lpaCode", esimMap.get("qrcode").toString());
-
-        String qrImageUrl = serverOrigin + uploadQrCodeFile( esimMap);
-        esimMap.put("qrImageUrl",  qrImageUrl);
-    }
 
     public void makeQrCodeBulk(HashMap esimMap, OrderDto orderDto) throws IOException, WriterException {
 

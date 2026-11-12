@@ -5,15 +5,18 @@ import com.naver.naverspabackend.dto.OrderDto;
 import com.naver.naverspabackend.dto.StoreDto;
 import com.naver.naverspabackend.enums.ApiType;
 import com.naver.naverspabackend.service.apipurchaseitem.ApiPurchaseItemService;
+import com.naver.naverspabackend.service.esiminstall.EsimInstallTokenService;
 import com.naver.naverspabackend.service.order.OrderService;
 import com.naver.naverspabackend.service.papal.PaypalService;
 import com.naver.naverspabackend.service.payapp.PayAppService;
 import com.naver.naverspabackend.service.payup.PayUpService;
 import com.naver.naverspabackend.service.portone.PortOneService;
 import com.naver.naverspabackend.service.store.StoreService;
+import com.naver.naverspabackend.service.wifi.WifiService;
 import com.naver.naverspabackend.util.*;
 import com.sun.org.apache.xpath.internal.operations.Mod;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -27,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Controller
 @RequestMapping("/external")
 @RequiredArgsConstructor
@@ -58,6 +62,28 @@ public class ExternalController {
     @Autowired
     private PayAppService payAppService;
 
+    @Autowired
+    private EsimInstallTokenService esimInstallTokenService;
+
+    @Autowired
+    private WifiService wifiService;
+    @Value("${wifi.appUrl:https://www.esimcity.co.kr/wifi}")
+    private String wifiAppUrl;
+
+    @GetMapping("/esim/install")
+    public String esimInstall(Model model, @RequestParam(name = "token", required = true) String token) {
+        Map<String, Object> payload = esimInstallTokenService.findPayloadByToken(token);
+        if (payload == null) {
+            model.addAttribute("expired", true);
+            return active + "/ESIM_INSTALL";
+        }
+        model.addAttribute("expired", false);
+        for (Map.Entry<String, Object> entry : payload.entrySet()) {
+            model.addAttribute(entry.getKey(), entry.getValue());
+        }
+        return active + "/ESIM_INSTALL";
+    }
+
     @GetMapping("/esimdata")
     public String  esimdata(Model model, @RequestParam (name = "id",required = true) String id,  @RequestParam (name = "orderId",required = false) String orderId, @RequestParam(name = "iccid",required = false) String iccid, @RequestParam(name = "type",required = false) String type, @RequestParam(name = "rcode",required = false) String rcode, HttpServletResponse response) throws Exception {
 
@@ -82,8 +108,6 @@ public class ExternalController {
         TsimUtil tsimUtil = EsimUtil.getTsimUtil(apiPurchaseItemService, storeDto, null);
         TugeUtil tugeUtil = EsimUtil.getTugeUtil(storeDto,null);
         WorldMoveUtil worldMoveUtil =  EsimUtil.getWorldMoveUtil(storeDto);
-        NizUtil nizUtil =  EsimUtil.getNizUtil(storeDto);
-        AirAloUtil airAloUtil  =  EsimUtil.getAirAloUtil(storeDto);
 
         model.addAttribute("esimCopyWrite",storeDto.getEsimCopyWrite());
         model.addAttribute("esimQuestLink",storeDto.getEsimQuestLink());
@@ -103,10 +127,6 @@ public class ExternalController {
             else
                 model.addAttribute("esimType",false);
             tugeUtil.contextLoads4(orderId,iccid,model,apiPurchaseItemDto);
-            model.addAttribute("esimDescription",orderDto.getEsimDescription());
-        }
-        else if(type.equals(ApiType.AIRALO.name())){
-            airAloUtil.contextLoads4(iccid,model);
             model.addAttribute("esimDescription",orderDto.getEsimDescription());
         }
         else if(type.equals(ApiType.TSIM.name())){
@@ -210,6 +230,17 @@ public class ExternalController {
 
     @PostMapping("/payup/success")
     public String paypalSuccess(Model model, @RequestParam Map<String, String> data ,HttpServletResponse response) {
+        String orderNumber = data.get("orderNumber");
+        String wifiOrderNo = orderNumber != null && orderNumber.startsWith(WifiService.ORDER_PREFIX) ? orderNumber : data.get("wf");
+        if (wifiOrderNo != null && wifiOrderNo.startsWith(WifiService.ORDER_PREFIX)) { // 포켓와이파이 충전
+            String transactionId = data.get("transactionId");
+            if (transactionId == null || transactionId.isEmpty()) { // 결제창 취소: 주문은 PAY_READY 그대로 두고 결과 화면에서 "결제 미완료" 표시
+                log.info("[WIFI] 결제 취소/미완료 orderNo={} params={}", wifiOrderNo, data.keySet());
+                return "redirect:" + wifiAppUrl + "/result?orderNo=" + wifiOrderNo;
+            }
+            String orderNo = wifiService.capturePayment(transactionId, wifiOrderNo, data.get("amount"));
+            return "redirect:" + wifiAppUrl + "/result?orderNo=" + orderNo; // React 결과 화면
+        }
         payUpService.captureOrder(model,data.get("transactionId"),data.get("orderNumber"),data.get("amount"));
         if(model.getAttribute("topupType")!=null && model.getAttribute("topupType").equals(ApiType.TUGE.name())){
             return active + "/payappSuccess";

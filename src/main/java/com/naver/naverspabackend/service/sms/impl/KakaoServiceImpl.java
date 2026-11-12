@@ -10,6 +10,7 @@ import com.naver.naverspabackend.dto.StoreDto;
 import com.naver.naverspabackend.mybatis.mapper.KakaoContentsMapper;
 import com.naver.naverspabackend.mybatis.mapper.KakaoMsgMapper;
 import com.naver.naverspabackend.response.ApiResult;
+import com.naver.naverspabackend.service.esiminstall.EsimInstallTokenService;
 import com.naver.naverspabackend.service.sms.KakaoService;
 import com.naver.naverspabackend.util.ApiUtil;
 import com.naver.naverspabackend.util.CommonUtil;
@@ -48,6 +49,9 @@ public class KakaoServiceImpl implements KakaoService {
     @Autowired
     private KakaoContentsMapper kakaoContentsMapper;
 
+    @Autowired
+    private EsimInstallTokenService esimInstallTokenService;
+
     @Value("${testmode}")
     private String testMode;
 
@@ -58,13 +62,19 @@ public class KakaoServiceImpl implements KakaoService {
 
 
 
-
-
     @Override
     public int requestSendKakaoMsg(Map<String, Object> kakaoParameters, String templateKey, StoreDto storeDto, OrderDto orderDto,String esimFlag,String kakaoResendFlag, boolean retrans, String... noList) throws Exception {
 
         if("true".equals(testMode)){
             noList = new String[]{testTel};
+        }
+        try{
+            // QR/활성화코드가 있으면 설치 랜딩 토큰 발급 (버튼 URL용)
+            esimInstallTokenService.attachInstallToken(kakaoParameters, orderDto);
+        }catch (Exception e){
+            log.warn("esim install token 발급 실패", e);
+            kakaoParameters.put("installToken", Objects.toString(kakaoParameters.get("installToken"), ""));
+            kakaoParameters.put("installUrl", Objects.toString(kakaoParameters.get("installUrl"), ""));
         }
         try{
             Gson gson = new Gson();
@@ -85,14 +95,14 @@ public class KakaoServiceImpl implements KakaoService {
         kakaoParameters.put("iccid", Objects.toString(kakaoParameters.get("iccid"), ""));
         kakaoParameters.put("ipActivityCode", Objects.toString(kakaoParameters.get("activation_code"), ""));
         kakaoParameters.put("usageUrl", Objects.toString(kakaoParameters.get("usageUrl"), ""));
+        kakaoParameters.put("installToken", Objects.toString(kakaoParameters.get("installToken"), ""));
+        kakaoParameters.put("installUrl", Objects.toString(kakaoParameters.get("installUrl"), ""));
         kakaoParameters.put("eSimResetInfo", Objects.toString(kakaoParameters.get("eSimResetInfo"), ""));
         kakaoParameters.put("eSimMResetInfo", Objects.toString(kakaoParameters.get("eSimMResetInfo"), ""));
         kakaoParameters.put("eSimChargeInfo", Objects.toString(kakaoParameters.get("eSimChargeInfo"), ""));
         kakaoParameters.put("eSimMChargeInfo", Objects.toString(kakaoParameters.get("eSimMChargeInfo"), ""));
         kakaoParameters.put("eSimApnInfo", Objects.toString(kakaoParameters.get("eSimApnInfo"), ""));
         kakaoParameters.put("eSimMApnInfo", Objects.toString(kakaoParameters.get("eSimMApnInfo"), ""));
-
-
 
 
 

@@ -79,8 +79,6 @@ public class ExController {
             TsimUtil tsimUtil = EsimUtil.getTsimUtil(apiPurchaseItemService,storeDto,active);
             TugeUtil tugeUtil = EsimUtil.getTugeUtil(storeDto,active);
             WorldMoveUtil worldMoveUtil =  EsimUtil.getWorldMoveUtil(storeDto);
-            NizUtil nizUtil =  EsimUtil.getNizUtil(storeDto);
-            AirAloUtil airAloUtil  =  EsimUtil.getAirAloUtil(storeDto);
             EsimAccessUtil esimAccessUtil  =  EsimUtil.getEsimAccess(storeDto);
 
 
@@ -105,10 +103,6 @@ public class ExController {
                 tugeUtil.contextLoads4(orderId,iccid,model,apiPurchaseItemDto);
                 model.addAttribute("esimDescription",orderDto.getEsimDescription());
 
-            }
-            else if(type.equals(ApiType.AIRALO.name())){
-                airAloUtil.contextLoads4(iccid,model);
-                model.addAttribute("esimDescription",orderDto.getEsimDescription());
             }
             else if(type.equals(ApiType.TSIM.name())){
                 //TSIM 완료

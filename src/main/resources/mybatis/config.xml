@@ -37,6 +37,7 @@
         <typeAlias type="com.naver.naverspabackend.dto.SearchAdShoppingDto" alias="searchAdShoppingDto"/>
         <typeAlias type="com.naver.naverspabackend.dto.SearchAdKeywordHistDto" alias="searchAdKeywordHistDto"/>
         <typeAlias type="com.naver.naverspabackend.dto.SearchAdShoppingHistDto" alias="searchAdShoppingHistDto"/>
+        <typeAlias type="com.naver.naverspabackend.dto.EsimInstallTokenDto" alias="esimInstallTokenDto"/>
 
 
     </typeAliases>

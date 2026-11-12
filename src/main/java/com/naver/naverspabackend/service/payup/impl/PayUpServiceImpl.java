@@ -168,6 +168,7 @@ public class PayUpServiceImpl implements PayUpService {
 
             EsimPriceDto esimPriceParam = new EsimPriceDto();
             esimPriceParam.setType(ApiType.ESIMACCESS.name());
+            esimPriceParam.setOriginProductNo(orderDto.getOriginProductNo());
             EsimPriceDto esimPriceDto = esimPriceService.findById(esimPriceParam);
             Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
 
@@ -177,6 +178,7 @@ public class PayUpServiceImpl implements PayUpService {
 
         EsimPriceDto esimPriceParam = new EsimPriceDto();
         esimPriceParam.setType(type);
+        esimPriceParam.setOriginProductNo(orderDto.getOriginProductNo());
         EsimPriceDto esimPriceDto = esimPriceService.findById(esimPriceParam);
         Double weight1 = esimPriceDto.getWeight1();
         Double weight2 = esimPriceDto.getWeight2();
@@ -359,7 +361,25 @@ public class PayUpServiceImpl implements PayUpService {
         model.addAttribute("errorMessage","충전 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
 
+    @Override
+    public String confirmPayment(String transactionId, String orderNumber, String amount) {
+        String accessToken = getAccessToken();
+        return accessToken == null ? null : doPaymentCheck(transactionId, orderNumber, amount, accessToken);
+    }
 
+    @Override
+    public String cancelPayment(String transactionId) {
+        String accessToken = getAccessToken();
+        return accessToken == null ? null : refundPayment(transactionId, accessToken);
+    }
+
+    @Override
+    public Map<String, Object> getPayConfig() {
+        Map<String, Object> m = new HashMap<>();
+        m.put("merchantId", merchantId);
+        m.put("redirectUrl", redirectUrl);
+        return m;
+    }
 
     private String doPaymentCheck(String transactionId, String token, String amount, String accessToken) {
         RestTemplate restTemplate = new RestTemplate();

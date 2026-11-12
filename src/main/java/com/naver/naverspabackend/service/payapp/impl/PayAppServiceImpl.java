@@ -184,6 +184,7 @@ public class PayAppServiceImpl implements PayAppService {
 
             EsimPriceDto esimPriceParam = new EsimPriceDto();
             esimPriceParam.setType(ApiType.ESIMACCESS.name());
+            esimPriceParam.setOriginProductNo(orderDto.getOriginProductNo());
             EsimPriceDto esimPriceDto = esimPriceService.findById(esimPriceParam);
             Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
 
@@ -193,6 +194,7 @@ public class PayAppServiceImpl implements PayAppService {
 
         EsimPriceDto esimPriceParam = new EsimPriceDto();
         esimPriceParam.setType(type);
+        esimPriceParam.setOriginProductNo(orderDto.getOriginProductNo());
         EsimPriceDto esimPriceDto = esimPriceService.findById(esimPriceParam);
         Double weight1 = esimPriceDto.getWeight1();
         Double weight2 = esimPriceDto.getWeight2();

@@ -95,13 +95,6 @@ public class StoreDto extends BaseDto{
     private String esimApiWorldMoveMerchantId;
     private String esimApiWorldMoveDeptId;
     private String esimApiWorldMoveToken;
-    private String esimApiNizId;
-    private String esimApiNizPass;
-    private String esimApiNizPartnerCode;
-    private String esimApiAiraloClientId;
-    private String esimApiAiraloClientSecret;
-
-
     private String esimApiEsimaccessClientId;
     private String esimApiEsimaccessClientSecret;
 

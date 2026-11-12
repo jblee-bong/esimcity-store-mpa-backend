@@ -7,7 +7,7 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
-testMode: true
+testMode: false
 
 logging:
   config: classpath:logback-prod.xml
@@ -39,15 +39,6 @@ api:
     merchantId: b0001f5
     deptId: '0002d1'
     token: cad4e5015673b45e387fb71ccb7db08d
-  niz:
-    nizId: X1XK8II40NENI4PN0MM19Stest
-    nizPass: 4NZG5JPOSY2FKKK5UP66D1test
-    nizPartnerCode: '000200000test'
-    baseUrl: https://simapi.simgonow.com
-  airalo:
-    clientId: a17f9843e9e8df7f2d5e1d38823442f6test
-    clientSecret: MK11yYutJTa2lR32zqsh3kaF0D3rlHn0PE8vlsiXtest
-    baseUrl: https://partners-api.airalo.com
   esimaccess:
     clientId: a111c008c987408c919ffb791108228a
     clientSecret: 7d270b27ace046d5847517576494103d

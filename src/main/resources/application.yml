@@ -73,3 +73,24 @@ naver:
   clientSecret: naver
   jwtKey: 068b9a38f763eafe19e2389c7fc2436d5e0bd83526d476969b5ae9e8c1b3d6979e13be889f00af01c0015436c669da9a95cfc31a04dc66ab8eb5b7e8413bc4b8
   encodingType: UTF-8
+
+# 글로벌 포켓 WiFi (TUGE T8) 충전 - 비밀값(jwtKey, api.tugeDevice.*)은 프로필별 yml 에 넣을 것
+wifi:
+  smsStoreId: 9999            # OTP/알림 SMS 발신에 쓸 STORE id (TB_STORE)
+  adminTel:              # 관리자 알림 번호 (쉼표 구분)
+  jwtKey: e903b7f65661ea6f7b8ea51f20b3e595cf9a7e9a78a983cda5078bf2530a741a  # 회원 로그인 서명키. 바꾸면 전원 로그아웃
+  cookieSecure: true     # 로컬 http 개발 시 false
+  publicUrl: https://www.esimcity.co.kr/api   # 브라우저 기준 백엔드 주소 (결제 페이지). 개발: http://내PC_IP:5173/api
+  appUrl: https://www.esimcity.co.kr/wifi     # React 앱 주소 (pm2). 결제 후 결과화면·QR 에 사용. 개발: http://내PC_IP:5173/wifi
+  pointValidDays: 365
+  balanceAlertUsd: 100
+  balanceAccountType: BASIC
+  payupSdkUrl: https://standard.payup.co.kr/assets/js/payup_standard-1.0.js
+#api:
+#  tugeDevice:
+#    accountId:
+#    signKey:
+#    secretKey:
+#    vector:
+#    version: 1.0
+#    baseUrl: http://enterpriseapiuat.tugegroup.com:8060/

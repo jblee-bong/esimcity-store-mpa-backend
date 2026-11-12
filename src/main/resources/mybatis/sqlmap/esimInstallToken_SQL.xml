@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.EsimInstallTokenMapper">
+
+    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO TB_ESIM_INSTALL_TOKEN (
+            token,
+            order_id,
+            payload_json,
+            expire_dt,
+            regist_dt
+        ) VALUES (
+            #{token},
+            #{orderId},
+            #{payloadJson},
+            #{expireDt},
+            NOW()
+        )
+    </insert>
+
+    <select id="selectValidByToken" parameterType="map" resultType="esimInstallTokenDto">
+        SELECT
+            id,
+            token,
+            order_id AS orderId,
+            payload_json AS payloadJson,
+            expire_dt AS expireDt,
+            regist_dt AS registDt
+        FROM TB_ESIM_INSTALL_TOKEN
+        WHERE token = #{token}
+          AND expire_dt > NOW()
+        LIMIT 1
+    </select>
+
+</mapper>

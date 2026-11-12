@@ -50,9 +50,6 @@ public interface OrderMapper {
 
     OrderWorldmoveEsimDto selectOrderWorldMoveEsim(OrderWorldmoveEsimDto orderWroldMoveEsimParam);
 
-    String selectOrderAiraloToken();
-
-    void inserttOrderAiraloToken(String airAloToken);
 
     void updateOrderSmsForEsimIccidAll(OrderDto orderDto);
 

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>결제하기 - 포켓와이파이 충전</title>
+  <script th:src="${sdkUrl}"></script>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background: #f5f6f8; color: #1a1d21; }
+    .wrap { max-width: 480px; margin: 0 auto; padding: 32px 16px; }
+    .card { background: #fff; border-radius: 16px; padding: 24px 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    h1 { font-size: 20px; margin: 0 0 20px; }
+    .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; }
+    .row span:first-child { color: #6b7280; }
+    .total { border-top: 1px solid #eef0f3; margin-top: 8px; padding-top: 16px; font-weight: 700; font-size: 17px; }
+    .total span:last-child { color: #2563eb; }
+    button { width: 100%; margin-top: 24px; height: 52px; border: 0; border-radius: 12px; background: #2563eb; color: #fff; font-size: 16px; font-weight: 700; }
+    button:disabled { background: #9ca3af; }
+    .back { display: block; text-align: center; margin-top: 16px; color: #6b7280; font-size: 14px; }
+    .notice { margin-top: 16px; font-size: 13px; color: #6b7280; line-height: 1.5; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>결제하기</h1>
+    <div class="row"><span>상품</span><span th:text="${itemName}"></span></div>
+    <div class="row"><span>상품금액</span><span th:text="${#numbers.formatInteger(totalKrw, 1, 'COMMA')} + '원'"></span></div>
+    <div class="row" th:if="${pointUsed > 0}"><span>포인트 사용</span><span th:text="'-' + ${#numbers.formatInteger(pointUsed, 1, 'COMMA')} + 'P'"></span></div>
+    <div class="row total"><span>결제금액</span><span th:text="${#numbers.formatInteger(amount, 1, 'COMMA')} + '원'"></span></div>
+    <button id="payBtn" type="button" onclick="pay()">결제하기</button>
+    <p class="notice">결제가 완료되면 바로 충전이 진행됩니다. 충전에 실패하면 결제는 자동으로 취소됩니다.</p>
+  </div>
+  <a class="back" href="javascript:history.back()">돌아가기</a>
+</div>
+<script th:inline="javascript">
+  var payData = {
+    merchantId: /*[[${merchantId}]]*/ '',
+    itemName: /*[[${itemName}]]*/ '',
+    amount: /*[[${amount}]]*/ 0,
+    userName: /*[[${userName}]]*/ '',
+    orderNumber: /*[[${orderNumber}]]*/ '',
+    taxFlag: "Y",
+    taxAmount: "0",
+    freeAmount: /*[[${amount}]]*/ 0,
+    returnUrl: /*[[${redirectUrl}]]*/ ''
+  };
+
+  function pay() {
+    if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      alert("모바일에서만 결제할 수 있습니다.");
+      return;
+    }
+    var btn = document.getElementById("payBtn");
+    btn.disabled = true;
+    btn.textContent = "결제창 여는 중...";
+    goPayupPay(payData);
+    setTimeout(function () { btn.disabled = false; btn.textContent = "결제하기"; }, 10000); // 뒤로가기 대비
+  }
+</script>
+</body>
+</html>

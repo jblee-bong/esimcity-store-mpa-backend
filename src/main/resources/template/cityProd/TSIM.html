@@ -96,20 +96,20 @@
 
     /* Hero Section */
     .hero-section {
-      padding: 64px 0 48px;
+      padding: 36px 0 20px;
       text-align: center;
     }
 
     .hero-title {
-      font-size: 42px;
+      font-size: 28px;
       font-weight: 800;
       color: var(--text-dark);
-      margin-bottom: 12px;
-      letter-spacing: -1px;
+      margin-bottom: 8px;
+      letter-spacing: -0.8px;
     }
 
     .hero-subtitle {
-      font-size: 18px;
+      font-size: 15px;
       color: var(--text-medium);
       font-weight: 400;
     }
@@ -121,9 +121,9 @@
 
     .usage-card {
       background: var(--white);
-      border-radius: 20px;
-      padding: 48px 56px;
-      box-shadow: var(--shadow-md);
+      border-radius: 22px;
+      padding: 28px 24px 32px;
+      box-shadow: 0 8px 28px rgba(44, 34, 20, 0.06);
       border: 1px solid var(--border-light);
     }
 
@@ -133,9 +133,9 @@
       align-items: center;
     }
     .usage-header-reset{
-      margin-bottom: 40px;
-      padding-bottom: 24px;
-      border-bottom: 2px solid var(--gold-light);
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--gold-light);
     }
 
     .usage-label {
@@ -159,7 +159,7 @@
     }
 
     .usage-visual {
-      margin: 48px 0;
+      margin: 20px 0 8px;
     }
 
     .usage-stats {
@@ -183,11 +183,12 @@
     }
 
     .usage-current-value {
-      font-size: 48px;
+      font-size: 40px;
       font-weight: 800;
-      color: var(--gold);
-      line-height: 1;
+      color: #8F6B08;
+      line-height: 1.1;
       font-family: 'Inter', sans-serif;
+      letter-spacing: -1px;
     }
 
     .usage-remaining {
@@ -267,41 +268,38 @@
     .info-cards-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
-      margin-bottom: 24px;
+      gap: 12px;
+      margin-bottom: 8px;
     }
 
     .info-card {
       background: var(--white);
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: var(--shadow-sm);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: none;
       border: 1px solid var(--border-light);
-      transition: all 0.3s ease;
+      transition: border-color 0.2s ease;
     }
 
     .info-card:hover {
-      box-shadow: var(--shadow-md);
-      transform: translateY(-2px);
-      border-color: var(--gold-light);
+      border-color: #E4D5B8;
     }
 
     .info-card-title {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 600;
-      color: var(--gold-dark);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 16px;
+      color: var(--text-medium);
+      letter-spacing: 0;
+      margin-bottom: 8px;
     }
 
     .info-card-value {
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: 600;
       color: var(--text-dark);
-      margin-bottom: 8px;
+      margin-bottom: 0;
       word-break: break-all;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
     .info-card-note {
@@ -316,42 +314,88 @@
 
     /* CTA Section */
     .cta-wrapper {
-      margin: 48px 0;
+      margin: 28px 0;
+    }
+    .cta-wrapper-charge {
+      margin: 8px 0 20px;
+      position: sticky;
+      bottom: 16px;
+      z-index: 40;
     }
 
     .cta-button {
       display: block;
-      background: var(--gold);
-      color: var(--white);
+      width: 100%;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #C9A227 0%, #B8860B 45%, #8F6B08 100%);
+      color: #fff;
       text-align: center;
-      padding: 20px 40px;
-      border-radius: 14px;
+      padding: 20px 28px;
+      border-radius: 16px;
       text-decoration: none;
       font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
-      transition: all 0.3s ease;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+      box-shadow: 0 10px 28px rgba(184, 134, 11, 0.45), 0 2px 0 rgba(255,255,255,0.25) inset;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      animation: chargePulse 2.4s ease-in-out infinite;
+    }
+    .cta-button-charge {
+      font-size: 19px;
+      padding: 22px 28px;
     }
     .cta-button-none{
       display: block;
-      background: lightslategray;
-      color: var(--white);
+      width: 100%;
+      background: #9CA3AF;
+      color: #fff;
       text-align: center;
-      padding: 20px 40px;
+      padding: 18px 28px;
       border-radius: 14px;
       text-decoration: none;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
-      letter-spacing: 0.5px;
-      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
-      transition: all 0.3s ease;
+      box-shadow: none;
+      animation: none;
+    }
+    .cta-button-secondary {
+      display: block;
+      width: 100%;
+      background: #fff;
+      color: #4A3E2C;
+      text-align: center;
+      padding: 16px 28px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 700;
+      border: 1px solid var(--border-light);
+      box-shadow: none;
+      animation: none;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .cta-button-secondary:hover {
+      background: #FAF7F2;
+      border-color: #E4D5B8;
     }
 
     .cta-button:hover {
-      background: var(--gold-dark);
+      filter: brightness(1.05);
       transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(212, 175, 55, 0.4);
+      box-shadow: 0 14px 32px rgba(184, 134, 11, 0.55), 0 2px 0 rgba(255,255,255,0.25) inset;
+    }
+    .cta-button:disabled {
+      animation: none;
+      opacity: 0.7;
+      cursor: wait;
+    }
+    @keyframes chargePulse {
+      0%, 100% { box-shadow: 0 10px 28px rgba(184, 134, 11, 0.42), 0 2px 0 rgba(255,255,255,0.25) inset; }
+      50% { box-shadow: 0 12px 36px rgba(184, 134, 11, 0.62), 0 2px 0 rgba(255,255,255,0.25) inset; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cta-button { animation: none; }
     }
 
     /* Footer */
@@ -461,9 +505,16 @@
         font-size: 20px;
       }
 
-      .cta-button {
-        font-size: 16px;
-        padding: 18px 32px;
+      .cta-button, .cta-button-charge {
+        font-size: 17px;
+        padding: 18px 22px;
+      }
+      .cta-button-secondary {
+        font-size: 14px;
+        padding: 14px 20px;
+      }
+      .cta-wrapper-charge {
+        bottom: 12px;
       }
 
       .footer-bottom {
@@ -834,7 +885,12 @@
         </div>
       </section>
 
-      <section class="info-section">
+      <section class="cta-wrapper cta-wrapper-charge" th:if="${chargeYN!='NONE'}">
+        <button th:if="${chargeYN=='Y'}" id="chargeBtn" class="cta-button cta-button-charge" type="button" th:text="${chargeBtnTxt}"></button>
+        <a th:if="${chargeYN=='N'}" class="cta-button-none">충전 불가 상품</a>
+      </section>
+
+    <section class="info-section">
         <div class="info-cards-grid">
           <div class="info-card info-card-full">
             <div class="info-card-title">구매상품</div>
@@ -858,12 +914,8 @@
         </div>
       </section>
 
-      <section class="cta-wrapper" th:if="${chargeYN!='NONE'}">
-        <button th:if="${chargeYN=='Y'}" id="chargeBtn" class="cta-button" th:text="${chargeBtnTxt}" style="width:100%"></button>
-        <a th:if="${chargeYN=='N'}" class="cta-button-none" style="width:100%">충전 불가 상품</a>
-      </section>
       <section class="cta-wrapper">
-        <a th:href="${esimQuestLink}" class="cta-button">고객 지원 문의하기</a>
+        <a th:href="${esimQuestLink}" class="cta-button-secondary">고객 지원 문의하기</a>
       </section>
     </div>
   </main>
@@ -889,7 +941,7 @@
         <div class="popup-subtitle" style="margin-top: 16px;">충전을 하시면 기존 잔여데이터는 삭제되고 새로운 요금제로 진행됩니다.</div>
       </div>
       <div class="popup-actions">
-        <button class="popup-button popup-button-confirm" onclick="confirmWarningAndOpenCharge()" style="flex: 1;">확인</button>
+        <button type="button" class="popup-button popup-button-confirm" onclick="confirmWarningAndOpenCharge(event)" style="flex: 1;">확인</button>
       </div>
     </div>
   </div>
@@ -1049,6 +1101,7 @@
     // 팝업 열기 (1단계: 용량 선택)
     function openChargePopup() {
       if (!apiPurchaseItemList || apiPurchaseItemList.length === 0) {
+        alert('충전 가능한 상품이 없습니다.');
         return;
       }
 
@@ -1195,15 +1248,28 @@
     }
 
     // 경고 팝업 확인 버튼 클릭 시
-    function confirmWarningAndOpenCharge() {
+    // (모바일에서 모달 닫힌 직후 클릭이 아래 레이어/오버레이로 관통되어
+    //  충전 팝업이 바로 닫히는 현상 방지)
+    var ignoreChargeOverlayClickUntil = 0;
+    function confirmWarningAndOpenCharge(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       closeWarningPopup();
-      openChargePopup();
+      ignoreChargeOverlayClickUntil = Date.now() + 400;
+      setTimeout(function() {
+        openChargePopup();
+      }, 50);
     }
 
     // 팝업 외부 클릭 시 닫기
     $(document).ready(function() {
       $('#chargePopup').click(function(e) {
         if ($(e.target).hasClass('popup-overlay')) {
+          if (Date.now() < ignoreChargeOverlayClickUntil) {
+            return;
+          }
           closeChargePopup();
         }
       });

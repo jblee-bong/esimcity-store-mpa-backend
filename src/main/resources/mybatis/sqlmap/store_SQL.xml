@@ -68,11 +68,6 @@
             esim_api_world_move_merchant_id,
             esim_api_world_move_dept_id,
             esim_api_world_move_token,
-            esim_api_niz_id,
-            esim_api_niz_pass,
-            esim_api_niz_partner_code,
-            esim_api_airalo_client_id,
-            esim_api_airalo_client_secret,
             esim_api_esimaccess_client_id,
             esim_api_esimaccess_client_secret
         ) values (
@@ -137,11 +132,6 @@
             #{esimApiWorldMoveMerchantId},
             #{esimApiWorldMoveDeptId},
             #{esimApiWorldMoveToken},
-            #{esimApiNizId},
-            #{esimApiNizPass},
-            #{esimApiNizPartnerCode},
-            #{esimApiAiraloClientId},
-            #{esimApiAiraloClientSecret},
             #{esimApiEsimaccessClientId},
             #{esimApiEsimaccessClientSecret}
         )
@@ -251,11 +241,6 @@
             esim_api_world_move_merchant_id =            #{esimApiWorldMoveMerchantId},
             esim_api_world_move_dept_id =            #{esimApiWorldMoveDeptId},
             esim_api_world_move_token =            #{esimApiWorldMoveToken},
-            esim_api_niz_id =            #{esimApiNizId},
-            esim_api_niz_pass =            #{esimApiNizPass},
-            esim_api_niz_partner_code =            #{esimApiNizPartnerCode},
-            esim_api_airalo_client_id =            #{esimApiAiraloClientId},
-            esim_api_airalo_client_secret =            #{esimApiAiraloClientSecret},
             esim_api_esimaccess_client_id = #{esimApiEsimaccessClientId},
             esim_api_esimaccess_client_secret = #{esimApiEsimaccessClientSecret}
         where id = #{id}

@@ -95,11 +95,7 @@ class SmsTaskletTest {
         TsimUtil tsimUtil = EsimUtil.getTsimUtil(null, storeDto, active);
         TugeUtil tugeUtil = EsimUtil.getTugeUtil(storeDto,null);
         WorldMoveUtil worldMoveUtil =  EsimUtil.getWorldMoveUtil(storeDto);
-        NizUtil nizUtil =  EsimUtil.getNizUtil(storeDto);
-        AirAloUtil airAloUtil  =  EsimUtil.getAirAloUtil(storeDto);
-
-
-        MatchInfoDto matchInfoDto = matchInfoMapper.selectMatchInfoByOrder(orderDto);
+MatchInfoDto matchInfoDto = matchInfoMapper.selectMatchInfoByOrder(orderDto);
 
         String email = "";
         if (matchInfoDto == null) {
@@ -170,66 +166,7 @@ class SmsTaskletTest {
                     orderDto.setEsimCorp("TEL25");
                 }
 
-                else if(matchInfoDto.getEsimType().equals("02")){
-                    orderDto.setEsimCorp("니즈");
-                    try {
-                        if(orderDto.getEsimApiRequestId()==null || orderDto.getEsimApiRequestId().equals("")){ //이심 요청 전
-
-                            for(int j=0;j<orderDto.getQuantity();j++){
-                                esimMap = nizUtil.contextLoads2(email, matchInfoDto.getEsimProductId(), matchInfoDto.getEsimProductDays(),orderDto.getId()); //이심 요청
-
-                                List<Map<String,Object>> resultList = (List<Map<String, Object>>) esimMap.get("activations");
-                                Map<String,Object> result = resultList.get(0);
-
-                                if(result.get("result").toString().equals("0")){
-                                    Map<String,Object>activationReqeust = (Map<String, Object>) result.get("activationReqeust");
-
-                                    if(orderDto.getEsimApiRequestId()==null || orderDto.getEsimApiRequestId().equals("")){
-                                        orderDto.setEsimApiRequestId((activationReqeust.get("id").toString()));
-                                    }else{
-                                        orderDto.setEsimApiRequestId(orderDto.getEsimApiRequestId() + ","+ activationReqeust.get("id").toString());
-                                    }
-                                }else{
-                                    try{
-                                        esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.PURCHASE_END_FAIL.getExplain() + result.get("message").toString(), orderDto.getId());
-                                    }catch (Exception e){
-                                        e.printStackTrace();
-                                    };
-                                }
-                            }
-                            orderMapper.updateOrderSmsForEsim(orderDto);
-                            return;
-                        }else{
-                            //여기서 상태 체크해서 개통 완료일 경우 다음 스탭 진행
-                            //0 : 개통 요청 상태
-                            //1 : 개통 완료
-                            //2 : 개통 오류
-                            //3 : 개통 보류
-                            //4, 5, 6 : 개통 처리 중
-                            String[] esimApiRequestIds = orderDto.getEsimApiRequestId().split(",");
-                            esimMap =  nizUtil.contextLoads3(esimApiRequestIds[i],orderDto.getId());
-                            if(esimMap!=null)
-                                System.out.println("니즈 개통 상태 체크 : " + esimMap.toString());
-                            if(esimMap.get("status").toString().equals("1")){
-                                fileUtil.makeQrCodeNiz(esimMap);
-                            }else{
-                                return;
-                            }
-                            try{
-                                System.out.println("updateOrderSmsForEsimIccid : " + esimMap.toString());
-                                orderDto.setEsimIccid(esimMap.get("iccid")!=null?esimMap.get("iccid").toString():null);
-                                orderMapper.updateOrderSmsForEsimIccid(orderDto);
-                            }catch (Exception e){
-                                e.printStackTrace();
-                            }
-
-                            esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.OPEN_END.getExplain(), orderDto.getId());
-                        }
-                    } catch (Exception e) {
-                        esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.ERROR.getExplain() + e.getMessage(), orderDto.getId());
-                        matchInfoDto.setEsimFlag("N");
-                    }
-                }else if(matchInfoDto.getEsimType().equals("03")){
+                else if(matchInfoDto.getEsimType().equals("03")){
                     orderDto.setEsimCorp("Tsim");
                     //TSIM
                     try {
@@ -282,79 +219,6 @@ class SmsTaskletTest {
                             esimMap.put("eEsimId",id);
                             esimMap.put("eEsimType",type);
                             esimMap.put("eEsimOrderId",orderId);
-                            esimMap.put("eEsimIccid",iccid);
-                            esimMap.put("eEsimRcode","");
-
-
-                            esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.OPEN_END.getExplain(), orderDto.getId());
-                        }
-
-
-
-
-                    } catch (Exception e) {
-                        esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.ERROR.getExplain() + e.getMessage(), orderDto.getId());
-                        matchInfoDto.setEsimFlag("N");
-                    }
-                }else if(matchInfoDto.getEsimType().equals("04")){
-                    orderDto.setEsimCorp("AirAlo");
-                    try {
-                        Map<String,Object> param = new HashMap<>();
-                        param.put("orderId", orderDto.getId());
-                        if(orderDto.getEsimApiRequestId()==null || orderDto.getEsimApiRequestId().equals("")){ //이심 요청 전
-
-                            for(int j=0;j<orderDto.getQuantity();j++){
-                                esimMap = airAloUtil.contextLoads2(email, matchInfoDto.getEsimProductId(), orderDto.getId()); //이심 요청
-
-                                Map<String,Object> result = (Map<String, Object>) esimMap.get("meta");
-                                Map<String,Object> data = (Map<String, Object>) esimMap.get("data");
-
-                                if(result.get("message").toString().equals("success")){
-                                    String orderId =  data.get("id").toString();
-                                    if(orderDto.getEsimApiRequestId()==null || orderDto.getEsimApiRequestId().equals("")){
-                                        orderDto.setEsimApiRequestId(orderId);
-                                    }else{
-                                        orderDto.setEsimApiRequestId(orderDto.getEsimApiRequestId() + ","+ orderId);
-                                    }
-
-                                    List<HashMap<String,Object>> sims = (List<HashMap<String, Object>>) data.get("sims");
-                                    String iccid =  sims.get(0).get("iccid").toString();
-                                    if(orderDto.getEsimIccid()==null || orderDto.getEsimIccid().equals("")){
-                                        orderDto.setEsimIccid(iccid);
-                                    }else{
-                                        orderDto.setEsimIccid(orderDto.getEsimIccid() + ","+ iccid);
-                                    }
-                                }
-                            }
-
-
-                            orderMapper.updateOrderSmsForEsimIccidAll(orderDto);
-                            orderMapper.updateOrderSmsForEsim(orderDto);
-                            return;
-                        }else{
-                            //여기서 상태 체크해서 개통 완료일 경우 다음 스탭 진행
-                            String[] esimIccids = orderDto.getEsimIccid().split(",");
-                            esimMap =  airAloUtil.contextLoads3(esimIccids[i], orderDto.getId());
-
-                            Map<String,Object> result = (Map<String, Object>) esimMap.get("meta");
-                            esimMap = (HashMap) esimMap.get("data");
-
-                            if(esimMap!=null && result.get("message").toString().equals("success")){
-                                fileUtil.makeQrCodeAirAlo(esimMap,orderDto);
-                            }else{
-                                return;
-                            }
-
-
-                            String id = CommonUtil.stringToBase64Encode((orderDto.getId()+""));
-                            String type = CommonUtil.stringToBase64Encode(ApiType.AIRALO.name());
-                            String iccid = CommonUtil.stringToBase64Encode(esimIccids[i]);
-
-                            esimMap.put("usageUrl",serverOrigin+usageUri+"?id="+ id +"&type="+ type+"&iccid="+iccid);
-
-                            esimMap.put("eEsimId",id);
-                            esimMap.put("eEsimType",type);
-                            esimMap.put("eEsimOrderId","");
                             esimMap.put("eEsimIccid",iccid);
                             esimMap.put("eEsimRcode","");
 
@@ -575,13 +439,9 @@ class SmsTaskletTest {
                         String type="";
                         if(matchInfoDto.getEsimType().equals("01"))
                             type = "tel25";
-                        else if(matchInfoDto.getEsimType().equals("02"))
-                            type = "NIZ";
-                        else if(matchInfoDto.getEsimType().equals("03"))
+else if(matchInfoDto.getEsimType().equals("03"))
                             type = "TSIM";
-                        else if(matchInfoDto.getEsimType().equals("04"))
-                            type = "AIRALO";
-                        else if(matchInfoDto.getEsimType().equals("05"))
+else if(matchInfoDto.getEsimType().equals("05"))
                             type = "TUGE";
                         else if(matchInfoDto.getEsimType().equals("06"))
                             type = "WORLDMOVE";

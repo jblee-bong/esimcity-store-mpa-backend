@@ -92,20 +92,20 @@
 
     /* Hero Section */
     .hero-section {
-      padding: 64px 0 48px;
+      padding: 36px 0 20px;
       text-align: center;
     }
 
     .hero-title {
-      font-size: 42px;
+      font-size: 28px;
       font-weight: 800;
       color: var(--text-dark);
-      margin-bottom: 12px;
-      letter-spacing: -1px;
+      margin-bottom: 8px;
+      letter-spacing: -0.8px;
     }
 
     .hero-subtitle {
-      font-size: 18px;
+      font-size: 15px;
       color: var(--text-medium);
       font-weight: 400;
     }
@@ -117,9 +117,9 @@
 
     .usage-card {
       background: var(--white);
-      border-radius: 20px;
-      padding: 48px 56px;
-      box-shadow: var(--shadow-md);
+      border-radius: 22px;
+      padding: 28px 24px 32px;
+      box-shadow: 0 8px 28px rgba(44, 34, 20, 0.06);
       border: 1px solid var(--border-light);
     }
 
@@ -129,9 +129,9 @@
       align-items: center;
     }
     .usage-header-reset{
-      margin-bottom: 40px;
-      padding-bottom: 24px;
-      border-bottom: 2px solid var(--gold-light);
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--gold-light);
     }
 
     .usage-label {
@@ -155,7 +155,7 @@
     }
 
     .usage-visual {
-      margin: 48px 0;
+      margin: 20px 0 8px;
     }
 
     .usage-stats {
@@ -179,11 +179,12 @@
     }
 
     .usage-current-value {
-      font-size: 48px;
+      font-size: 40px;
       font-weight: 800;
-      color: var(--gold);
-      line-height: 1;
+      color: #8F6B08;
+      line-height: 1.1;
       font-family: 'Inter', sans-serif;
+      letter-spacing: -1px;
     }
 
     .usage-remaining {
@@ -312,28 +313,26 @@
 
     /* CTA Section */
     .cta-wrapper {
-      margin: 48px 0;
+      margin: 28px 0;
     }
-
-    .cta-button {
+    .cta-button-secondary {
       display: block;
-      background: var(--gold);
-      color: var(--white);
+      width: 100%;
+      background: #fff;
+      color: #4A3E2C;
       text-align: center;
-      padding: 20px 40px;
+      padding: 16px 28px;
       border-radius: 14px;
       text-decoration: none;
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 700;
-      letter-spacing: 0.5px;
-      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
-      transition: all 0.3s ease;
+      border: 1px solid var(--border-light);
+      box-shadow: none;
+      transition: background 0.2s ease, border-color 0.2s ease;
     }
-
-    .cta-button:hover {
-      background: var(--gold-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(212, 175, 55, 0.4);
+    .cta-button-secondary:hover {
+      background: #FAF7F2;
+      border-color: #E4D5B8;
     }
 
     /* Footer */
@@ -443,9 +442,16 @@
         font-size: 20px;
       }
 
-      .cta-button {
-        font-size: 16px;
-        padding: 18px 32px;
+      .cta-button, .cta-button-charge {
+        font-size: 17px;
+        padding: 18px 22px;
+      }
+      .cta-button-secondary {
+        font-size: 14px;
+        padding: 14px 20px;
+      }
+      .cta-wrapper-charge {
+        bottom: 12px;
       }
 
       .footer-bottom {
@@ -573,7 +579,7 @@
       </section>
 
       <section class="cta-wrapper">
-        <a th:href="${esimQuestLink}" class="cta-button">고객 지원 문의하기</a>
+        <a th:href="${esimQuestLink}" class="cta-button-secondary">고객 지원 문의하기</a>
       </section>
     </div>
   </main>

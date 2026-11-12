@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.naverspabackend.mybatis.mapper.WifiMapper">
+
+    <!-- ===================== 회원 ===================== -->
+
+    <select id="findMemberById" resultType="com.naver.naverspabackend.dto.WifiMemberDto">
+        select * from TB_WIFI_MEMBER where id = #{id}
+    </select>
+
+    <select id="findMemberByTel" resultType="com.naver.naverspabackend.dto.WifiMemberDto">
+        select * from TB_WIFI_MEMBER where tel = #{tel}
+    </select>
+
+    <insert id="insertMember" parameterType="com.naver.naverspabackend.dto.WifiMemberDto" useGeneratedKeys="true" keyProperty="id">
+        insert into TB_WIFI_MEMBER (tel, status, point_balance, privacy_agree_dt, marketing_agree_yn, regist_dt)
+        values (#{tel}, #{status}, #{pointBalance},
+                <choose><when test='status == "ACTIVE"'>now()</when><otherwise>null</otherwise></choose>,
+                ifnull(#{marketingAgreeYn}, 'N'), now())
+    </insert>
+
+    <update id="activateMember">
+        update TB_WIFI_MEMBER
+           set status = 'ACTIVE', privacy_agree_dt = now(), marketing_agree_yn = ifnull(#{marketingAgreeYn}, 'N')
+         where id = #{id} and status = 'PRE'
+    </update>
+
+    <update id="updateLastLogin">
+        update TB_WIFI_MEMBER set last_login_dt = now() where id = #{id}
+    </update>
+
+    <update id="incrementTokenVersion">
+        update TB_WIFI_MEMBER set token_version = token_version + 1 where id = #{id}
+    </update>
+
+    <update id="addPoint">
+        update TB_WIFI_MEMBER set point_balance = point_balance + #{amount} where id = #{id}
+    </update>
+
+    <!-- 잔액 부족이면 0 rows -->
+    <update id="usePoint">
+        update TB_WIFI_MEMBER set point_balance = point_balance - #{amount}
+         where id = #{id} and point_balance >= #{amount}
+    </update>
+
+    <update id="extendPointExpire">
+        update TB_WIFI_MEMBER
+           set point_expire_dt = case when point_expire_dt is null or point_expire_dt &lt; #{expireDt} then #{expireDt} else point_expire_dt end
+         where id = #{id}
+    </update>
+
+    <update id="withdrawMember">
+        update TB_WIFI_MEMBER
+           set status = 'DELETED', tel = null, kakao_id = null, point_balance = 0,
+               token_version = token_version + 1, delete_dt = now()
+         where id = #{id}
+    </update>
+
+    <select id="selectExpiredPointMembers" resultType="com.naver.naverspabackend.dto.WifiMemberDto">
+        select * from TB_WIFI_MEMBER
+         where point_balance > 0 and point_expire_dt is not null and point_expire_dt &lt; now() and status != 'DELETED'
+    </select>
+
+    <update id="expirePoint">
+        update TB_WIFI_MEMBER set point_balance = 0 where id = #{id}
+    </update>
+
+    <sql id="memberWhere">
+        where m.status != 'DELETED'
+        <if test='keyword != null and keyword != ""'>
+            and m.tel like concat('%', #{keyword}, '%')
+        </if>
+        <if test='status != null and status != ""'>
+            and m.status = #{status}
+        </if>
+    </sql>
+
+    <select id="adminMemberList" parameterType="map" resultType="com.naver.naverspabackend.dto.WifiMemberDto">
+        select m.*, (select count(*) from TB_WIFI_DEVICE d where d.member_id = m.id) as device_count
+          from TB_WIFI_MEMBER m
+        <include refid="memberWhere"/>
+         order by m.id desc
+         limit #{offset}, #{size}
+    </select>
+
+    <select id="adminMemberCount" parameterType="map" resultType="int">
+        select count(*) from TB_WIFI_MEMBER m <include refid="memberWhere"/>
+    </select>
+
+    <insert id="insertPointLog" parameterType="com.naver.naverspabackend.dto.WifiPointLogDto">
+        insert into TB_WIFI_POINT_LOG (member_id, amount, reason, order_id, admin_id, memo, regist_dt)
+        values (#{memberId}, #{amount}, #{reason}, #{orderId}, #{adminId}, #{memo}, now())
+    </insert>
+
+    <select id="pointLogList" resultType="com.naver.naverspabackend.dto.WifiPointLogDto">
+        select * from TB_WIFI_POINT_LOG where member_id = #{memberId} order by id desc limit 200
+    </select>
+
+    <!-- ===================== 장비 ===================== -->
+
+    <select id="findDevice" resultType="com.naver.naverspabackend.dto.WifiDeviceDto">
+        select d.*, m.tel as member_tel
+          from TB_WIFI_DEVICE d left join TB_WIFI_MEMBER m on m.id = d.member_id
+         where d.sn = #{sn}
+    </select>
+
+    <insert id="upsertDevice">
+        insert into TB_WIFI_DEVICE (sn, device_type, tuge_status, regist_dt, modify_dt)
+        values (#{sn}, #{deviceType}, #{tugeStatus}, now(), now())
+        on duplicate key update
+            device_type = ifnull(#{deviceType}, device_type),
+            tuge_status = ifnull(#{tugeStatus}, tuge_status),
+            modify_dt = now()
+    </insert>
+
+    <update id="registerDevice">
+        update TB_WIFI_DEVICE set member_id = #{memberId}, registered_dt = now(), modify_dt = now()
+         where sn = #{sn} and member_id is null
+    </update>
+
+    <!-- memberId null 이면 관리자 강제 해제 -->
+    <update id="releaseDevice">
+        update TB_WIFI_DEVICE set member_id = null, registered_dt = null, modify_dt = now()
+         where sn = #{sn}
+        <if test="memberId != null"> and member_id = #{memberId}</if>
+    </update>
+
+    <update id="releaseAllDevices">
+        update TB_WIFI_DEVICE set member_id = null, registered_dt = null, modify_dt = now()
+         where member_id = #{memberId}
+    </update>
+
+    <select id="myDevices" resultType="com.naver.naverspabackend.dto.WifiDeviceDto">
+        select * from TB_WIFI_DEVICE where member_id = #{memberId} order by registered_dt desc
+    </select>
+
+    <insert id="insertDeviceLog">
+        insert into TB_WIFI_DEVICE_LOG (sn, member_id, action, admin_id, regist_dt)
+        values (#{sn}, #{memberId}, #{action}, #{adminId}, now())
+    </insert>
+
+    <sql id="deviceWhere">
+        <where>
+            <if test='keyword != null and keyword != ""'>
+                (d.sn like concat('%', #{keyword}, '%') or m.tel like concat('%', #{keyword}, '%'))
+            </if>
+            <if test='registered == "Y"'> and d.member_id is not null</if>
+            <if test='registered == "N"'> and d.member_id is null</if>
+        </where>
+    </sql>
+
+    <select id="adminDeviceList" parameterType="map" resultType="com.naver.naverspabackend.dto.WifiDeviceDto">
+        select d.*, m.tel as member_tel
+          from TB_WIFI_DEVICE d left join TB_WIFI_MEMBER m on m.id = d.member_id
+        <include refid="deviceWhere"/>
+         order by d.modify_dt desc
+         limit #{offset}, #{size}
+    </select>
+
+    <select id="adminDeviceCount" parameterType="map" resultType="int">
+        select count(*) from TB_WIFI_DEVICE d left join TB_WIFI_MEMBER m on m.id = d.member_id
+        <include refid="deviceWhere"/>
+    </select>
+
+    <!-- ===================== 상품 ===================== -->
+
+    <select id="findProduct" resultType="com.naver.naverspabackend.dto.WifiProductDto">
+        select p.* from TB_WIFI_PRODUCT p where p.product_code = #{productCode}
+    </select>
+
+    <!-- 관리자 입력값(sale_yn, display_name, category_id...)은 건드리지 않음. cost_changed_yn 은 settlement_usd 갱신보다 먼저 평가 -->
+    <insert id="upsertProductFromTuge" parameterType="com.naver.naverspabackend.dto.WifiProductDto">
+        insert into TB_WIFI_PRODUCT (product_code, tuge_name, product_type, days, validity_period, data_limited, data_total, data_unit,
+                                     mcc, device_type, settlement_usd, popup_json, active_type, rule_desc, tuge_modified_dt,
+                                     tuge_active, cost_changed_yn, sale_yn, regist_dt, modify_dt)
+        values (#{productCode}, #{tugeName}, #{productType}, #{days}, #{validityPeriod}, #{dataLimited}, #{dataTotal}, #{dataUnit},
+                #{mcc}, #{deviceType}, #{settlementUsd}, #{popupJson}, #{activeType}, #{ruleDesc}, #{tugeModifiedDt},
+                'Y', 'N', 'N', now(), now())
+        on duplicate key update
+            cost_changed_yn = if(settlement_usd is not null and settlement_usd &lt;&gt; values(settlement_usd), 'Y', cost_changed_yn),
+            tuge_name = values(tuge_name),
+            product_type = values(product_type),
+            days = values(days),
+            validity_period = values(validity_period),
+            data_limited = values(data_limited),
+            data_total = values(data_total),
+            data_unit = values(data_unit),
+            mcc = values(mcc),
+            device_type = values(device_type),
+            settlement_usd = values(settlement_usd),
+            popup_json = values(popup_json),
+            active_type = values(active_type),
+            rule_desc = values(rule_desc),
+            tuge_modified_dt = values(tuge_modified_dt),
+            tuge_active = 'Y'
+    </insert>
+
+    <update id="markMissingProductsInactive">
+        update TB_WIFI_PRODUCT set tuge_active = 'N', sale_yn = 'N'
+         where tuge_active = 'Y' and product_code not in
+        <foreach collection="codes" item="c" open="(" separator="," close=")">#{c}</foreach>
+    </update>
+
+    <sql id="productWhere">
+        <where>
+            <if test='keyword != null and keyword != ""'>
+                (p.product_code like concat('%', #{keyword}, '%') or p.tuge_name like concat('%', #{keyword}, '%')
+                 or p.display_name like concat('%', #{keyword}, '%'))
+            </if>
+            <if test='saleYn != null and saleYn != ""'> and p.sale_yn = #{saleYn}</if>
+            <if test='productType != null and productType != ""'> and p.product_type = #{productType}</if>
+            <if test='tugeActive != null and tugeActive != ""'> and p.tuge_active = #{tugeActive}</if>
+            <if test='costChangedYn != null and costChangedYn != ""'> and p.cost_changed_yn = #{costChangedYn}</if>
+            <if test='categoryId != null and categoryId != ""'>
+                and (p.category_id = #{categoryId}
+                     or p.category_id in (select c.id from TB_WIFI_CATEGORY c where c.parent_id = #{categoryId}))
+            </if>
+        </where>
+    </sql>
+
+    <select id="adminProductList" parameterType="map" resultType="com.naver.naverspabackend.dto.WifiProductDto">
+        select p.product_code, p.tuge_name, p.product_type, p.days, p.validity_period, p.data_limited, p.data_total, p.data_unit,
+               p.daily_high_speed_mb, p.mcc, p.device_type, p.settlement_usd, p.popup_json, p.active_type, p.tuge_modified_dt,
+               p.tuge_active, p.cost_changed_yn, p.sale_yn, p.category_id, p.min_period, p.max_period,
+               p.display_name, p.thumbnail, p.sort, p.regist_dt, p.modify_dt
+          from TB_WIFI_PRODUCT p
+        <include refid="productWhere"/>
+         order by p.sale_yn desc, p.sort asc, p.regist_dt desc
+         limit #{offset}, #{size}
+    </select>
+
+    <select id="adminProductCount" parameterType="map" resultType="int">
+        select count(*) from TB_WIFI_PRODUCT p <include refid="productWhere"/>
+    </select>
+
+    <!-- 관리자가 저장하면 원가변경 배지는 확인한 것으로 처리 -->
+    <update id="updateProductSale" parameterType="com.naver.naverspabackend.dto.WifiProductDto">
+        update TB_WIFI_PRODUCT
+           set sale_yn = #{saleYn},
+               category_id = #{categoryId},
+               min_period = #{minPeriod},
+               max_period = #{maxPeriod},
+               display_name = #{displayName},
+               thumbnail = #{thumbnail},
+               detail_html = #{detailHtml},
+               daily_high_speed_mb = #{dailyHighSpeedMb},
+               sort = #{sort},
+               cost_changed_yn = 'N',
+               modify_dt = now()
+         where product_code = #{productCode}
+    </update>
+
+    <sql id="sellable">
+        p.sale_yn = 'Y' and p.tuge_active = 'Y' and p.category_id is not null and p.settlement_usd is not null
+        and (p.device_type is null or p.device_type = ''
+             <if test='deviceType != null and deviceType != ""'> or find_in_set(#{deviceType}, replace(p.device_type, ' ', '')) > 0</if>)
+    </sql>
+
+    <!-- 판매가는 서버(WifiPricing)가 나라 가격정책으로 계산 -->
+    <select id="userProductList" resultType="com.naver.naverspabackend.dto.WifiProductDto">
+        select p.product_code, p.product_type, p.days, p.validity_period, p.data_limited, p.data_total, p.data_unit,
+               p.daily_high_speed_mb, p.display_name, p.tuge_name, p.thumbnail, p.sort,
+               p.settlement_usd, p.category_id, p.min_period, p.max_period
+          from TB_WIFI_PRODUCT p
+         where <include refid="sellable"/>
+        <if test="categoryId != null"> and p.category_id = #{categoryId}</if>
+         order by p.sort asc, p.display_name asc
+    </select>
+
+    <!-- ===================== 카테고리 (지역 > 나라, 나라마다 가격정책) ===================== -->
+
+    <select id="adminCategoryList" resultType="com.naver.naverspabackend.dto.WifiCategoryDto">
+        select c.*, (select count(*) from TB_WIFI_PRODUCT p where p.category_id = c.id) as product_count
+          from TB_WIFI_CATEGORY c order by c.sort asc, c.id asc
+    </select>
+
+    <!-- 판매 상품이 있는 나라 + 그런 나라를 가진 지역 (평평한 목록, 화면에서 parent_id 로 묶음) -->
+    <select id="userCategoryList" resultType="com.naver.naverspabackend.dto.WifiCategoryDto">
+        select c.id, c.parent_id, c.name, c.image, c.sort
+          from TB_WIFI_CATEGORY c
+         where c.use_yn = 'Y'
+           and (exists (select 1 from TB_WIFI_PRODUCT p where p.category_id = c.id and <include refid="sellable"/>)
+                or exists (select 1 from TB_WIFI_CATEGORY ch join TB_WIFI_PRODUCT p on p.category_id = ch.id
+                            where ch.parent_id = c.id and ch.use_yn = 'Y' and <include refid="sellable"/>))
+         order by c.sort asc, c.id asc
+    </select>
+
+    <insert id="insertCategory" parameterType="com.naver.naverspabackend.dto.WifiCategoryDto" useGeneratedKeys="true" keyProperty="id">
+        insert into TB_WIFI_CATEGORY (parent_id, name, image, sort, use_yn, usd_rate, margin_rate, period_rules, regist_dt)
+        values (#{parentId}, #{name}, #{image}, #{sort}, ifnull(#{useYn}, 'Y'), #{usdRate}, #{marginRate}, #{periodRules}, now())
+    </insert>
+
+    <update id="updateCategory" parameterType="com.naver.naverspabackend.dto.WifiCategoryDto">
+        update TB_WIFI_CATEGORY
+           set parent_id = #{parentId}, name = #{name}, image = #{image}, sort = #{sort}, use_yn = #{useYn},
+               usd_rate = #{usdRate}, margin_rate = #{marginRate}, period_rules = #{periodRules}
+         where id = #{id}
+    </update>
+
+    <select id="countChildCategories" resultType="int">
+        select count(*) from TB_WIFI_CATEGORY where parent_id = #{id}
+    </select>
+
+    <select id="findCategory" resultType="com.naver.naverspabackend.dto.WifiCategoryDto">
+        select * from TB_WIFI_CATEGORY where id = #{id}
+    </select>
+
+    <delete id="deleteCategory">
+        delete from TB_WIFI_CATEGORY where id = #{id}
+    </delete>
+
+    <!-- 카테고리 삭제 시 연결된 상품은 나라 해제 + 판매중지 -->
+    <update id="deleteCategoryMappings">
+        update TB_WIFI_PRODUCT set category_id = null, sale_yn = 'N' where category_id = #{categoryId}
+    </update>
+
+    <!-- ===================== 주문 ===================== -->
+
+    <insert id="insertOrder" parameterType="com.naver.naverspabackend.dto.WifiOrderDto" useGeneratedKeys="true" keyProperty="id">
+        insert into TB_WIFI_ORDER (order_no, member_id, device_sn, product_code, option_id, product_name, order_period,
+                                   total_krw, point_used, pay_krw, settlement_usd, payment_status, topup_status, regist_dt, modify_dt)
+        values (#{orderNo}, #{memberId}, #{deviceSn}, #{productCode}, #{optionId}, #{productName}, #{orderPeriod},
+                #{totalKrw}, #{pointUsed}, #{payKrw}, #{settlementUsd}, #{paymentStatus}, 'READY', now(), now())
+    </insert>
+
+    <select id="findOrderByNo" resultType="com.naver.naverspabackend.dto.WifiOrderDto">
+        select * from TB_WIFI_ORDER where order_no = #{orderNo}
+    </select>
+
+    <select id="findOrderById" resultType="com.naver.naverspabackend.dto.WifiOrderDto">
+        select * from TB_WIFI_ORDER where id = #{id}
+    </select>
+
+    <!-- 상태 전이를 원자적으로 (중복 콜백 방지). 0 rows 면 이미 처리됨 -->
+    <update id="changePaymentStatus">
+        update TB_WIFI_ORDER
+           set payment_status = #{to},
+               <if test="pgTransactionId != null">pg_transaction_id = #{pgTransactionId},</if>
+               modify_dt = now()
+         where id = #{id} and payment_status = #{from}
+    </update>
+
+    <update id="updateOrderTopup" parameterType="com.naver.naverspabackend.dto.WifiOrderDto">
+        update TB_WIFI_ORDER
+           set topup_status = #{topupStatus},
+               tuge_order_no = #{tugeOrderNo},
+               tuge_flow_order_nos = #{tugeFlowOrderNos},
+               retry_count = #{retryCount},
+               last_error = #{lastError},
+               modify_dt = now()
+         where id = #{id}
+    </update>
+
+    <update id="setOrderEarnPoint">
+        update TB_WIFI_ORDER set earn_point = #{earnPoint}, modify_dt = now() where id = #{id} and earn_point = 0
+    </update>
+
+    <select id="retryTargetOrders" resultType="com.naver.naverspabackend.dto.WifiOrderDto">
+        select * from TB_WIFI_ORDER
+         where topup_status = 'RETRY' and payment_status in ('PAID', 'POINT_ONLY')
+           and modify_dt &lt; date_sub(now(), interval 50 second)
+         order by id asc limit 50
+    </select>
+
+    <select id="myOrders" resultType="com.naver.naverspabackend.dto.WifiOrderDto">
+        select id, order_no, device_sn, product_code, product_name, order_period, total_krw, point_used, pay_krw, earn_point,
+               payment_status, topup_status, regist_dt
+          from TB_WIFI_ORDER
+         where member_id = #{memberId} and payment_status != 'PAY_READY'
+         order by id desc limit 100
+    </select>
+
+    <sql id="orderWhere">
+        <where>
+            <if test='keyword != null and keyword != ""'>
+                (o.order_no like concat('%', #{keyword}, '%') or o.device_sn like concat('%', #{keyword}, '%')
+                 or m.tel like concat('%', #{keyword}, '%'))
+            </if>
+            <if test='paymentStatus != null and paymentStatus != ""'> and o.payment_status = #{paymentStatus}</if>
+            <if test='topupStatus != null and topupStatus != ""'> and o.topup_status = #{topupStatus}</if>
+            <if test='hideReady == "Y"'> and o.payment_status != 'PAY_READY'</if>
+        </where>
+    </sql>
+
+    <select id="adminOrderList" parameterType="map" resultType="com.naver.naverspabackend.dto.WifiOrderDto">
+        select o.*, m.tel as member_tel
+          from TB_WIFI_ORDER o left join TB_WIFI_MEMBER m on m.id = o.member_id
+        <include refid="orderWhere"/>
+         order by o.id desc
+         limit #{offset}, #{size}
+    </select>
+
+    <select id="adminOrderCount" parameterType="map" resultType="int">
+        select count(*) from TB_WIFI_ORDER o left join TB_WIFI_MEMBER m on m.id = o.member_id
+        <include refid="orderWhere"/>
+    </select>
+
+</mapper>

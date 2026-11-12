@@ -2,6 +2,7 @@ package com.naver.naverspabackend.util;
 
 import com.naver.naverspabackend.dto.OrderDto;
 
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -143,11 +144,29 @@ public class CommonUtil {
             String qrImage = "<img class=\"CToWUd\" src=\"" + Objects.toString(esimMap.get("qrImageUrl"), "") + "\" alt=\"image.png\" data-image-whitelisted=\"\" data-bit=\"iit\" />";
             contents = contents.replaceAll("\\$\\{qrImage\\}", qrImage);
             contents = contents.replaceAll("\\$\\{qrImageUrl\\}", Objects.toString(esimMap.get("qrImageUrl"), ""));
+            contents = contents.replaceAll("\\$\\{installUrl\\}", Objects.toString(esimMap.get("installUrl"), ""));
+            contents = contents.replaceAll("\\$\\{installToken\\}", Objects.toString(esimMap.get("installToken"), ""));
+            String lpa = Objects.toString(esimMap.get("lpaCode"), "");
+            if (lpa.isEmpty()) {
+                String smdp = Objects.toString(esimMap.get("smdp"), "");
+                String activation = Objects.toString(esimMap.get("activation_code"), "");
+                if (!smdp.isEmpty() && !activation.isEmpty()) {
+                    lpa = "LPA:1$" + smdp + "$" + activation;
+                }
+            }
+            String iosInstallUrl = "";
+            String androidInstallUrl = "";
+            if (!lpa.isEmpty()) {
+                try {
+                    String encoded = URLEncoder.encode(lpa, StandardCharsets.UTF_8.name());
+                    iosInstallUrl = "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=" + encoded;
+                    androidInstallUrl = "https://esimsetup.android.com/esim_qrcode_provisioning?carddata=" + encoded;
+                } catch (Exception ignore) {
+                }
+            }
+            contents = contents.replaceAll("\\$\\{iosInstallUrl\\}", Matcher.quoteReplacement(iosInstallUrl));
+            contents = contents.replaceAll("\\$\\{androidInstallUrl\\}", Matcher.quoteReplacement(androidInstallUrl));
             contents = contents.replaceAll("\\$\\{rentalNo\\}", Objects.toString(esimMap.get("rentalNo"), ""));
-            /*airalo 용 전환 데이터 start*/
-            contents = contents.replaceAll("\\$\\{cloudLink\\}", Objects.toString(esimMap.get("cloudLink"), ""));
-            contents = contents.replaceAll("\\$\\{accessCode\\}", Objects.toString(esimMap.get("accessCode"), ""));
-            /*airalo 용 전환 데이터 end*/
         }
 
         return contents;

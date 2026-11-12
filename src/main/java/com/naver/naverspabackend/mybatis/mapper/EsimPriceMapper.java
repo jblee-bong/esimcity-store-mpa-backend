@@ -8,4 +8,6 @@ public interface EsimPriceMapper {
 
 
     EsimPriceDto findById(EsimPriceDto esimPriceDto);
+
+    EsimPriceDto findByProduct(EsimPriceDto esimPriceDto);
 }

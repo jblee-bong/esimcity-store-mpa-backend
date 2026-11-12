@@ -476,7 +476,7 @@ public class TugeUtil {
                     Double weight5 = esimPriceDto.getWeight5();
 
                     for(ApiPurchaseItemDto data : apiPurchaseItemDtoList){
-                        Double krwPrice = Double.valueOf(apiPurchaseItemDto.getApiPurchaseKrwPrice());
+                        Double krwPrice = Double.valueOf(data.getApiPurchaseKrwPrice());
                         double apiPrice =  krwPrice;
                         double priceWeight = 0;
                         //금액으로인한 가중치

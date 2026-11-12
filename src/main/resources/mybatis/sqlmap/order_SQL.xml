@@ -282,10 +282,6 @@
     </select>
 
 
-    <select id="selectListOrderTugeEsim" parameterType="map" resultType="orderTugeEsimDto">
-        select * FROM TB_ORDER_TUGE_ESIM where order_id = #{orderId} order by id asc
-    </select>
-
 
     <update id="updateOrderStatus" parameterType="map">
         update TB_ORDER set
@@ -583,6 +579,10 @@
     </update>
 
 
+    <select id="selectListOrderTugeEsim" parameterType="map" resultType="orderTugeEsimDto">
+        select * FROM TB_ORDER_TUGE_ESIM where order_id = #{orderId} order by id asc
+    </select>
+
 
     <insert id="insertOrderTugeEsim" parameterType="orderTugeEsimDto" >
         insert into TB_ORDER_TUGE_ESIM(
@@ -613,6 +613,16 @@
                     #{orderType}
                  )
     </insert>
+
+    <select id="selecTugeItemWithIccid" parameterType="orderTugeEsimDto" resultType="orderTugeEsimDto">
+        select *
+        from TB_ORDER_TUGE_ESIM o where iccid = #{iccid}
+    </select>
+
+    <select id="selectListOrderTugeEsimByOrderNo" parameterType="orderTugeEsimDto" resultType="orderTugeEsimDto">
+        select *
+        from TB_ORDER_TUGE_ESIM o where order_no = #{orderNo}
+    </select>
 
 
 
@@ -650,16 +660,6 @@
 
 
 
-    <select id="selecTugeItemWithIccid" parameterType="orderTugeEsimDto" resultType="orderTugeEsimDto">
-        select *
-        from TB_ORDER_TUGE_ESIM o where iccid = #{iccid}
-    </select>
-
-    <select id="selectListOrderTugeEsimByOrderNo" parameterType="orderTugeEsimDto" resultType="orderTugeEsimDto">
-        select *
-        from TB_ORDER_TUGE_ESIM o where order_no = #{orderNo}
-    </select>
-
     <select id="selectListOrderRenewTugeEsimList" parameterType="orderRenewTugeEsimDto" resultType="orderRenewTugeEsimDto">
         select *
         from TB_ORDER_RENEW_TUGE_ESIM o where order_id = #{orderId} order by id asc
@@ -673,22 +673,7 @@
     <select id="selectListOrderAllList"  resultType="orderDto">
         select * from TB_ORDER
     </select>
-
-
-
-    <select id="selectOrderAiraloToken" resultType="string">
-        SELECT airalo_token FROM TB_ORDER_AIRALO_TOKEN WHERE regist_dt > DATE_ADD(now(), INTERVAL -10 HOUR) ORDER BY regist_dt desc limit 1
-    </select>
-
-    <insert id="inserttOrderAiraloToken" parameterType="map" >
-        insert into TB_ORDER_AIRALO_TOKEN(
-            airalo_token
-        ) values (
-            #{token}
-        )
-    </insert>
-
-    <update id="updateOrderForTransSuccessYn" parameterType="orderDto">
+<update id="updateOrderForTransSuccessYn" parameterType="orderDto">
         update TB_ORDER set
             trans_success_yn = 'Y'
         where product_order_id = #{productOrderId}

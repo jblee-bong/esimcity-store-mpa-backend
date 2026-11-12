@@ -132,6 +132,7 @@ public class PaypalServiceImpl implements PaypalService {
 
         EsimPriceDto esimPriceParam = new EsimPriceDto();
         esimPriceParam.setType(type);
+        esimPriceParam.setOriginProductNo(orderDto.getOriginProductNo());
         EsimPriceDto esimPriceDto = esimPriceService.findById(esimPriceParam);
         Double weight1 = esimPriceDto.getWeight1();
         Double weight2 = esimPriceDto.getWeight2();

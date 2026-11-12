@@ -88,10 +88,6 @@ public class NaverCancelIccidTasklet implements Tasklet {
         TsimUtil tsimUtil = EsimUtil.getTsimUtil(null, storeDto, null);
         TugeUtil tugeUtil = EsimUtil.getTugeUtil(storeDto,null);
         WorldMoveUtil worldMoveUtil =  EsimUtil.getWorldMoveUtil(storeDto);
-        NizUtil nizUtil =  EsimUtil.getNizUtil(storeDto);
-        AirAloUtil airAloUtil  =  EsimUtil.getAirAloUtil(storeDto);
-
-
         MatchInfoDto matchInfoDto = matchInfoMapper.selectMatchInfoByOrder(orderDto);
 
         if (matchInfoDto == null) {
@@ -104,45 +100,7 @@ public class NaverCancelIccidTasklet implements Tasklet {
 
 
                 HashMap esimMap = new HashMap();
-                if(matchInfoDto.getEsimType().equals("02")){
-                    try {
-                        if(orderDto.getEsimApiRequestId()==null || orderDto.getEsimApiRequestId().equals("")){ //이심 요청 전
-                            return;
-                        }else{
-                            //여기서 상태 체크해서 개통 완료일 경우 다음 스탭 진행
-                            //0 : 개통 요청 상태
-                            //1 : 개통 완료
-                            //2 : 개통 오류
-                            //3 : 개통 보류
-                            //4, 5, 6 : 개통 처리 중
-
-                            String[] esimApiRequestIds = orderDto.getEsimApiRequestId().split(",");
-                            esimMap =  nizUtil.contextLoads3(esimApiRequestIds[i],orderDto.getId());
-
-                            if(esimMap.get("status").toString().equals("1")){
-                            }else{
-                                return;
-                            }
-                            try{
-                                orderDto.setEsimIccid(esimMap.get("simno")!=null?esimMap.get("simno").toString():null);
-                                log.error("cancel ICCID : " + esimMap.get("simno"));
-                                orderMapper.updateOrderSmsForEsimIccid(orderDto);
-                            }catch (Exception e){
-                                e.printStackTrace();
-                            }
-
-
-                            orderDto.setEsimCorp("니즈");
-
-                        }
-
-
-
-
-                    } catch (NoSuchAlgorithmException e) {
-                        matchInfoDto.setEsimFlag("N");
-                    }
-                }else if(matchInfoDto.getEsimType().equals("03")){
+                if(matchInfoDto.getEsimType().equals("03")){
                     try {
                         if(orderDto.getEsimApiRequestId()==null || orderDto.getEsimApiRequestId().equals("")){
                             return;
@@ -172,9 +130,6 @@ public class NaverCancelIccidTasklet implements Tasklet {
                     } catch (NoSuchAlgorithmException e) {
                         matchInfoDto.setEsimFlag("N");
                     }
-                }else if(matchInfoDto.getEsimType().equals("04")){
-                 //AirAlo  구매시, ICCID 등록
-
                 }
                 else if(matchInfoDto.getEsimType().equals("05")){
                     //Tuge

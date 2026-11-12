@@ -87,7 +87,6 @@ public class ApiPurchaseListSchedulerTest {
         Map<String,Double> exchangeRate = getExchangeRate();
         // 흠위에꺼를 쓰고싶은데 현재 환율데로 하면, 충전금액에 대해 비용의 차이가 발생하네. 충전한 달러로 차감하니까 티심, 투지는 그래서 티심 투지의 같은경우 지정해야할듯
 
-
         try{
             EsimPriceDto param = new EsimPriceDto();
             param.setType(ApiType.TSIM.name());
@@ -115,7 +114,7 @@ public class ApiPurchaseListSchedulerTest {
                             double krwPrice = echangeRate *Double.parseDouble(itemList.get(j).get("price").toString());
                             apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
 
-                            double originKrwPrice = esimPriceDto.getExchangeOriginRate() *Double.parseDouble(itemList.get(j).get("price").toString());
+                            double originKrwPrice = esimPriceDto.getExchangeRate() *Double.parseDouble(itemList.get(j).get("price").toString());
                             apiPurchaseItemDto.setApiPurchaseOriginKrwPrice(originKrwPrice+"");
                         }
                     }
@@ -130,7 +129,7 @@ public class ApiPurchaseListSchedulerTest {
                             topupSupport = Integer.parseInt(itemList.get(j).get("topup_support").toString());
                         }
 
-                        if(topupSupport==1 && !apiPurchaseItemDto.isApiPurchaseItemIsDaily() && (apn.toLowerCase().equals("e-ideas") || apn.toLowerCase().equals("plus"))){
+                        if(topupSupport==1 && !apiPurchaseItemDto.isApiPurchaseItemIsDaily() && (apn.toLowerCase().equals("e-ideas") || apn.toLowerCase().equals("plus") || apn.toLowerCase().equals("ctm-mobile"))){
                             apiPurchaseItemDto.setApiPurchaseIsCharge(true);
                         }else {
                             apiPurchaseItemDto.setApiPurchaseIsCharge(false);
@@ -163,9 +162,6 @@ public class ApiPurchaseListSchedulerTest {
             e.printStackTrace();
         }
 
-
-        if(true)
-            return;
         try{
             List<String> cardTypeList = new ArrayList<>();
             List<Boolean> cardRenewList = new ArrayList<>();
@@ -237,7 +233,7 @@ public class ApiPurchaseListSchedulerTest {
                         if(echangeRate!=null){
                             double krwPrice = echangeRate *Double.parseDouble(itemList.get(j).get("netPrice").toString());
                             apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
-                            double originKrwPrice = esimPriceDto.getExchangeOriginRate() *Double.parseDouble(itemList.get(j).get("netPrice").toString());
+                            double originKrwPrice = esimPriceDto.getExchangeRate() *Double.parseDouble(itemList.get(j).get("netPrice").toString());
                             apiPurchaseItemDto.setApiPurchaseOriginKrwPrice(originKrwPrice+"");
                         }
                     }
@@ -291,95 +287,6 @@ public class ApiPurchaseListSchedulerTest {
         }catch (Exception e){
             e.printStackTrace();
         }
-        try{
-            ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
-            apiPurchaseItemDto.setApiPurchaseItemType(ApiType.ESIMACCESS.name());
-            List<Map<String,Object>> itemList  = OriginEsimAccessUtil.contextLoads1();
-
-            EsimPriceDto param = new EsimPriceDto();
-            param.setType(ApiType.ESIMACCESS.name());
-            EsimPriceDto esimPriceDto = esimPriceService.findById(param);
-            Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
-
-            apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
-
-            for(int j=0;j<itemList.size();j++){
-                Map<String,Object> item = itemList.get(j);
-
-                int activeType  = (int) item.get("activeType");//언제부터 요금제 카운트 시작 1. 휴대폰설치시점 2. 최초네트워크접속시점 브라질과 아르헨티나는 받음 최저가떄문.
-                if(activeType!=2 && !item.get("location").toString().equals("BR") && !item.get("location").toString().equals("AR")){ // 최초네트워크접속시점만 판매함
-                    continue;
-                }
-                apiPurchaseItemDto.setApiPurchaseExportDomainCode(item.get("ipExport").toString());
-                apiPurchaseItemDto.setApiPurchaseItemProcutId(item.get("packageCode").toString());
-                apiPurchaseItemDto.setApiPurchaseItemDescription(item.get("name").toString());
-                double price = (Double.parseDouble(item.get("price").toString())/10000);
-                apiPurchaseItemDto.setApiPurchasePrice(price+"");//가격
-                if(echangeRate!=null){
-                    double krwPrice = echangeRate *price;
-                    apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
-                    double originKrwPrice = esimPriceDto.getExchangeOriginRate() *price;
-                    apiPurchaseItemDto.setApiPurchaseOriginKrwPrice(originKrwPrice+"");
-                }
-                apiPurchaseItemDto.setApiPurchaseCurrency(item.get("currencyCode").toString());//화폐단위
-                apiPurchaseItemDto.setApiPurchaseDataTotal(item.get("volume").toString());//용량
-                apiPurchaseItemDto.setApiPurchaseDataUnit("bytes"); //용량단위
-
-                int dataType  = (int) item.get("dataType");
-                apiPurchaseItemDto.setApiPurchaseItemSelectType(dataType+"");//1:총량제, 2:일일제한(속도제어), 3:일일제한(차단) 4:일일무제한
-                apiPurchaseItemDto.setApiPurchaseItemIsDaily(dataType==2 || dataType == 3  || dataType == 4);
-
-                int unusedValidTime  = (int) item.get("unusedValidTime");
-                apiPurchaseItemDto.setApiPurchaseUnusedValidTime(unusedValidTime+"");
-
-                apiPurchaseItemDto.setApiPurchaseItemDays(((Integer) item.get("duration")) +"");//활성화후 유효기간 (일)
-
-                apiPurchaseItemDto.setApiPurchaseCoverDomainCode(item.get("location").toString());
-
-                apiPurchaseItemDto.setApiPurchaseNormalSpeed(item.get("speed").toString());
-
-                apiPurchaseItemDto.setApiPurchaseSlowSpeed(item.get("fupPolicy").toString());
-                if((Integer) item.get("supportTopUpType")==2){
-                    apiPurchaseItemDto.setApiPurchaseIsCharge(true);
-                }else{
-                    apiPurchaseItemDto.setApiPurchaseIsCharge(false);
-
-                }
-                String apiPurchaseOperator ="";
-                List<HashMap<String,Object>> locationNetworkList = (List<HashMap<String, Object>>) item.get("locationNetworkList");
-                for(HashMap<String,Object> locationNetwork:locationNetworkList){
-                    List<HashMap<String,Object>> operatorList = (List<HashMap<String, Object>>) locationNetwork.get("operatorList");
-                    apiPurchaseOperator += locationNetwork.get("locationName").toString();
-                    for(HashMap<String,Object> operator:operatorList){
-                        apiPurchaseOperator +="(" + operator.get("operatorName").toString() + operator.get("networkType").toString() +") ";
-                    }
-                }
-                apiPurchaseItemDto.setApiPurchaseOperator(apiPurchaseOperator);
-
-
-
-                apiPurchaseItemService.insert(apiPurchaseItemDto);
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        if(true)
-            return;
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         try{
             EsimPriceDto param = new EsimPriceDto();
@@ -430,7 +337,7 @@ public class ApiPurchaseListSchedulerTest {
                         if(echangeRate!=null){
                             double krwPrice = echangeRate *Double.parseDouble(itemList.get(j).get("productPrice").toString());
                             apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
-                            double originKrwPrice = esimPriceDto.getExchangeOriginRate() *Double.parseDouble(itemList.get(j).get("productPrice").toString());
+                            double originKrwPrice = esimPriceDto.getExchangeRate() *Double.parseDouble(itemList.get(j).get("productPrice").toString());
                             apiPurchaseItemDto.setApiPurchaseOriginKrwPrice(originKrwPrice+"");
                         }
                     }
@@ -450,14 +357,79 @@ public class ApiPurchaseListSchedulerTest {
         }
 
 
+        try{
+            ApiPurchaseItemDto apiPurchaseItemDto = new ApiPurchaseItemDto();
+            apiPurchaseItemDto.setApiPurchaseItemType(ApiType.ESIMACCESS.name());
+            List<Map<String,Object>> itemList  = OriginEsimAccessUtil.contextLoads1();
+
+            EsimPriceDto param = new EsimPriceDto();
+            param.setType(ApiType.ESIMACCESS.name());
+            EsimPriceDto esimPriceDto = esimPriceService.findById(param);
+            Double echangeRate = esimPriceDto.getExchangeRate() * esimPriceDto.getExchangeWeight();
+
+            apiPurchaseItemService.deleteWithApiPurchaseItemType(apiPurchaseItemDto);
+
+            for(int j=0;j<itemList.size();j++){
+                Map<String,Object> item = itemList.get(j);
+
+                int activeType  = (int) item.get("activeType");//언제부터 요금제 카운트 시작 1. 휴대폰설치시점 2. 최초네트워크접속시점 브라질과 아르헨티나는 받음 최저가떄문.
+                if(activeType!=2 && !item.get("location").toString().equals("BR") && !item.get("location").toString().equals("AR")){ // 최초네트워크접속시점만 판매함
+                    continue;
+                }
+                apiPurchaseItemDto.setApiPurchaseExportDomainCode(item.get("ipExport").toString());
+                apiPurchaseItemDto.setApiPurchaseItemProcutId(item.get("packageCode").toString());
+                apiPurchaseItemDto.setApiPurchaseItemDescription(item.get("name").toString());
+                double price = (Double.parseDouble(item.get("price").toString())/10000);
+                apiPurchaseItemDto.setApiPurchasePrice(price+"");//가격
+                if(echangeRate!=null){
+                    double krwPrice = echangeRate *price;
+                    apiPurchaseItemDto.setApiPurchaseKrwPrice(krwPrice+"");
+                    double originKrwPrice = esimPriceDto.getExchangeRate() *price;
+                    apiPurchaseItemDto.setApiPurchaseOriginKrwPrice(originKrwPrice+"");
+                }
+                apiPurchaseItemDto.setApiPurchaseCurrency(item.get("currencyCode").toString());//화폐단위
+                apiPurchaseItemDto.setApiPurchaseDataTotal(item.get("volume").toString());//용량
+                apiPurchaseItemDto.setApiPurchaseDataUnit("bytes"); //용량단위
+
+                int dataType  = (int) item.get("dataType");
+                apiPurchaseItemDto.setApiPurchaseItemSelectType(dataType+"");//1:총량제, 2:일일제한(속도제어), 3:일일제한(차단) 4:일일무제한
+                apiPurchaseItemDto.setApiPurchaseItemIsDaily(dataType==2 || dataType == 3  || dataType == 4);
+
+                int unusedValidTime  = (int) item.get("unusedValidTime");
+                apiPurchaseItemDto.setApiPurchaseUnusedValidTime(unusedValidTime+"");
+
+                apiPurchaseItemDto.setApiPurchaseItemDays(((Integer) item.get("duration")) +"");//활성화후 유효기간 (일)
+
+                apiPurchaseItemDto.setApiPurchaseCoverDomainCode(item.get("location").toString());
+
+                apiPurchaseItemDto.setApiPurchaseNormalSpeed(item.get("speed").toString());
+
+                apiPurchaseItemDto.setApiPurchaseSlowSpeed(item.get("fupPolicy").toString());
+                if((Integer) item.get("supportTopUpType")==2){
+                    apiPurchaseItemDto.setApiPurchaseIsCharge(true);
+                }else{
+                    apiPurchaseItemDto.setApiPurchaseIsCharge(false);
+
+                }
+                String apiPurchaseOperator ="";
+                List<HashMap<String,Object>> locationNetworkList = (List<HashMap<String, Object>>) item.get("locationNetworkList");
+                for(HashMap<String,Object> locationNetwork:locationNetworkList){
+                    List<HashMap<String,Object>> operatorList = (List<HashMap<String, Object>>) locationNetwork.get("operatorList");
+                    apiPurchaseOperator += locationNetwork.get("locationName").toString();
+                    for(HashMap<String,Object> operator:operatorList){
+                        apiPurchaseOperator +="(" + operator.get("operatorName").toString() + operator.get("networkType").toString() +") ";
+                    }
+                }
+                apiPurchaseItemDto.setApiPurchaseOperator(apiPurchaseOperator);
 
 
 
+                apiPurchaseItemService.insert(apiPurchaseItemDto);
+            }
 
-
-
-
-
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
 
     }
@@ -482,7 +454,7 @@ public class ApiPurchaseListSchedulerTest {
 
             for(ProductDto productDto:productDtoList){
                 /* 특정 아이디만 리셋하려면 이거 하면됨
-                if(productDto.getOriginProductNo()!=13717396084L  ){
+                if(productDto.getOriginProductNo()!=12794014501L  ){
                     continue;
                 }*/
                 Map<String, Object> bodyMap = new HashMap<>();
@@ -492,12 +464,12 @@ public class ApiPurchaseListSchedulerTest {
                 MatchInfoDto matchInfoParam = new MatchInfoDto();
                 matchInfoParam.setOriginProductNo(productDto.getOriginProductNo());
                 List<MatchInfoDto> matchInfoDtoList = matchInfoService.selectMatchInfoListAll(matchInfoParam);
-                /* 특정 심회사만 처리*/
+                /* 특정 심회사만 처리
                 if(matchInfoDtoList.size()>0){
-                    if(matchInfoDtoList.get(0).getMatchInfoName().indexOf("TS")!=0){
+                    if(matchInfoDtoList.get(0).getMatchInfoName().indexOf("TG")!=0){
                         continue;
                     }
-                }
+                }*/
                 List<Map<String,Object>> optionCombinations = new ArrayList<>();
                 for(MatchInfoDto matchInfoDto:matchInfoDtoList){
                     Map<String,Object> optionBodyMap = new HashMap<>();
@@ -523,10 +495,14 @@ public class ApiPurchaseListSchedulerTest {
 
                         if (apiPurchaseItemParam.getApiPurchaseItemType() != null) {
                             ApiPurchaseItemDto apiPurchaseItemDto = apiPurchaseItemService.selectApiPurchaseItemWithApiPurchaseItemTypeAndApiPurchaseItemProcutId(apiPurchaseItemParam);
-
-                            //System.out.println(apiPurchaseItemParam.toString());
-                            if(apiPurchaseItemDto.getApiPurchaseKrwPrice()!=null){
-                                double apiPrice = getRealSamePrice(apiPurchaseItemDto);
+                            if(apiPurchaseItemDto==null){
+                                //상품없으면 품절시키삼
+                                optionBodyMap.put("id",matchInfoDto.getProductOptionDto().getOptionId());
+                                optionBodyMap.put("stockQuantity",0);
+                                optionBodyMap.put("price",matchInfoDto.getProductDto().getSalePrice());
+                                optionCombinations.add(optionBodyMap);
+                            }else if(apiPurchaseItemDto.getApiPurchaseKrwPrice()!=null){
+                                double apiPrice = getRealSamePrice(apiPurchaseItemDto, productDto);
 
                                 if(matchInfoDto.getEsimType().equals("07")){
                                     apiPrice = getEsimAccessRealPrice(apiPurchaseItemDto,matchInfoDto.getEsimProductDays());
@@ -670,13 +646,9 @@ public class ApiPurchaseListSchedulerTest {
                     String type = "";
                     if (matchInfoDto.getEsimType().equals("01"))
                         type = "tel25";
-                    else if (matchInfoDto.getEsimType().equals("02"))
-                        type = "NIZ";
-                    else if (matchInfoDto.getEsimType().equals("03"))
+else if (matchInfoDto.getEsimType().equals("03"))
                         type = "TSIM";
-                    else if (matchInfoDto.getEsimType().equals("04"))
-                        type = "AIRALO";
-                    else if (matchInfoDto.getEsimType().equals("05"))
+else if (matchInfoDto.getEsimType().equals("05"))
                         type = "TUGE";
                     else if (matchInfoDto.getEsimType().equals("06"))
                         type = "WORLDMOVE";
@@ -723,10 +695,17 @@ public class ApiPurchaseListSchedulerTest {
         }
     }
 
-    public double getRealSamePrice(ApiPurchaseItemDto apiPurchaseItemDto){
+    public double getRealSamePrice(ApiPurchaseItemDto apiPurchaseItemDto, ProductDto productDto){
 
         EsimPriceDto param = new EsimPriceDto();
-        param.setType(apiPurchaseItemDto.getApiPurchaseItemType());
+        String type = apiPurchaseItemDto.getApiPurchaseItemType();
+        if ((type == null || type.trim().isEmpty()) && productDto != null) {
+            type = esimPriceService.resolveTypeFromSellerManagementCode(productDto.getOriginProductSellerManagementCode());
+        }
+        param.setType(type);
+        if (productDto != null) {
+            param.setOriginProductNo(productDto.getOriginProductNo());
+        }
         EsimPriceDto esimPriceDto = esimPriceService.findById(param);
         Double weight1 = esimPriceDto.getWeight1();
         Double weight2 = esimPriceDto.getWeight2();
@@ -787,6 +766,8 @@ public class ApiPurchaseListSchedulerTest {
 
         EsimPriceDto param = new EsimPriceDto();
         param.setType(apiPurchaseItemDto.getApiPurchaseItemType());
+        // getEsimAccessRealPrice 호출부가 productDto 컨텍스트를 갖고 있어 origin_product_no 우선 적용
+        // (테스트 내부 private 메서드라 시그니처 유지, 타입 fallback만)
         EsimPriceDto esimPriceDto = esimPriceService.findById(param);
         Double weight1 = esimPriceDto.getWeight1();
         Double weight2 = esimPriceDto.getWeight2();

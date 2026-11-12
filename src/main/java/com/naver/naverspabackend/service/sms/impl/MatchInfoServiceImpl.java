@@ -192,12 +192,8 @@ public class MatchInfoServiceImpl implements MatchInfoService {
     public ApiResult<?> fetchEsimProductIdList(Map<String, Object> paramMap) throws Exception {
         if(paramMap.get("value").equals("01"))
             return ApiResult.succeed(Tel25Util.contextLoads1(), null);
-        else if(paramMap.get("value").equals("02")){
-            return ApiResult.succeed(apiPurchaseItemMapper.selectApiPurchaseItemWithApiPurchaseItemType(new ApiPurchaseItemDto(ApiType.NIZ.name(), paramMap.get("searchKey")!=null?paramMap.get("searchKey").toString():"")), null);
-        }else if(paramMap.get("value").equals("03")){
+        else if(paramMap.get("value").equals("03")){
             return ApiResult.succeed(apiPurchaseItemMapper.selectApiPurchaseItemWithApiPurchaseItemType(new ApiPurchaseItemDto(ApiType.TSIM.name(), paramMap.get("searchKey")!=null?paramMap.get("searchKey").toString():"")), null);
-        }else if(paramMap.get("value").equals("04")){
-            return ApiResult.succeed(apiPurchaseItemMapper.selectApiPurchaseItemWithApiPurchaseItemType(new ApiPurchaseItemDto(ApiType.AIRALO.name(), paramMap.get("searchKey")!=null?paramMap.get("searchKey").toString():"")), null);
         }else if(paramMap.get("value").equals("05")){
             return ApiResult.succeed(apiPurchaseItemMapper.selectApiPurchaseItemWithApiPurchaseItemType(new ApiPurchaseItemDto(ApiType.TUGE.name(), paramMap.get("searchKey")!=null?paramMap.get("searchKey").toString():"")), null);
         }else if(paramMap.get("value").equals("06")){

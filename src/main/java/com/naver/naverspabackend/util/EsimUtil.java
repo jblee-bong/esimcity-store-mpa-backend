@@ -45,19 +45,6 @@ public class EsimUtil {
     }
 
 
-    static String nizBaseUrl;
-    @Value("${api.niz.baseUrl}")
-    public void setNizBaseUrl(String nizBaseUrl) {
-        this.nizBaseUrl = nizBaseUrl;
-    }
-
-    static String airaloBaseUrl;
-    @Value("${api.airalo.baseUrl}")
-    public void setAiraloBaseUrl(String airaloBaseUrl) {
-        this.airaloBaseUrl = airaloBaseUrl;
-    }
-
-
     static String esimAccessBaseUrl;
     @Value("${api.esimaccess.baseUrl}")
     public void setEsimAccessBaseUrl(String esimAccessBaseUrl) {
@@ -142,14 +129,6 @@ public class EsimUtil {
 
     public static WorldMoveUtil getWorldMoveUtil(StoreDto storeDto)  {
         return new WorldMoveUtil(storeDto.getEsimApiWorldMoveMerchantId(), storeDto.getEsimApiWorldMoveDeptId(), storeDto.getEsimApiWorldMoveToken(), worldMoveBaseUrl, esimApiIngStepLogsService);
-    }
-
-    public static NizUtil getNizUtil(StoreDto storeDto)  {
-        return new NizUtil(storeDto.getEsimApiNizId(), storeDto.getEsimApiNizPass(), storeDto.getEsimApiNizPartnerCode(), nizBaseUrl, esimApiIngStepLogsService);
-    }
-
-    public static AirAloUtil getAirAloUtil(StoreDto storeDto)  {
-        return new AirAloUtil(storeDto.getEsimApiAiraloClientId(), storeDto.getEsimApiAiraloClientSecret(), airaloBaseUrl, esimApiIngStepLogsService,orderMapper);
     }
 
     public static EsimAccessUtil getEsimAccess(StoreDto storeDto)  {
