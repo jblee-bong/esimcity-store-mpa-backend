@@ -69,6 +69,9 @@ public class PayUpServiceImpl implements PayUpService {
     @Value("${payup.cancelURI}")
     private String cancelURI;
 
+    @Value("${payup.partCancelURI:/api/v1/partCancel}")
+    private String partCancelURI;
+
     @Autowired
     private KakaoService kakaoService;
 
@@ -371,6 +374,40 @@ public class PayUpServiceImpl implements PayUpService {
     public String cancelPayment(String transactionId) {
         String accessToken = getAccessToken();
         return accessToken == null ? null : refundPayment(transactionId, accessToken);
+    }
+
+    @Override
+    public String partCancelPayment(String transactionId, int cancelAmount, String cancelReason) {
+        String accessToken = getAccessToken();
+        if (accessToken == null) return null;
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.add("Authorization", accessToken);
+            Map<String, Object> body = new HashMap<>();
+            body.put("transactionId", transactionId);
+            body.put("cancelAmount", String.valueOf(cancelAmount));
+            body.put("cancelReason", cancelReason);
+            ResponseEntity<HashMap> response = new RestTemplate().exchange(baseUrl + partCancelURI, HttpMethod.POST,
+                new HttpEntity<>(new Gson().toJson(body), headers), HashMap.class);
+            return partCancelResult(response.getBody(), cancelAmount);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /** status=SUCCESS, data.responseCode=0000, 취소금액 일치일 때만 성공 → 부분취소 거래번호 */
+    static String partCancelResult(Map<String, Object> res, int cancelAmount) {
+        if (res == null || !"SUCCESS".equals(String.valueOf(res.get("status")))) return null;
+        Object d = res.get("data");
+        if (!(d instanceof Map)) return null;
+        Map<?, ?> data = (Map<?, ?>) d;
+        if (!"0000".equals(String.valueOf(data.get("responseCode")))) return null;
+        if (!String.valueOf(cancelAmount).equals(String.valueOf(data.get("cancelAmount")))) return null;
+        Object id = data.get("partTransactionId");
+        return id == null ? "" : id.toString();
     }
 
     @Override

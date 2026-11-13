@@ -39,5 +39,13 @@ public interface WifiAdminService {
     void retryOrder(String orderNo);
     void refundOrder(String orderNo, String adminId);
 
+    /**
+     * 충전 완료 주문 환불 (전액/부분). refundKrw = 돌려줄 결제금액, refundPoint = 돌려줄 사용 포인트.
+     * cancelTuge = TUGE 요금제도 취소. 결제금액 전부면 PayUp 전액취소, 일부면 PayUp 부분취소.
+     */
+    void processRefund(String orderNo, int refundKrw, int refundPoint, boolean cancelTuge, String memo, String adminId);
+
+    void rejectRefund(String orderNo, String memo, String adminId);
+
     Map<String, Object> balance();
 }

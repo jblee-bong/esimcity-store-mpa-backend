@@ -75,6 +75,12 @@ public interface WifiMapper {
     int setOrderEarnPoint(@Param("id") Long id, @Param("earnPoint") int earnPoint);
     List<WifiOrderDto> retryTargetOrders();
     List<WifiOrderDto> myOrders(Long memberId);
+    int requestRefund(@Param("id") Long id, @Param("memberId") Long memberId, @Param("reason") String reason);
+    /** 누적 환불액 갱신. prev 값이 그대로일 때만 (동시 처리 방지) */
+    int completeRefund(@Param("id") Long id, @Param("from") String from, @Param("to") String to,
+                       @Param("prevKrw") int prevKrw, @Param("prevPoint") int prevPoint,
+                       @Param("refundKrw") int refundKrw, @Param("refundPoint") int refundPoint, @Param("memo") String memo);
+    int rejectRefund(@Param("id") Long id, @Param("memo") String memo);
     List<WifiOrderDto> adminOrderList(Map<String, Object> param);
     int adminOrderCount(Map<String, Object> param);
 }

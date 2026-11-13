@@ -104,8 +104,15 @@ CREATE TABLE IF NOT EXISTS TB_WIFI_ORDER (
     pay_krw             INT           NOT NULL COMMENT 'PG 결제금액',
     earn_point          INT           NOT NULL DEFAULT 0 COMMENT '충전 완료 시 적립 포인트',
     settlement_usd      DECIMAL(28,2) NULL COMMENT '원가 스냅샷(USD x 기간)',
-    payment_status      VARCHAR(20)   NOT NULL COMMENT 'PAY_READY/PAID/POINT_ONLY/PAY_FAILED/REFUNDED/REFUND_FAILED',
+    payment_status      VARCHAR(20)   NOT NULL COMMENT 'PAY_READY/PAID/POINT_ONLY/PAY_FAILED/REFUNDED/PARTIAL_REFUNDED/REFUND_FAILED',
     topup_status        VARCHAR(20)   NOT NULL DEFAULT 'READY' COMMENT 'READY/RETRY/DONE/FAILED',
+    refund_status       VARCHAR(20)   NULL COMMENT 'REQUESTED/DONE/REJECTED',
+    refund_reason       VARCHAR(500)  NULL COMMENT '사용자 환불 사유',
+    refund_request_dt   DATETIME      NULL,
+    refund_krw          INT           NOT NULL DEFAULT 0 COMMENT '환불한 결제금액',
+    refund_point        INT           NOT NULL DEFAULT 0 COMMENT '돌려준 사용 포인트',
+    refund_memo         VARCHAR(500)  NULL COMMENT '관리자 메모/거절 사유',
+    refund_dt           DATETIME      NULL,
     pg_transaction_id   VARCHAR(100)  NULL,
     tuge_order_no       VARCHAR(100)  NULL,
     tuge_flow_order_nos VARCHAR(500)  NULL,
@@ -117,7 +124,8 @@ CREATE TABLE IF NOT EXISTS TB_WIFI_ORDER (
     UNIQUE KEY uk_order_no (order_no),
     KEY idx_member_id (member_id),
     KEY idx_device_sn (device_sn),
-    KEY idx_status (payment_status, topup_status)
+    KEY idx_status (payment_status, topup_status),
+    KEY idx_refund_status (refund_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='포켓와이파이 충전 주문';
 
 CREATE TABLE IF NOT EXISTS TB_WIFI_POINT_LOG (

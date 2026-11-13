@@ -22,8 +22,15 @@ public class WifiOrderDto {
     private int payKrw;
     private int earnPoint;          // 충전 완료 시 적립된 포인트
     private BigDecimal settlementUsd;
-    private String paymentStatus;   // PAY_READY/PAID/POINT_ONLY/PAY_FAILED/REFUNDED/REFUND_FAILED
+    private String paymentStatus;   // PAY_READY/PAID/POINT_ONLY/PAY_FAILED/REFUNDED/PARTIAL_REFUNDED/REFUND_FAILED
     private String topupStatus;     // READY/RETRY/DONE/FAILED
+    private String refundStatus;    // null/REQUESTED/DONE/REJECTED
+    private String refundReason;
+    private Date refundRequestDt;
+    private int refundKrw;
+    private int refundPoint;
+    private String refundMemo;
+    private Date refundDt;
     private String pgTransactionId;
     private String tugeOrderNo;
     private String tugeFlowOrderNos;

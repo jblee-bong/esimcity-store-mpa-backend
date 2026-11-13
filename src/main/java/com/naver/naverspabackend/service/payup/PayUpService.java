@@ -16,6 +16,9 @@ public interface PayUpService {
     /** 결제 취소. "SUCCESS" 면 성공 (포켓와이파이용) */
     String cancelPayment(String transactionId);
 
+    /** 결제 부분취소. 성공하면 부분취소 거래번호, 실패하면 null (포켓와이파이용) */
+    String partCancelPayment(String transactionId, int cancelAmount, String cancelReason);
+
     /** 결제창 SDK 에 넘길 merchantId, redirectUrl */
     Map<String, Object> getPayConfig();
 

@@ -43,6 +43,9 @@ public interface WifiService {
 
     List<WifiOrderDto> myOrders(WifiMemberDto member);
 
+    /** 사용자 환불 신청 (충전 완료 주문, 1회). 처리는 관리자가 */
+    void requestRefund(WifiMemberDto member, String orderNo, String reason);
+
     List<WifiPointLogDto> myPointLogs(WifiMemberDto member);
 
     /** TUGE 개통/주문. 재시도 배치에서도 호출 */

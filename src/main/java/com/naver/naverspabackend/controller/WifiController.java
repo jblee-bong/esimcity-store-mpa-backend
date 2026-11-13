@@ -143,6 +143,13 @@ public class WifiController {
         return ApiResult.succeed(wifiService.orderResult(authService.requireMember(req, res), orderNo), null);
     }
 
+    @PostMapping("/orders/{orderNo}/refund")
+    public ApiResult<?> requestRefund(@PathVariable String orderNo, @RequestBody Map<String, Object> body,
+                                      HttpServletRequest req, HttpServletResponse res) {
+        wifiService.requestRefund(authService.requireMember(req, res), orderNo, str(body.get("reason")));
+        return ApiResult.succeed(null, null);
+    }
+
     /* ---------- 공통 ---------- */
 
     @ExceptionHandler(WifiException.class)

@@ -130,6 +130,21 @@ public class WifiAdminController {
         return ApiResult.succeed(null, null);
     }
 
+    /** 충전 완료 주문 환불 (전액/부분) */
+    @PostMapping("/order/refund/process")
+    public ApiResult<?> refundProcess(@RequestBody Map<String, Object> param, @TokenUser UserDto admin) {
+        adminService.processRefund(String.valueOf(param.get("orderNo")), (int) num(param.get("refundKrw")), (int) num(param.get("refundPoint")),
+            Boolean.TRUE.equals(param.get("cancelTuge")),
+            param.get("memo") == null ? null : String.valueOf(param.get("memo")), admin.getEmail());
+        return ApiResult.succeed(null, null);
+    }
+
+    @PostMapping("/order/refund/reject")
+    public ApiResult<?> refundReject(@RequestBody Map<String, Object> param, @TokenUser UserDto admin) {
+        adminService.rejectRefund(String.valueOf(param.get("orderNo")), param.get("memo") == null ? null : String.valueOf(param.get("memo")), admin.getEmail());
+        return ApiResult.succeed(null, null);
+    }
+
     @PostMapping("/balance")
     public ApiResult<?> balance() {
         Map<String, Object> r = adminService.balance();
@@ -138,6 +153,14 @@ public class WifiAdminController {
     }
 
     /** 관리자 화면은 HTTP 200 + responseCode 로 오류를 판단하므로 상태코드는 200 유지 */
+    private static double num(Object o) {
+        try {
+            return o == null ? 0 : Double.parseDouble(o.toString());
+        } catch (NumberFormatException e) {
+            throw new WifiException("숫자를 확인해주세요.");
+        }
+    }
+
     @ExceptionHandler(WifiException.class)
     public ResponseEntity<ApiResult<?>> wifiError(WifiException e) {
         return ResponseEntity.ok(ApiResult.failed(e.getMessage(), e.getResponseCode()));

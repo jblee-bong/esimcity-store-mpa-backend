@@ -365,11 +365,33 @@
 
     <select id="myOrders" resultType="com.naver.naverspabackend.dto.WifiOrderDto">
         select id, order_no, device_sn, product_code, product_name, order_period, total_krw, point_used, pay_krw, earn_point,
-               payment_status, topup_status, regist_dt
+               payment_status, topup_status, refund_status, refund_krw, refund_point, regist_dt
           from TB_WIFI_ORDER
          where member_id = #{memberId} and payment_status != 'PAY_READY'
          order by id desc limit 100
     </select>
+
+    <!-- 충전 완료된 내 주문만, 한 번만 신청 -->
+    <update id="requestRefund">
+        update TB_WIFI_ORDER
+           set refund_status = 'REQUESTED', refund_reason = #{reason}, refund_request_dt = now(), modify_dt = now()
+         where id = #{id} and member_id = #{memberId} and refund_status is null
+           and topup_status = 'DONE' and payment_status in ('PAID', 'POINT_ONLY')
+    </update>
+
+    <!-- 여러 번 부분환불 가능: 누적액이 읽은 값 그대로일 때만 갱신 (이중 처리 방지) -->
+    <update id="completeRefund">
+        update TB_WIFI_ORDER
+           set payment_status = #{to}, refund_status = 'DONE', refund_krw = #{refundKrw}, refund_point = #{refundPoint},
+               refund_memo = left(concat_ws(' / ', refund_memo, #{memo}), 500), refund_dt = now(), modify_dt = now()
+         where id = #{id} and payment_status = #{from} and refund_krw = #{prevKrw} and refund_point = #{prevPoint}
+    </update>
+
+    <update id="rejectRefund">
+        update TB_WIFI_ORDER
+           set refund_status = 'REJECTED', refund_memo = #{memo}, refund_dt = now(), modify_dt = now()
+         where id = #{id} and refund_status = 'REQUESTED'
+    </update>
 
     <sql id="orderWhere">
         <where>
@@ -380,6 +402,7 @@
             <if test='paymentStatus != null and paymentStatus != ""'> and o.payment_status = #{paymentStatus}</if>
             <if test='topupStatus != null and topupStatus != ""'> and o.topup_status = #{topupStatus}</if>
             <if test='hideReady == "Y"'> and o.payment_status != 'PAY_READY'</if>
+            <if test='refundStatus != null and refundStatus != ""'> and o.refund_status = #{refundStatus}</if>
         </where>
     </sql>
 

@@ -101,6 +101,15 @@ public class TugeDeviceUtil {
         return call("addOrder", "api-publicappmodule/saleOrderApi/addOrder", d, 340);
     }
 
+    /** 3.5 요금제 주문 취소 (미개통 주문, 또는 개통된 주문 조기 종료). 장비로 발송된 주문이면 deviceNo 필수 */
+    public Map<String, Object> cancelOrder(String orderNo, String sn) {
+        Map<String, Object> d = new HashMap<>();
+        d.put("orderNo", orderNo);
+        if (sn != null) d.put("deviceNo", sn);
+        d.put("lang", "en");
+        return call("cancelOrder", "api-publicappmodule/saleOrderApi/cancelOrder", d, 1000);
+    }
+
     /** 3.7 장비의 요금제 목록 (dataUsage 는 누적, 약 1시간 지연) */
     public Map<String, Object> queryOrderList(String sn) {
         Map<String, Object> d = new HashMap<>();

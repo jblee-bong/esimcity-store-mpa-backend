@@ -440,6 +440,10 @@ public class WifiServiceImpl implements WifiService {
         r.put("earnPoint", o.getEarnPoint());
         r.put("paymentStatus", o.getPaymentStatus());
         r.put("topupStatus", o.getTopupStatus());
+        r.put("refundStatus", o.getRefundStatus());
+        r.put("refundKrw", o.getRefundKrw());
+        r.put("refundPoint", o.getRefundPoint());
+        if ("REJECTED".equals(o.getRefundStatus())) r.put("refundMemo", o.getRefundMemo()); // 처리 메모는 내부용, 반려 사유만 고객에게
         r.put("registDt", o.getRegistDt());
         return r;
     }
@@ -447,6 +451,18 @@ public class WifiServiceImpl implements WifiService {
     @Override
     public List<WifiOrderDto> myOrders(WifiMemberDto member) {
         return wifiMapper.myOrders(member.getId());
+    }
+
+    @Override
+    public void requestRefund(WifiMemberDto member, String orderNo, String reason) {
+        WifiOrderDto o = wifiMapper.findOrderByNo(orderNo);
+        if (o == null || !o.getMemberId().equals(member.getId())) throw new WifiException("주문을 찾을 수 없습니다.", ResponseCode.NOT_EXIST);
+        String r = StringUtils.abbreviate(StringUtils.trimToEmpty(reason), 500);
+        if (r.isEmpty()) throw new WifiException("환불 사유를 입력해주세요.");
+        if (wifiMapper.requestRefund(o.getId(), member.getId(), r) == 0) {
+            throw new WifiException(o.getRefundStatus() != null ? "이미 환불 신청한 주문입니다." : "충전이 완료된 주문만 환불 신청할 수 있어요.");
+        }
+        smsSender.alertAdmin("포켓와이파이 환불 신청 " + orderNo);
     }
 
     @Override

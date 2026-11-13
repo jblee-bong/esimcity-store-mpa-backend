@@ -16,6 +16,7 @@ import com.naver.naverspabackend.service.wifi.WifiAdminService;
 import com.naver.naverspabackend.service.wifi.WifiAuthService;
 import com.naver.naverspabackend.service.wifi.WifiPricing;
 import com.naver.naverspabackend.service.wifi.WifiService;
+import com.naver.naverspabackend.service.wifi.WifiSmsSender;
 import com.naver.naverspabackend.util.TugeDeviceUtil;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -49,6 +50,8 @@ public class WifiAdminServiceImpl implements WifiAdminService {
     private WifiService wifiService;
     @Autowired
     private PayUpService payUpService;
+    @Autowired
+    private WifiSmsSender smsSender;
 
     @Value("${wifi.pointValidDays:365}")
     private int pointValidDays;
@@ -392,12 +395,101 @@ public class WifiAdminServiceImpl implements WifiAdminService {
             return;
         }
         if ("DONE".equals(o.getTopupStatus())) {
-            throw new WifiException("이미 충전된 주문입니다. TUGE 주문 취소 후 PayUp 에서 직접 환불해주세요.");
+            throw new WifiException("충전 완료된 주문은 [환불 처리]로 환불해주세요.");
         }
         if (!"PAID".equals(o.getPaymentStatus()) && !"POINT_ONLY".equals(o.getPaymentStatus())) {
             throw new WifiException("환불할 결제가 없습니다.");
         }
         wifiService.failAndRefund(o, "관리자 환불 (" + adminId + ")");
+    }
+
+    @Override
+    public void processRefund(String orderNo, int refundKrw, int refundPoint, boolean cancelTuge, String memo, String adminId) {
+        WifiOrderDto o = wifiMapper.findOrderByNo(orderNo);
+        if (o == null) throw new WifiException("주문이 없습니다.");
+        String from = o.getPaymentStatus();
+        if (!"PAID".equals(from) && !"POINT_ONLY".equals(from) && !"PARTIAL_REFUNDED".equals(from)) {
+            throw new WifiException("환불할 수 있는 결제 상태가 아닙니다.");
+        }
+        if (!"DONE".equals(o.getTopupStatus())) throw new WifiException("충전 전/실패 주문은 [환불] 버튼(결제 취소)을 사용해주세요.");
+        int leftKrw = o.getPayKrw() - o.getRefundKrw();
+        int leftPoint = o.getPointUsed() - o.getRefundPoint();
+        if (refundKrw < 0 || refundKrw > leftKrw) throw new WifiException("환불 금액은 0 ~ " + leftKrw + "원(남은 결제금액) 사이로 입력해주세요.");
+        if (refundPoint < 0 || refundPoint > leftPoint) throw new WifiException("돌려줄 포인트는 0 ~ " + leftPoint + "P(남은 포인트) 사이로 입력해주세요.");
+        if (refundKrw == 0 && refundPoint == 0) throw new WifiException("환불 금액이나 포인트를 입력해주세요.");
+
+
+        if (cancelTuge) {
+            Map<String, Object> r = tuge.cancelOrder(o.getTugeOrderNo(), o.getDeviceSn());
+            if (!TugeDeviceUtil.isOk(r)) throw new WifiException("TUGE 주문 취소 실패 (" + r.get("code") + " " + r.get("msg") + "). 환불은 진행하지 않았습니다.");
+        }
+        String pgNote = "";
+        if (refundKrw > 0) {
+            boolean ok;
+            if (o.getRefundKrw() == 0 && refundKrw == o.getPayKrw()) { // 처음부터 전액이면 일반 취소, 이미 부분취소했으면 남은 금액도 부분취소
+                ok = "SUCCESS".equals(payUpService.cancelPayment(o.getPgTransactionId()));
+            } else {
+                String partId = payUpService.partCancelPayment(o.getPgTransactionId(), refundKrw, "포켓와이파이 부분환불");
+                ok = partId != null;
+                pgNote = ok ? " [부분취소 " + partId + "]" : "";
+            }
+            if (!ok) throw new WifiException("PG 취소 실패. PayUp 관리자에서 확인해주세요." + (cancelTuge ? " TUGE 주문은 이미 취소됐습니다." : ""));
+        }
+
+        int totalKrw = o.getRefundKrw() + refundKrw;
+        int totalPoint = o.getRefundPoint() + refundPoint;
+        boolean full = totalKrw == o.getPayKrw() && totalPoint == o.getPointUsed();
+        String note = StringUtils.abbreviate(StringUtils.trimToEmpty(memo) + pgNote + " (" + adminId + ")", 500);
+        if (wifiMapper.completeRefund(o.getId(), from, full ? "REFUNDED" : "PARTIAL_REFUNDED",
+                o.getRefundKrw(), o.getRefundPoint(), totalKrw, totalPoint, note) == 0) {
+            throw new WifiException("이미 처리된 주문입니다. 새로고침 후 확인해주세요.");
+        }
+        if (refundPoint > 0) {
+            wifiMapper.addPoint(o.getMemberId(), refundPoint);
+            orderLog(o, refundPoint, "REFUND", adminId, "환불 " + orderNo);
+        }
+        // 결제 적립 포인트는 환불한 금액 비율만큼 회수 (잔액이 모자라면 남은 만큼만)
+        int claw = o.getPayKrw() == 0 ? 0 : (int) ((long) o.getEarnPoint() * refundKrw / o.getPayKrw());
+        if (claw > 0) {
+            WifiMemberDto m = wifiMapper.findMemberById(o.getMemberId());
+            int take = Math.min(claw, m == null ? 0 : m.getPointBalance());
+            if (take > 0 && wifiMapper.usePoint(o.getMemberId(), take) > 0) orderLog(o, -take, "EARN_CANCEL", adminId, "환불로 적립 취소 " + orderNo);
+        }
+
+        WifiMemberDto m = wifiMapper.findMemberById(o.getMemberId());
+        if (m != null && m.getTel() != null) {
+            StringBuilder b = new StringBuilder("[이심시티] 포켓와이파이 환불이 처리되었습니다.");
+            if (refundKrw > 0) b.append(" 결제 ").append(String.format("%,d", refundKrw)).append("원 취소(카드사에 따라 3~7영업일 소요).");
+            if (refundPoint > 0) b.append(" 포인트 ").append(String.format("%,d", refundPoint)).append("P 복구.");
+            smsSender.send(m.getTel(), b.toString());
+        }
+    }
+
+    @Override
+    public void rejectRefund(String orderNo, String memo, String adminId) {
+        WifiOrderDto o = wifiMapper.findOrderByNo(orderNo);
+        if (o == null) throw new WifiException("주문이 없습니다.");
+        String reason = StringUtils.trimToEmpty(memo);
+        if (reason.isEmpty()) throw new WifiException("반려 사유를 입력해주세요. 고객에게 문자로 안내됩니다.");
+        if (wifiMapper.rejectRefund(o.getId(), StringUtils.abbreviate(reason, 500)) == 0) { // 고객에게 보이는 사유라 관리자 ID 는 로그로만
+            throw new WifiException("환불 신청 상태가 아닙니다.");
+        }
+        log.info("[WIFI] 환불 반려 orderNo={} admin={}", orderNo, adminId);
+        WifiMemberDto m = wifiMapper.findMemberById(o.getMemberId());
+        if (m != null && m.getTel() != null) {
+            smsSender.send(m.getTel(), "[이심시티] 포켓와이파이 환불 신청이 반려되었습니다. 사유: " + StringUtils.abbreviate(reason, 60));
+        }
+    }
+
+    private void orderLog(WifiOrderDto o, int amount, String reason, String adminId, String memo) {
+        WifiPointLogDto pl = new WifiPointLogDto();
+        pl.setMemberId(o.getMemberId());
+        pl.setAmount(amount);
+        pl.setReason(reason);
+        pl.setOrderId(o.getId());
+        pl.setAdminId(adminId);
+        pl.setMemo(memo);
+        wifiMapper.insertPointLog(pl);
     }
 
     @Override
