@@ -27,6 +27,15 @@ class PayUpPartCancelResultTest {
     }
 
     @Test
+    void sameAmountForPaymentCheck() {
+        org.junit.jupiter.api.Assertions.assertTrue(PayUpServiceImpl.sameAmount("12000", "12000"));
+        org.junit.jupiter.api.Assertions.assertTrue(PayUpServiceImpl.sameAmount("12000.0", "12000"));
+        org.junit.jupiter.api.Assertions.assertFalse(PayUpServiceImpl.sameAmount("100", "12000"));
+        org.junit.jupiter.api.Assertions.assertFalse(PayUpServiceImpl.sameAmount(null, "12000"));
+        org.junit.jupiter.api.Assertions.assertFalse(PayUpServiceImpl.sameAmount("abc", "12000"));
+    }
+
+    @Test
     void failures() {
         assertNull(PayUpServiceImpl.partCancelResult(res("ERROR", "0000", "4000"), 4000));
         assertNull(PayUpServiceImpl.partCancelResult(res("SUCCESS", "9999", "4000"), 4000));

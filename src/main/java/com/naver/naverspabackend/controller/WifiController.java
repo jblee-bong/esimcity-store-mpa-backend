@@ -95,7 +95,13 @@ public class WifiController {
 
     @PostMapping("/me/devices")
     public ApiResult<?> register(@RequestBody Map<String, Object> body, HttpServletRequest req, HttpServletResponse res) {
-        return ApiResult.succeed(wifiService.registerDevice(authService.requireMember(req, res), str(body.get("sn"))), null);
+        return ApiResult.succeed(wifiService.registerDevice(authService.requireMember(req, res), str(body.get("sn")), str(body.get("nickname"))), null);
+    }
+
+    @PostMapping("/me/devices/{sn}/nickname")
+    public ApiResult<?> rename(@PathVariable String sn, @RequestBody Map<String, Object> body, HttpServletRequest req, HttpServletResponse res) {
+        wifiService.renameDevice(authService.requireMember(req, res), sn, str(body.get("nickname")));
+        return ApiResult.succeed(null, null);
     }
 
     @DeleteMapping("/me/devices/{sn}")
@@ -107,6 +113,27 @@ public class WifiController {
     @GetMapping("/devices/{sn}")
     public ApiResult<?> device(@PathVariable String sn, HttpServletRequest req, HttpServletResponse res) {
         return ApiResult.succeed(wifiService.deviceDetail(authService.requireMember(req, res), sn), null);
+    }
+
+    @GetMapping("/devices/{sn}/settings")
+    public ApiResult<?> deviceSettings(@PathVariable String sn, HttpServletRequest req, HttpServletResponse res) {
+        return ApiResult.succeed(wifiService.deviceSettings(authService.requireMember(req, res), sn), null);
+    }
+
+    /** 장비 설정 변경 전 재인증 번호 발송 */
+    @PostMapping("/devices/{sn}/settings/otp")
+    public ApiResult<?> deviceSettingsOtp(@PathVariable String sn, HttpServletRequest req, HttpServletResponse res) {
+        WifiMemberDto member = authService.requireMember(req, res);
+        wifiService.deviceSettings(member, sn); // 내 장비인지 먼저 확인
+        return ApiResult.succeed(authService.sendActionOtp(member, clientIp(req)), null);
+    }
+
+    @PostMapping("/devices/{sn}/settings")
+    public ApiResult<?> updateDeviceSettings(@PathVariable String sn, @RequestBody Map<String, Object> body,
+                                             HttpServletRequest req, HttpServletResponse res) {
+        wifiService.updateDeviceSettings(authService.requireMember(req, res), sn, str(body.get("wifiPwd")),
+            str(body.get("deviceLang")), str(body.get("blackList")), str(body.get("code")));
+        return ApiResult.succeed(null, null);
     }
 
     /* ---------- 상품 ---------- */

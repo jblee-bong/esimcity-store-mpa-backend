@@ -17,9 +17,18 @@ public interface WifiService {
     List<WifiDeviceDto> myDevices(WifiMemberDto member);
 
     /** 바로 내 장비로 등록 (먼저 등록한 계정이 주인). 다른 계정에 있으면 "이미 등록된 장비" */
-    WifiDeviceDto registerDevice(WifiMemberDto member, String sn);
+    WifiDeviceDto registerDevice(WifiMemberDto member, String sn, String nickname);
+
+    /** 장비 별명 변경 (빈 값이면 지워서 SN 으로 표시) */
+    void renameDevice(WifiMemberDto member, String sn, String nickname);
 
     void releaseDevice(WifiMemberDto member, String sn);
+
+    /** 와이파이 이름·비밀번호, 화면 언어, 데이터 절약 모드 (3.16, 실시간) */
+    Map<String, Object> deviceSettings(WifiMemberDto member, String sn);
+
+    /** 장비 설정 변경 (3.15). null 인 값은 그대로 유지. code = 재인증 번호 */
+    void updateDeviceSettings(WifiMemberDto member, String sn, String wifiPwd, String deviceLang, String blackList, String code);
 
     /** 장비 상태(3.10, 캐시) + 요금제 목록(3.7, 캐시) */
     Map<String, Object> deviceDetail(WifiMemberDto member, String sn);

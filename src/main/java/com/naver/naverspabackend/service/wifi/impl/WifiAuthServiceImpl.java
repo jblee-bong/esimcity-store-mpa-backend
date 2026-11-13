@@ -85,14 +85,50 @@ public class WifiAuthServiceImpl implements WifiAuthService {
         if (!underLimit("wifi:otp:cnt:" + tel, OTP_MAX_PER_TEL_HOUR) || !underLimit("wifi:otp:ip:" + ip, OTP_MAX_PER_IP_HOUR)) {
             throw new WifiException("인증번호 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
         }
+        issueCode("wifi:otp:", tel);
+    }
+
+    @Override
+    public String sendActionOtp(WifiMemberDto member, String ip) {
+        String tel = member.getTel();
+        if (!underLimit("wifi:otp:cnt:" + tel, OTP_MAX_PER_TEL_HOUR) || !underLimit("wifi:otp:ip:" + ip, OTP_MAX_PER_IP_HOUR)) {
+            throw new WifiException("인증번호 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
+        }
+        issueCode("wifi:otp:act:", tel);
+        return WifiAuthService.maskTel(tel);
+    }
+
+    @Override
+    public void verifyActionOtp(WifiMemberDto member, String code) {
+        checkCode("wifi:otp:act:", member.getTel(), code);
+        redisTemplate.delete("wifi:otp:act:" + member.getTel());
+    }
+
+    private void issueCode(String prefix, String tel) {
         String code = String.format("%06d", random.nextInt(1_000_000));
-        redisTemplate.opsForValue().set("wifi:otp:" + tel, code, OTP_TTL_SEC, TimeUnit.SECONDS);
-        redisTemplate.delete("wifi:otp:try:" + tel);
+        redisTemplate.opsForValue().set(prefix + tel, code, OTP_TTL_SEC, TimeUnit.SECONDS);
+        redisTemplate.delete(prefix + "try:" + tel);
         try {
             smsSender.sendOrThrow(tel, "[이심시티] 인증번호 [" + code + "]를 입력해주세요.");
         } catch (Exception e) {
             log.error("[WIFI] OTP 발송 실패: {}", e.getMessage());
             throw new WifiException("인증번호 발송에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        }
+    }
+
+    /** 만료·시도 횟수·일치 확인 (일치해도 코드는 지우지 않음) */
+    private void checkCode(String prefix, String tel, String code) {
+        Object saved = redisTemplate.opsForValue().get(prefix + tel);
+        if (saved == null) throw new WifiException("인증번호가 만료되었습니다. 다시 요청해주세요.");
+        Long tries = redisTemplate.opsForValue().increment(prefix + "try:" + tel);
+        if (tries != null && tries == 1) redisTemplate.expire(prefix + "try:" + tel, OTP_TTL_SEC, TimeUnit.SECONDS);
+        if (tries != null && tries > OTP_MAX_TRY) {
+            redisTemplate.delete(prefix + tel);
+            throw new WifiException("인증 시도 횟수를 초과했습니다. 다시 요청해주세요.");
+        }
+        if (code == null || !MessageDigest.isEqual(saved.toString().getBytes(StandardCharsets.UTF_8),
+            code.trim().getBytes(StandardCharsets.UTF_8))) {
+            throw new WifiException("인증번호가 일치하지 않습니다.");
         }
     }
 
@@ -107,18 +143,7 @@ public class WifiAuthServiceImpl implements WifiAuthService {
     @Transactional
     public Map<String, Object> verifyOtp(String rawTel, String code, boolean privacyAgree, boolean marketingAgree, HttpServletResponse res) {
         String tel = WifiAuthService.normalizeTel(rawTel);
-        Object saved = redisTemplate.opsForValue().get("wifi:otp:" + tel);
-        if (saved == null) throw new WifiException("인증번호가 만료되었습니다. 다시 요청해주세요.");
-        Long tries = redisTemplate.opsForValue().increment("wifi:otp:try:" + tel);
-        if (tries != null && tries == 1) redisTemplate.expire("wifi:otp:try:" + tel, OTP_TTL_SEC, TimeUnit.SECONDS);
-        if (tries != null && tries > OTP_MAX_TRY) {
-            redisTemplate.delete("wifi:otp:" + tel);
-            throw new WifiException("인증 시도 횟수를 초과했습니다. 다시 요청해주세요.");
-        }
-        if (code == null || !MessageDigest.isEqual(saved.toString().getBytes(StandardCharsets.UTF_8),
-            code.trim().getBytes(StandardCharsets.UTF_8))) {
-            throw new WifiException("인증번호가 일치하지 않습니다.");
-        }
+        checkCode("wifi:otp:", tel, code);
 
         WifiMemberDto member = wifiMapper.findMemberByTel(tel);
         boolean needsAgree = member == null || "PRE".equals(member.getStatus());

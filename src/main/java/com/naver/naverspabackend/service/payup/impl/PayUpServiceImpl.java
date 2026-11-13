@@ -69,6 +69,10 @@ public class PayUpServiceImpl implements PayUpService {
     @Value("${payup.cancelURI}")
     private String cancelURI;
 
+    /** log: 금액 불일치를 기록만 (기본) / block: 승인 거부. 운영 로그에서 오탐이 없는지 확인한 뒤 block 으로 */
+    @Value("${payup.amountCheck:log}")
+    private String amountCheck = "log";
+
     @Value("${payup.partCancelURI:/api/v1/partCancel}")
     private String partCancelURI;
 
@@ -273,7 +277,19 @@ public class PayUpServiceImpl implements PayUpService {
                 return;
             }
 
-            String paymentResult = doPaymentCheck(transactionId,token,amount,accessToken);
+            // 결제창에서 돌아온 금액은 브라우저에서 바꿀 수 있음. 기본은 기록만(log), payup.amountCheck=block 이면 승인 거부
+            boolean amountOk = sameAmount(amount, topupOrderDto.getTopupKrwprice());
+            if (!amountOk) {
+                System.out.println("[PAYUP] 결제금액 불일치 token=" + token + " callback=" + amount + " db=" + topupOrderDto.getTopupKrwprice() + " mode=" + amountCheck);
+            }
+            if (!amountOk && "block".equals(amountCheck)) {
+                model.addAttribute("errorMessage","결제 금액이 주문 금액과 달라 결제를 승인하지 않았습니다. 다시 시도해주세요.");
+                model.addAttribute("success",false);
+                topupOrderDto.setPaymentStatus(2);
+                topupOrderService.updatePaypalStatus(topupOrderDto);
+                return;
+            }
+            String paymentResult = doPaymentCheck(transactionId,token,"block".equals(amountCheck) ? topupOrderDto.getTopupKrwprice() : amount,accessToken);
             if(paymentResult==null || !paymentResult.equals("SUCCESS")) {//결제실패
                 model.addAttribute("errorMessage","충전 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
                 model.addAttribute("success",false);
@@ -395,6 +411,15 @@ public class PayUpServiceImpl implements PayUpService {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    /** 금액 문자열 비교 ("12000" 과 "12000.0" 은 같음). 둘 중 하나라도 숫자가 아니면 다름 */
+    static boolean sameAmount(String a, String b) {
+        try {
+            return new java.math.BigDecimal(a.trim()).compareTo(new java.math.BigDecimal(b.trim())) == 0;
+        } catch (Exception e) {
+            return false;
         }
     }
 

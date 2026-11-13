@@ -61,6 +61,8 @@ public class WifiServiceImpl implements WifiService {
     @Autowired
     private WifiSmsSender smsSender;
     @Autowired
+    private WifiAuthService authService;
+    @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     @Value("${wifi.payupSdkUrl:https://standard.payup.co.kr/assets/js/payup_standard-1.0.js}")
@@ -81,10 +83,14 @@ public class WifiServiceImpl implements WifiService {
     }
 
     @Override
-    public WifiDeviceDto registerDevice(WifiMemberDto member, String rawSn) {
+    public WifiDeviceDto registerDevice(WifiMemberDto member, String rawSn, String rawNickname) {
         String sn = normalizeSn(rawSn);
+        String nickname = normalizeNickname(rawNickname);
         WifiDeviceDto existing = wifiMapper.findDevice(sn);
-        if (existing != null && member.getId().equals(existing.getMemberId())) return existing; // 이미 내 장비
+        if (existing != null && member.getId().equals(existing.getMemberId())) { // 이미 내 장비
+            if (nickname != null) wifiMapper.updateNickname(sn, member.getId(), nickname);
+            return wifiMapper.findDevice(sn);
+        }
         if (existing != null && existing.getMemberId() != null) throw alreadyRegistered();
 
         // 소유 확인 없이 먼저 등록한 계정이 주인 (정책). 우리 채널 장비인지만 확인 (0000 개통 / 0002 미개통)
@@ -99,9 +105,24 @@ public class WifiServiceImpl implements WifiService {
         Map<?, ?> data = check.get("data") instanceof Map ? (Map<?, ?>) check.get("data") : new HashMap<>();
         wifiMapper.upsertDevice(sn, str(data.get("deviceType")), str(data.get("deviceStatus")));
 
-        if (wifiMapper.registerDevice(sn, member.getId()) == 0) throw alreadyRegistered(); // 동시 등록 경합
+        if (wifiMapper.registerDevice(sn, member.getId(), nickname) == 0) throw alreadyRegistered(); // 동시 등록 경합
         wifiMapper.insertDeviceLog(sn, member.getId(), "REGISTER", null);
         return wifiMapper.findDevice(sn);
+    }
+
+    @Override
+    public void renameDevice(WifiMemberDto member, String sn, String nickname) {
+        WifiDeviceDto d = ownDevice(member, sn);
+        wifiMapper.updateNickname(d.getSn(), member.getId(), normalizeNickname(nickname));
+    }
+
+    /** 앞뒤 공백 제거, 빈 값은 null(=SN 표시), 최대 20자 */
+    static String normalizeNickname(String n) {
+        String t = StringUtils.trimToNull(n);
+        if (t == null) return null;
+        t = t.replaceAll("\\s+", " ");
+        if (t.codePointCount(0, t.length()) > 20) throw new WifiException("별명은 20자 이내로 입력해주세요.");
+        return t;
     }
 
     private static WifiException alreadyRegistered() {
@@ -122,6 +143,7 @@ public class WifiServiceImpl implements WifiService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("sn", sn);
         result.put("deviceType", device.getDeviceType());
+        result.put("nickname", device.getNickname());
 
         // 실시간 상태 (3.10)
         Cached st = cached("wifi:st:" + sn, STATUS_TTL_SEC, () -> tuge.getConnectionStatus(sn), "1011", "1013");
@@ -451,6 +473,81 @@ public class WifiServiceImpl implements WifiService {
     @Override
     public List<WifiOrderDto> myOrders(WifiMemberDto member) {
         return wifiMapper.myOrders(member.getId());
+    }
+
+    static final java.util.Set<String> DEVICE_LANGS = new java.util.HashSet<>(java.util.Arrays.asList("KR", "US", "JP", "CN", "TW", "VN"));
+
+    @Override
+    public Map<String, Object> deviceSettings(WifiMemberDto member, String sn) {
+        WifiDeviceDto d = ownDevice(member, sn);
+        Map<String, Object> p = currentProps(d.getSn(), false);
+        Map<String, Object> r = new LinkedHashMap<>();
+        r.put("ssid", p.get("ssid"));
+        r.put("wifiPwd", p.get("wifiPwd"));
+        r.put("deviceLang", p.get("deviceLang"));
+        r.put("blackList", p.get("blackList"));
+        r.put("tel", WifiAuthService.maskTel(member.getTel()));
+        return r;
+    }
+
+    @Override
+    public void updateDeviceSettings(WifiMemberDto member, String sn, String wifiPwd, String deviceLang, String blackList, String code) {
+        WifiDeviceDto d = ownDevice(member, sn);
+        String newPwd = StringUtils.trimToNull(wifiPwd);
+        deviceLang = StringUtils.trimToNull(deviceLang);
+        blackList = StringUtils.trimToNull(blackList);
+        if (newPwd != null && !validWifiPwd(newPwd)) throw new WifiException("비밀번호는 공백 없이 영문·숫자·기호 8~16자로 입력해주세요.");
+        if (deviceLang != null && !DEVICE_LANGS.contains(deviceLang)) throw new WifiException("화면 언어를 확인해주세요.");
+        if (blackList != null && !"Y".equals(blackList) && !"N".equals(blackList)) throw new WifiException("데이터 절약 모드를 확인해주세요.");
+
+        authService.verifyActionOtp(member, code); // 입력이 맞을 때만 인증번호 소진
+
+        Map<String, Object> cur = currentProps(d.getSn(), true);
+        String pwd = newPwd != null ? newPwd : StringUtils.trimToNull(str(cur.get("wifiPwd")));
+        if (pwd == null) throw new WifiException("현재 비밀번호를 불러오지 못했습니다. 새 비밀번호를 입력해주세요.");
+        String lang = deviceLang != null ? deviceLang : StringUtils.defaultIfBlank(str(cur.get("deviceLang")), "KR");
+        String bl = blackList != null ? blackList : StringUtils.defaultIfBlank(str(cur.get("blackList")), "N");
+        Map<String, Object> res = tuge.updateIndividualDeviceInfo(d.getSn(), pwd, lang, str(cur.get("cardLabel")), bl);
+        if (!TugeDeviceUtil.isOk(res)) {
+            log.warn("[WIFI] 장비 설정 변경 실패 sn={} code={} msg={}", d.getSn(), res.get("code"), res.get("msg"));
+            throw new WifiException("장비 설정을 변경하지 못했습니다. 잠시 후 다시 시도해주세요.");
+        }
+        redisTemplate.delete(Arrays.asList("wifi:props:" + d.getSn(), "wifi:props:" + d.getSn() + ":stale",
+            "wifi:info:" + d.getSn(), "wifi:info:" + d.getSn() + ":stale"));
+        log.info("[WIFI] 장비 설정 변경 sn={} member={} pwdChanged={}", d.getSn(), member.getId(), newPwd != null);
+    }
+
+    /** TUGE 3.15 는 8~16자. 장비 입력·표시 문제를 피하려고 공백 없는 ASCII 만 허용 */
+    static boolean validWifiPwd(String p) {
+        return p != null && p.matches("[\\x21-\\x7E]{8,16}");
+    }
+
+    /** 3.16 현재 속성. 이름·비밀번호가 비어 오면 3.23 장비 정보로 보충. 화면 표시는 캐시, 변경할 때는 fresh */
+    private Map<String, Object> currentProps(String sn, boolean fresh) {
+        Map<String, Object> res = fresh ? tuge.getIndividualDeviceInfo(sn)
+            : cached("wifi:props:" + sn, 600, () -> tuge.getIndividualDeviceInfo(sn)).res;
+        if (!TugeDeviceUtil.isOk(res)) {
+            log.warn("[WIFI] 장비 속성 조회 실패 sn={} code={} msg={}", sn, res.get("code"), res.get("msg"));
+            throw new WifiException("장비 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+        }
+        Map<String, Object> p = new HashMap<>();
+        Object data = res.get("data");
+        if (data instanceof Collection) {
+            for (Object o : (Collection<?>) data) {
+                if (o instanceof Map && sn.equalsIgnoreCase(String.valueOf(((Map<?, ?>) o).get("deviceNo")))) {
+                    ((Map<?, ?>) o).forEach((k, v) -> p.put(String.valueOf(k), v));
+                }
+            }
+        }
+        if (StringUtils.isBlank(str(p.get("ssid"))) || StringUtils.isBlank(str(p.get("wifiPwd")))) {
+            Map<String, Object> info = fresh ? tuge.getDeviceInfo(sn) : cached("wifi:info:" + sn, 600, () -> tuge.getDeviceInfo(sn)).res;
+            if (TugeDeviceUtil.isOk(info) && info.get("data") instanceof Map) {
+                Map<?, ?> i = (Map<?, ?>) info.get("data");
+                if (StringUtils.isBlank(str(p.get("ssid")))) p.put("ssid", i.get("ssid"));
+                if (StringUtils.isBlank(str(p.get("wifiPwd")))) p.put("wifiPwd", i.get("wifiPwd"));
+            }
+        }
+        return p;
     }
 
     @Override

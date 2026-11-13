@@ -37,7 +37,8 @@ public interface WifiMapper {
     /* ---------- 장비 ---------- */
     WifiDeviceDto findDevice(String sn);
     int upsertDevice(@Param("sn") String sn, @Param("deviceType") String deviceType, @Param("tugeStatus") String tugeStatus);
-    int registerDevice(@Param("sn") String sn, @Param("memberId") Long memberId);
+    int registerDevice(@Param("sn") String sn, @Param("memberId") Long memberId, @Param("nickname") String nickname);
+    int updateNickname(@Param("sn") String sn, @Param("memberId") Long memberId, @Param("nickname") String nickname);
     int releaseDevice(@Param("sn") String sn, @Param("memberId") Long memberId);
     int releaseAllDevices(Long memberId);
     List<WifiDeviceDto> myDevices(Long memberId);

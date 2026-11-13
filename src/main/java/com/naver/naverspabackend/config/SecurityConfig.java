@@ -63,6 +63,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/external/**").permitAll()
             .antMatchers("/ex/**").permitAll()
             .antMatchers("/assets/**").permitAll()
+            .antMatchers("/common/upload").authenticated() // 이미지 업로드는 관리자 화면 로그인 사용자만
             .antMatchers("/common/**").permitAll()
             .antMatchers("/auth/**").authenticated()
             .antMatchers("/code/**").authenticated()

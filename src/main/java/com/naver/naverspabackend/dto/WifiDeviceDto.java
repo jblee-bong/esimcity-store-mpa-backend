@@ -9,6 +9,7 @@ import lombok.Setter;
 public class WifiDeviceDto {
     private String sn;
     private String deviceType;
+    private String nickname;
     private String tugeStatus;
     private Long memberId;
     private String memberTel;       // 조인 조회용

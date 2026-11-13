@@ -392,13 +392,14 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/api/assets/css/esim-theme.css?v=20261113"> <!-- 포켓와이파이와 같은 디자인 (덮어쓰기만) -->
 </head>
 <body>
   <header class="top-header">
     <div class="container">
       <div class="header-inner">
         <a th:href="${esimLogoLink}" class="logo-link">
-          <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="brand-logo">
+          <img th:src="${'/api/assets/img/esimcity/' + (esimLogoType != null ? esimLogoType : 'esimcity') + '.png'}" alt="eSIM CITY" class="brand-logo">
         </a>
       </div>
     </div>
@@ -476,7 +477,7 @@
   <footer class="main-footer">
     <div class="container">
       <div class="footer-inner">
-        <img th:src="${'/api/assets/img/esimcity/' + esimLogoType + '.png'}" alt="eSIM CITY" class="footer-logo">
+        <img th:src="${'/api/assets/img/esimcity/' + (esimLogoType != null ? esimLogoType : 'esimcity') + '.png'}" alt="eSIM CITY" class="footer-logo">
         <p class="footer-tagline">Connect Anywhere, Anytime</p>
         <div class="footer-divider"></div>
         <div class="footer-bottom">

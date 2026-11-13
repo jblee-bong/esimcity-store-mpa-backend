@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS TB_WIFI_MEMBER (
 CREATE TABLE IF NOT EXISTS TB_WIFI_DEVICE (
     sn              VARCHAR(32)  NOT NULL COMMENT '장비번호(SN)',
     device_type     VARCHAR(20)  NULL COMMENT 'T8 등',
+    nickname        VARCHAR(30)  NULL COMMENT '고객이 붙인 별명',
     tuge_status     VARCHAR(20)  NULL COMMENT 'ACTIVATED/NOTACTIVE/SUSPEND...',
     member_id       BIGINT       NULL COMMENT '등록된 회원',
     registered_dt   DATETIME     NULL,

@@ -110,6 +110,28 @@ public class TugeDeviceUtil {
         return call("cancelOrder", "api-publicappmodule/saleOrderApi/cancelOrder", d, 1000);
     }
 
+    /** 3.16 장비 개별 속성 조회 (와이파이 이름·비밀번호, 화면 언어, 데이터 절약 모드) */
+    public Map<String, Object> getIndividualDeviceInfo(String sn) {
+        Map<String, Object> d = new HashMap<>();
+        d.put("page", 1);
+        d.put("pageSize", 1);
+        d.put("deviceNo", sn);
+        d.put("lang", "en");
+        return call("getIndividualDeviceInfo", "api-publicappmodule/saleDeviceApi/getIndividualDeviceInfo", d, 1000);
+    }
+
+    /** 3.15 장비 개별 속성 변경. 비밀번호·언어·절약모드 모두 필수라 현재 값에 바꿀 것만 덮어 보냄 */
+    public Map<String, Object> updateIndividualDeviceInfo(String sn, String wifiPwd, String deviceLang, String cardLabel, String blackList) {
+        Map<String, Object> d = new HashMap<>();
+        d.put("deviceNo", sn);
+        d.put("wifiPwd", wifiPwd);
+        d.put("deviceLang", deviceLang);
+        d.put("cardLabel", cardLabel == null ? "" : cardLabel);
+        d.put("blackList", blackList);
+        d.put("lang", "en");
+        return call("updateIndividualDeviceInfo", "api-publicappmodule/saleDeviceApi/updateIndividualDeviceInfo", d, 1000);
+    }
+
     /** 3.7 장비의 요금제 목록 (dataUsage 는 누적, 약 1시간 지연) */
     public Map<String, Object> queryOrderList(String sn) {
         Map<String, Object> d = new HashMap<>();

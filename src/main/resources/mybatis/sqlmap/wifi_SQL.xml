@@ -115,19 +115,24 @@
     </insert>
 
     <update id="registerDevice">
-        update TB_WIFI_DEVICE set member_id = #{memberId}, registered_dt = now(), modify_dt = now()
+        update TB_WIFI_DEVICE set member_id = #{memberId}, nickname = #{nickname}, registered_dt = now(), modify_dt = now()
          where sn = #{sn} and member_id is null
+    </update>
+
+    <update id="updateNickname">
+        update TB_WIFI_DEVICE set nickname = #{nickname}, modify_dt = now()
+         where sn = #{sn} and member_id = #{memberId}
     </update>
 
     <!-- memberId null 이면 관리자 강제 해제 -->
     <update id="releaseDevice">
-        update TB_WIFI_DEVICE set member_id = null, registered_dt = null, modify_dt = now()
+        update TB_WIFI_DEVICE set member_id = null, nickname = null, registered_dt = null, modify_dt = now()
          where sn = #{sn}
         <if test="memberId != null"> and member_id = #{memberId}</if>
     </update>
 
     <update id="releaseAllDevices">
-        update TB_WIFI_DEVICE set member_id = null, registered_dt = null, modify_dt = now()
+        update TB_WIFI_DEVICE set member_id = null, nickname = null, registered_dt = null, modify_dt = now()
          where member_id = #{memberId}
     </update>
 

@@ -182,7 +182,7 @@ public class ExternalController {
         }
 
         model.addAttribute("title",productOption);
-        return active + "/" + type;
+        return usagePage(model, type);
     }
 
     @GetMapping("/paypal/success")
@@ -246,5 +246,14 @@ public class ExternalController {
             return active + "/payappSuccess";
         }
         return active +  "/paypalSuccess"; // confirm 페이지 렌더링
+    }
+
+    /** 사용량 페이지: 4개 공급사는 통합 템플릿(USAGE.html). 문제 시 USE_UNIFIED_USAGE=false 로 예전 공급사별 템플릿 */
+    private static final boolean USE_UNIFIED_USAGE = true;
+    private static final java.util.Set<String> USAGE_TYPES = new java.util.HashSet<>(java.util.Arrays.asList("TUGE", "TSIM", "ESIMACCESS", "WORLDMOVE"));
+
+    private String usagePage(Model model, String type) {
+        model.addAttribute("usageType", type);
+        return active + "/" + (USE_UNIFIED_USAGE && USAGE_TYPES.contains(type) ? "USAGE" : type);
     }
 }
