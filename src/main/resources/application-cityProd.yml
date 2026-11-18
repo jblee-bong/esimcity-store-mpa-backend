@@ -7,7 +7,7 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
-testMode: false
+testMode: true
 
 logging:
   config: classpath:logback-prod.xml
@@ -34,6 +34,13 @@ api:
     baseUrl: https://enterpriseapi.tugegroup.com:8070/api-publicappmodule/
     base2Url: https://enterpriseapi.tugegroup.com:8070/openapi/
     version: 1.0
+  tugeDevice: # 포켓와이파이(디바이스) - 지금은 샌드박스 키. 운영 키 받으면 교체
+    accountId: GNUI-test
+    secretKey: KkXaZi8IAKupxJPm
+    signKey: SQXWjLPYiywI7g2AX7vR4Jxvh7XFZK6k
+    vector: DLCEOOOT6G8apGYs
+    version: 1.0
+    baseUrl: https://enterpriseapisandbox.tugegroup.com:8070/
   worldmove: #월드무브 완료
     baseUrl: https://fmshippingsys.fastmove.com.tw
     merchantId: b0001f5

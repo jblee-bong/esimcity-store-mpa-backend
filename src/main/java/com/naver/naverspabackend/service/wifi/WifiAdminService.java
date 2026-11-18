@@ -21,6 +21,10 @@ public interface WifiAdminService {
     WifiCategoryDto saveCategory(WifiCategoryDto dto);
     void deleteCategory(Long id);
 
+    List<Map<String, Object>> mccList();
+    void saveMcc(Map<String, Object> param);
+    void deleteMcc(Long id);
+
     /* 장비 */
     Map<String, Object> deviceList(Map<String, Object> param);
     Map<String, Object> syncDevices();
@@ -43,7 +47,10 @@ public interface WifiAdminService {
      * 충전 완료 주문 환불 (전액/부분). refundKrw = 돌려줄 결제금액, refundPoint = 돌려줄 사용 포인트.
      * cancelTuge = TUGE 요금제도 취소. 결제금액 전부면 PayUp 전액취소, 일부면 PayUp 부분취소.
      */
-    void processRefund(String orderNo, int refundKrw, int refundPoint, boolean cancelTuge, String memo, String adminId);
+    void processRefund(String orderNo, int refundKrw, int refundPoint, String memo, String adminId);
+
+    /** TUGE 요금제 취소 (결제 환불과 따로). 사용 전이면 비용이 채널 잔액으로 돌아오고, 사용 중이면 조기 종료 */
+    void cancelTugeOrder(String orderNo, String adminId);
 
     void rejectRefund(String orderNo, String memo, String adminId);
 

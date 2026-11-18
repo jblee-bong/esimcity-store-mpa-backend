@@ -35,6 +35,13 @@ api:
     baseUrl: https://enterpriseapi.tugegroup.com:8070/api-publicappmodule/
     base2Url: https://enterpriseapisandbox.tugegroup.com:8070/openapi/
     version: 1.0
+  tugeDevice: # 포켓와이파이(디바이스) 샌드박스 키 - eSIM 용 api.tuge 와 별개
+    accountId: GNUI-test
+    secretKey: KkXaZi8IAKupxJPm
+    signKey: SQXWjLPYiywI7g2AX7vR4Jxvh7XFZK6k
+    vector: DLCEOOOT6G8apGYs
+    version: 1.0
+    baseUrl: https://enterpriseapisandbox.tugegroup.com:8070/
   worldmove: #월드무브 테스트
     baseUrl: https://tfmshippingsys.fastmove.com.twtest
     merchantId: b0000b5test

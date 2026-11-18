@@ -41,16 +41,30 @@ class TugeDeviceUtilTest {
     }
 
     @Test
-    void periodSelectableOnlyForOneDayDailyOrOneMonth() {
+    void slowAfterAutoFromDataLimitedUnlessAdminSets() {
+        com.naver.naverspabackend.dto.WifiProductDto p = new com.naver.naverspabackend.dto.WifiProductDto();
+        p.setDataLimited("N");
+        assertTrue(p.isSlowAfter());       // 자동: 용량 제한 없음 → 저속 계속
+        p.setDataLimited("Y");
+        assertFalse(p.isSlowAfter());      // 자동: 정해진 용량 → 추가 충전
+        p.setAfterUse("SLOW");
+        assertTrue(p.isSlowAfter());       // 관리자 지정이 우선
+        p.setDataLimited("N");
+        p.setAfterUse("STOP");
+        assertFalse(p.isSlowAfter());
+    }
+
+    @Test
+    void periodSelectableOnlyForOneDayDaily() {
         WifiProductDto p = new WifiProductDto();
         p.setProductType("DAILY");
         p.setDays(1);
         assertTrue(p.isPeriodSelectable());
         p.setDays(2);
         assertFalse(p.isPeriodSelectable());
-        p.setProductType("MONTH");
+        p.setProductType("MONTH"); // 월간은 1개월 고정 (기간 선택 없음)
         p.setDays(1);
-        assertTrue(p.isPeriodSelectable());
+        assertFalse(p.isPeriodSelectable());
         p.setProductType("MULTIPLEMONTHS");
         assertFalse(p.isPeriodSelectable());
     }

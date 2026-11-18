@@ -76,8 +76,11 @@ naver:
 
 # 글로벌 포켓 WiFi (TUGE T8) 충전 - 비밀값(jwtKey, api.tugeDevice.*)은 프로필별 yml 에 넣을 것
 wifi:
-  smsStoreId: 9999            # OTP/알림 SMS 발신에 쓸 STORE id (TB_STORE)
-  adminTel:              # 관리자 알림 번호 (쉼표 구분)
+  smsStoreId: 9999           # OTP/알림 SMS 발신에 쓸 STORE id (TB_STORE)
+  smsEnabled: true           # 알림톡(실패 시 SMS): 충전 완료·실패·환불·만료 예정·관리자 알림. 오픈 전 true 로
+  deviceNames:               # 알림톡 장비 이름 예외만 (예: T9=CityFi T9 Pro). 비우면 "CityFi + TUGE 모델명" 자동
+  otpSmsEnabled: true        # 로그인 인증번호 문자. false 면 문자 대신 서버 로그에 번호를 남김(테스트용). 오픈 전 반드시 true
+  adminTel: 01097716110      # 관리자 알림 번호 (쉼표 구분)
   jwtKey: e903b7f65661ea6f7b8ea51f20b3e595cf9a7e9a78a983cda5078bf2530a741a  # 회원 로그인 서명키. 바꾸면 전원 로그아웃
   cookieSecure: true     # 로컬 http 개발 시 false
   publicUrl: https://www.esimcity.co.kr/api   # 브라우저 기준 백엔드 주소 (결제 페이지). 개발: http://내PC_IP:5173/api

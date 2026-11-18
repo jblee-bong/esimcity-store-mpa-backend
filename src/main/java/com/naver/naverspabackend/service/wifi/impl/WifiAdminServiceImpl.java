@@ -49,6 +49,8 @@ public class WifiAdminServiceImpl implements WifiAdminService {
     @Autowired
     private WifiService wifiService;
     @Autowired
+    private org.springframework.data.redis.core.RedisTemplate<String, Object> redisTemplate;
+    @Autowired
     private PayUpService payUpService;
     @Autowired
     private WifiSmsSender smsSender;
@@ -59,6 +61,56 @@ public class WifiAdminServiceImpl implements WifiAdminService {
     private String appUrl;
 
     private final Gson gson = new Gson();
+
+    /* ===================== MCC 나라 표 ===================== */
+
+    /** 서버 시작 시 DB 표로 교체. 테이블이 없거나(SQL 미적용) 비었으면 TSV 기본값 그대로 */
+    @javax.annotation.PostConstruct
+    public void loadMccTable() {
+        try {
+            reloadMcc();
+        } catch (Exception e) {
+            log.warn("[WIFI] MCC 표 DB 읽기 실패, 기본 TSV 사용: {}", e.getMessage());
+        }
+    }
+
+    private void reloadMcc() {
+        List<String[]> rows = new ArrayList<>();
+        for (Map<String, Object> m : wifiMapper.mccList()) {
+            rows.add(new String[] {String.valueOf(m.get("mcc")), String.valueOf(m.get("iso")), String.valueOf(m.get("name"))});
+        }
+        com.naver.naverspabackend.service.wifi.WifiCountries.reload(rows);
+    }
+
+    @Override
+    public List<Map<String, Object>> mccList() {
+        return wifiMapper.mccList();
+    }
+
+    @Override
+    @Transactional
+    public void saveMcc(Map<String, Object> param) {
+        Object rawId = param.get("id");
+        Long id = rawId == null || rawId.toString().isEmpty() ? null : Long.valueOf(rawId.toString());
+        String mcc = param.get("mcc") == null ? "" : param.get("mcc").toString().trim();
+        String iso = param.get("iso") == null ? "" : param.get("iso").toString().trim().toUpperCase();
+        String name = param.get("name") == null ? "" : param.get("name").toString().trim();
+        if (!mcc.matches("\\d{3}|-")) throw new WifiException("MCC 는 숫자 3자리로 입력해주세요. (MCC 없이 나라만 넣을 때는 -)");
+        if (!iso.matches("[A-Z]{2}")) throw new WifiException("ISO 는 영문 2글자로 입력해주세요. (예: JP)");
+        if (name.isEmpty() || name.length() > 50) throw new WifiException("나라 이름을 입력해주세요.");
+        if (wifiMapper.countMccDup(id, mcc, iso) > 0) throw new WifiException("이미 있는 MCC 입니다. 기존 줄을 수정해주세요.");
+        if (id == null) wifiMapper.insertMcc(mcc, iso, name);
+        else wifiMapper.updateMcc(id, mcc, iso, name);
+        wifiMapper.renameIso(iso, name);
+        reloadMcc();
+    }
+
+    @Override
+    @Transactional
+    public void deleteMcc(Long id) {
+        wifiMapper.deleteMcc(id);
+        reloadMcc();
+    }
 
     @Override
     public double exchangeRate() {
@@ -80,11 +132,23 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         paging(param);
         List<WifiProductDto> list = wifiMapper.adminProductList(param);
         Map<Long, WifiCategoryDto> cats = pricing.categories();
-        for (WifiProductDto p : list) pricing.fillUnitPrice(p, cats); // 나라 정책으로 계산한 1일(고정) 판매가
+        for (WifiProductDto p : list) {
+            pricing.fillUnitPrice(p, cats); // 나라 정책으로 계산한 1일(고정) 판매가
+            p.setCountries(com.naver.naverspabackend.service.wifi.WifiCountries.of(p.getMcc(), p.getCountryOverride()));
+            p.setUnknownMcc(com.naver.naverspabackend.service.wifi.WifiCountries.unknown(p.getMcc()));
+        }
         Map<String, Object> r = new HashMap<>();
         r.put("list", list);
         r.put("total", wifiMapper.adminProductCount(param));
         r.put("rate", exchangeRate());
+        // 전체 상품에서 MCC 표에 없는 번호 → 그 번호를 쓰는 상품들 (화면 위 경고)
+        Map<String, List<String>> unknown = new java.util.TreeMap<>();
+        for (WifiProductDto p : wifiMapper.activeProductMcc()) {
+            for (String code : com.naver.naverspabackend.service.wifi.WifiCountries.unknown(p.getMcc())) {
+                unknown.computeIfAbsent(code, k -> new ArrayList<>()).add(p.getDisplayName() != null ? p.getDisplayName() : p.getProductCode());
+            }
+        }
+        r.put("unknownMcc", unknown);
         return r;
     }
 
@@ -94,7 +158,8 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         List<String> codes = new ArrayList<>();
         int page = 1;
         int total = Integer.MAX_VALUE;
-        while (codes.size() < total && page <= 100) {
+        int seen = 0;
+        while (seen < total && page <= 100) {
             Map<String, Object> res = tuge.getProductList(page, 100);
             if (!TugeDeviceUtil.isOk(res)) {
                 throw new WifiException("TUGE 상품 조회 실패 (" + res.get("code") + " " + res.get("msg") + "). 기존 상품은 그대로입니다.");
@@ -103,6 +168,8 @@ public class WifiAdminServiceImpl implements WifiAdminService {
             if (!(res.get("data") instanceof Collection) || ((Collection<?>) res.get("data")).isEmpty()) break;
             for (Object o : (Collection<?>) res.get("data")) {
                 if (!(o instanceof Map)) continue;
+                seen++;
+                log.info("[WIFI] TUGE 상품 원본 {}", gson.toJson(o)); // shortcut: 실제 응답(dataTotal 등) 확인용, 확인 끝나면 지우기
                 WifiProductDto p = fromTuge((Map<?, ?>) o);
                 if (p.getProductCode() == null) continue;
                 wifiMapper.upsertProductFromTuge(p);
@@ -132,11 +199,30 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         p.setMcc(StringUtils.abbreviate(str(m.get("mcc")), 1000));
         p.setDeviceType(str(m.get("deviceType")));
         p.setSettlementUsd(m.get("settlementPrice") == null ? null : new BigDecimal(m.get("settlementPrice").toString()));
-        p.setPopupJson(m.get("popupList") == null ? null : gson.toJson(m.get("popupList")));
+        Object popup = m.get("popupList") != null ? m.get("popupList") : m.get("refuelingPackage"); // 문서는 popupList, 실제 응답은 refuelingPackage
+        p.setPopupJson(popup == null ? null : gson.toJson(popup));
         p.setActiveType(str(m.get("activeType")));
         p.setRuleDesc(str(m.get("ruleDesc")));
         p.setTugeModifiedDt(str(m.get("lastModifiedTime")));
+        // 데일리는 dataTotal 이 "unlimited" 로 와서 하루 고속 용량을 규칙/이름에서 읽음 (관리자가 넣은 값이 있으면 SQL 에서 그 값 유지)
+        if ("DAILY".equals(p.getProductType())) p.setDailyHighSpeedMb(dailyMbOf(p.getRuleDesc(), p.getTugeName()));
         return p;
+    }
+
+    // "5G 망" 같은 통신 세대는 용량으로 읽지 않게, G/M 단독은 코드 형식(1G(ZD))만
+    private static final java.util.regex.Pattern DATA_SIZE = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)?)\\s*(GB|MB|G(?=[(/\\-]|$)|M(?=[(/\\-]|$))", java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    /** "1GB of high-speed data per day" / "D-003-S-D-1G(ZD)" → 1024. 못 찾으면 null */
+    static Integer dailyMbOf(String... texts) {
+        for (String t : texts) {
+            if (t == null) continue;
+            java.util.regex.Matcher m = DATA_SIZE.matcher(t);
+            if (m.find()) {
+                double v = Double.parseDouble(m.group(1));
+                return (int) Math.round(m.group(2).toUpperCase().startsWith("G") ? v * 1024 : v);
+            }
+        }
+        return null;
     }
 
     @Override
@@ -144,6 +230,7 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         WifiProductDto p = wifiMapper.findProduct(productCode);
         if (p == null) throw new WifiException("상품이 없습니다.");
         pricing.fillPrices(p); // 화면에서 1일/7일/30일 예시 가격 표시
+        p.setCountries(com.naver.naverspabackend.service.wifi.WifiCountries.of(p.getMcc(), p.getCountryOverride()));
         return p;
     }
 
@@ -171,6 +258,8 @@ public class WifiAdminServiceImpl implements WifiAdminService {
             if (p.getSettlementUsd() == null) throw new WifiException("TUGE 원가가 없는 상품은 판매할 수 없습니다.");
         }
         dto.setSaleYn("Y".equals(dto.getSaleYn()) ? "Y" : "N");
+        dto.setCountryOverride(com.naver.naverspabackend.service.wifi.WifiCountries.normalizeOverride(dto.getCountryOverride()));
+        dto.setAfterUse("SLOW".equals(dto.getAfterUse()) || "STOP".equals(dto.getAfterUse()) ? dto.getAfterUse() : null);
         wifiMapper.updateProductSale(dto);
     }
 
@@ -404,7 +493,21 @@ public class WifiAdminServiceImpl implements WifiAdminService {
     }
 
     @Override
-    public void processRefund(String orderNo, int refundKrw, int refundPoint, boolean cancelTuge, String memo, String adminId) {
+    public void cancelTugeOrder(String orderNo, String adminId) {
+        WifiOrderDto o = wifiMapper.findOrderByNo(orderNo);
+        if (o == null) throw new WifiException("주문이 없습니다.");
+        if (StringUtils.isBlank(o.getTugeOrderNo())) throw new WifiException("TUGE 에 접수된 요금제가 없는 주문입니다.");
+        if (o.getTugeCancelDt() != null) throw new WifiException("이미 TUGE 취소한 주문입니다.");
+        Map<String, Object> r = tuge.cancelOrder(o.getTugeOrderNo(), o.getDeviceSn());
+        if (!TugeDeviceUtil.isOk(r)) throw new WifiException("TUGE 주문 취소 실패 (" + r.get("code") + " " + r.get("msg") + ")");
+        wifiMapper.markTugeCanceled(o.getId());
+        // 장비 화면 요금제 목록 캐시(5분)를 지워 취소가 바로 보이게
+        redisTemplate.delete(java.util.Arrays.asList("wifi:od:" + o.getDeviceSn(), "wifi:st:" + o.getDeviceSn()));
+        log.info("[WIFI] TUGE 주문 취소 orderNo={} tugeOrderNo={} by={}", orderNo, o.getTugeOrderNo(), adminId);
+    }
+
+    @Override
+    public void processRefund(String orderNo, int refundKrw, int refundPoint, String memo, String adminId) {
         WifiOrderDto o = wifiMapper.findOrderByNo(orderNo);
         if (o == null) throw new WifiException("주문이 없습니다.");
         String from = o.getPaymentStatus();
@@ -419,10 +522,6 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         if (refundKrw == 0 && refundPoint == 0) throw new WifiException("환불 금액이나 포인트를 입력해주세요.");
 
 
-        if (cancelTuge) {
-            Map<String, Object> r = tuge.cancelOrder(o.getTugeOrderNo(), o.getDeviceSn());
-            if (!TugeDeviceUtil.isOk(r)) throw new WifiException("TUGE 주문 취소 실패 (" + r.get("code") + " " + r.get("msg") + "). 환불은 진행하지 않았습니다.");
-        }
         String pgNote = "";
         if (refundKrw > 0) {
             boolean ok;
@@ -433,7 +532,7 @@ public class WifiAdminServiceImpl implements WifiAdminService {
                 ok = partId != null;
                 pgNote = ok ? " [부분취소 " + partId + "]" : "";
             }
-            if (!ok) throw new WifiException("PG 취소 실패. PayUp 관리자에서 확인해주세요." + (cancelTuge ? " TUGE 주문은 이미 취소됐습니다." : ""));
+            if (!ok) throw new WifiException("PG 취소 실패. PayUp 관리자에서 확인해주세요.");
         }
 
         int totalKrw = o.getRefundKrw() + refundKrw;
@@ -461,7 +560,9 @@ public class WifiAdminServiceImpl implements WifiAdminService {
             StringBuilder b = new StringBuilder("[이심시티] 포켓와이파이 환불이 처리되었습니다.");
             if (refundKrw > 0) b.append(" 결제 ").append(String.format("%,d", refundKrw)).append("원 취소(카드사에 따라 3~7영업일 소요).");
             if (refundPoint > 0) b.append(" 포인트 ").append(String.format("%,d", refundPoint)).append("P 복구.");
-            smsSender.send(m.getTel(), b.toString());
+            smsSender.talk(m.getTel(), WifiSmsSender.WF_REFUND_DONE,
+                WifiSmsSender.params("orderNo", orderNo, "productName", o.getProductName(),
+                    "refundAmount", WifiSmsSender.won(refundKrw), "refundPoint", WifiSmsSender.won(refundPoint)), b.toString());
         }
     }
 
@@ -477,7 +578,9 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         log.info("[WIFI] 환불 반려 orderNo={} admin={}", orderNo, adminId);
         WifiMemberDto m = wifiMapper.findMemberById(o.getMemberId());
         if (m != null && m.getTel() != null) {
-            smsSender.send(m.getTel(), "[이심시티] 포켓와이파이 환불 신청이 반려되었습니다. 사유: " + StringUtils.abbreviate(reason, 60));
+            smsSender.talk(m.getTel(), WifiSmsSender.WF_REFUND_REJECT,
+                WifiSmsSender.params("orderNo", orderNo, "productName", o.getProductName(), "reason", StringUtils.abbreviate(reason, 200)),
+                "[이심시티] 포켓와이파이 환불 신청이 반려되었습니다. 사유: " + StringUtils.abbreviate(reason, 60));
         }
     }
 

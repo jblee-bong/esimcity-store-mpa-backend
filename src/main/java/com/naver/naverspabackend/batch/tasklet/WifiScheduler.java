@@ -3,6 +3,7 @@ package com.naver.naverspabackend.batch.tasklet;
 import com.naver.naverspabackend.dto.WifiOrderDto;
 import com.naver.naverspabackend.mybatis.mapper.WifiMapper;
 import com.naver.naverspabackend.service.wifi.WifiAdminService;
+import com.naver.naverspabackend.service.wifi.WifiPlanChecker;
 import com.naver.naverspabackend.service.wifi.WifiService;
 import com.naver.naverspabackend.service.wifi.WifiSmsSender;
 import com.naver.naverspabackend.util.TugeDeviceUtil;
@@ -33,6 +34,8 @@ public class WifiScheduler {
     private WifiSmsSender smsSender;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private WifiPlanChecker planChecker;
 
     @Value("${wifi.balanceAlertUsd:100}")
     private double balanceAlertUsd;
@@ -59,7 +62,7 @@ public class WifiScheduler {
             adminService.syncProducts();
         } catch (Exception e) {
             log.error("[WIFI] product sync error", e);
-            smsSender.alertAdmin("상품 동기화 실패: " + e.getMessage());
+            smsSender.alertAdmin(WifiSmsSender.WF_ADM_SYNC_FAIL, WifiSmsSender.params("message", String.valueOf(e.getMessage())), "상품 동기화 실패: " + e.getMessage());
         }
     }
 
@@ -70,6 +73,18 @@ public class WifiScheduler {
             adminService.syncDevices();
         } catch (Exception e) {
             log.error("[WIFI] device sync error", e);
+        }
+    }
+
+    /** 요금제 기간·상태 갱신(관리자 화면). 낮(10~19시)에는 내일 끝나는 요금제 알림도 (한 번만) */
+    @Scheduled(cron = "0 20 * * * *", zone = "Asia/Seoul")
+    public void checkPlans() {
+        if (!tuge.isConfigured()) return;
+        int hour = java.time.LocalTime.now(java.time.ZoneId.of("Asia/Seoul")).getHour();
+        try {
+            planChecker.run(hour >= 10 && hour < 20);
+        } catch (Exception e) {
+            log.error("[WIFI] plan check error", e);
         }
     }
 
@@ -97,7 +112,7 @@ public class WifiScheduler {
             double balance = ((Number) a.get("balance")).doubleValue();
             if (balance < balanceAlertUsd) {
                 Boolean first = redisTemplate.opsForValue().setIfAbsent("wifi:alert:lowbalance", "1", 6, TimeUnit.HOURS);
-                if (Boolean.TRUE.equals(first)) smsSender.alertAdmin("TUGE 채널 잔액 " + balance + " USD. 충전 필요");
+                if (Boolean.TRUE.equals(first)) smsSender.alertAdmin(WifiSmsSender.WF_ADM_BALANCE, WifiSmsSender.params("balance", String.valueOf(balance)), "TUGE 채널 잔액 " + balance + " USD. 충전 필요");
             }
         }
     }

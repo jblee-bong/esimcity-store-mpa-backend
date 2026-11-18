@@ -37,6 +37,30 @@ public class WifiAdminController {
         return ApiResult.succeed(adminService.syncProducts(), null);
     }
 
+    /** 나라 직접 지정용 전체 나라 목록 */
+    @PostMapping("/countries")
+    public ApiResult<?> countries() {
+        return ApiResult.succeed(com.naver.naverspabackend.service.wifi.WifiCountries.all(), null);
+    }
+
+    /** MCC → 나라 표 (TB_WIFI_MCC). 저장하면 바로 반영 */
+    @PostMapping("/mcc/list")
+    public ApiResult<?> mccList() {
+        return ApiResult.succeed(adminService.mccList(), null);
+    }
+
+    @PostMapping("/mcc/save")
+    public ApiResult<?> mccSave(@RequestBody Map<String, Object> param) {
+        adminService.saveMcc(param);
+        return ApiResult.succeed(null, null);
+    }
+
+    @PostMapping("/mcc/delete")
+    public ApiResult<?> mccDelete(@RequestBody Map<String, Object> param) {
+        adminService.deleteMcc(Long.valueOf(param.get("id").toString()));
+        return ApiResult.succeed(null, null);
+    }
+
     @PostMapping("/product/detail")
     public ApiResult<?> productDetail(@RequestBody Map<String, Object> param) {
         return ApiResult.succeed(adminService.productDetail(String.valueOf(param.get("productCode"))), null);
@@ -134,8 +158,14 @@ public class WifiAdminController {
     @PostMapping("/order/refund/process")
     public ApiResult<?> refundProcess(@RequestBody Map<String, Object> param, @TokenUser UserDto admin) {
         adminService.processRefund(String.valueOf(param.get("orderNo")), (int) num(param.get("refundKrw")), (int) num(param.get("refundPoint")),
-            Boolean.TRUE.equals(param.get("cancelTuge")),
             param.get("memo") == null ? null : String.valueOf(param.get("memo")), admin.getEmail());
+        return ApiResult.succeed(null, null);
+    }
+
+    /** TUGE 요금제 취소 (결제 환불과 따로) */
+    @PostMapping("/order/tuge-cancel")
+    public ApiResult<?> tugeCancel(@RequestBody Map<String, Object> param, @TokenUser UserDto admin) {
+        adminService.cancelTugeOrder(String.valueOf(param.get("orderNo")), admin.getEmail());
         return ApiResult.succeed(null, null);
     }
 

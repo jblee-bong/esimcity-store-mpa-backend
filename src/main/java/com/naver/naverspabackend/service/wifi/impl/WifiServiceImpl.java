@@ -12,16 +12,23 @@ import com.naver.naverspabackend.mybatis.mapper.WifiMapper;
 import com.naver.naverspabackend.response.model.ResponseCode;
 import com.naver.naverspabackend.service.payup.PayUpService;
 import com.naver.naverspabackend.service.wifi.WifiAuthService;
+import com.naver.naverspabackend.service.wifi.WifiCountries;
 import com.naver.naverspabackend.service.wifi.WifiPricing;
 import com.naver.naverspabackend.service.wifi.WifiService;
 import com.naver.naverspabackend.service.wifi.WifiSmsSender;
+import static com.naver.naverspabackend.service.wifi.WifiSmsSender.params;
+import static com.naver.naverspabackend.service.wifi.WifiSmsSender.won;
 import com.naver.naverspabackend.util.TugeDeviceUtil;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -161,7 +168,7 @@ public class WifiServiceImpl implements WifiService {
             status.put("mcc", d.get("mcc"));
             status.put("countryCode", d.get("countryCode"));
             status.put("lastLogin", TugeDeviceUtil.utcToKst(d.get("lastloginTime")));
-            status.put("todayUsageMb", d.get("dataUsage"));   // 데일리: 당일 사용량 (TUGE 확인 중)
+            status.put("todayUsageMb", d.get("dataUsage"));   // 당일 사용량, 5분마다 갱신 (TUGE 답변: 요금제 목록 dataUsage 보다 정확)
             status.put("dataTotalMb", d.get("dataTotal"));
         } else if ("1011".equals(stCode)) {
             status.put("message", "아직 개통 전인 장비입니다. 요금제를 충전하면 개통됩니다.");
@@ -190,6 +197,8 @@ public class WifiServiceImpl implements WifiService {
                 plan.put("productType", prod == null ? null : prod.getProductType());
                 plan.put("dailyHighSpeedMb", prod == null ? null : prod.getDailyHighSpeedMb());
                 plan.put("status", p.get("status"));
+                // 장비 개통 상품은 켜기 전 날짜가 임시값(주문일 기준) → 켜면 다시 계산됨. 날짜 지정 상품은 주문 때 확정
+                plan.put("dateFixed", prod == null || prod.isDateStart());
                 plan.put("start", TugeDeviceUtil.utcToKst(p.get("startDate")));
                 plan.put("end", TugeDeviceUtil.utcToKst(p.get("endDate")));
                 plan.put("dataTotal", p.get("dataTotal"));
@@ -217,8 +226,50 @@ public class WifiServiceImpl implements WifiService {
         for (WifiProductDto p : list) {
             pricing.fillUnitPrice(p, cats);
             p.setSettlementUsd(null); // 원가 비노출
+            p.setCountries(WifiCountries.of(p.getMcc(), p.getCountryOverride()));
+            p.setMcc(null);
+            p.setCountryOverride(null);
         }
         return list;
+    }
+
+    @Override
+    public List<Map<String, String>> coverage(WifiMemberDto member, String sn) {
+        Map<String, Map<String, String>> byIso = new HashMap<>();
+        for (WifiProductDto p : wifiMapper.userProductList(null, ownDevice(member, sn).getDeviceType())) {
+            for (Map<String, String> c : WifiCountries.of(p.getMcc(), p.getCountryOverride())) byIso.putIfAbsent(c.get("iso"), c);
+        }
+        List<Map<String, String>> list = new ArrayList<>(byIso.values());
+        list.sort((a, b) -> a.get("name").compareTo(b.get("name")));
+        return list;
+    }
+
+    @Override
+    public Map<String, Object> productsByCountries(WifiMemberDto member, String sn, List<String> rawIsos) {
+        List<String> isos = new ArrayList<>();
+        for (String i : rawIsos) if (i != null && i.trim().matches("[A-Za-z]{2}") && !isos.contains(i.trim().toUpperCase())) isos.add(i.trim().toUpperCase());
+        if (isos.isEmpty() || isos.size() > 10) throw new WifiException("나라를 1~10개 골라주세요.");
+        List<WifiProductDto> all = products(member, sn, null);
+        List<WifiProductDto> full = new ArrayList<>();
+        List<WifiProductDto> partial = new ArrayList<>();
+        for (WifiProductDto p : all) {
+            List<String> has = new ArrayList<>();
+            for (Map<String, String> c : p.getCountries()) has.add(c.get("iso"));
+            List<String> matched = new ArrayList<>();
+            List<String> missing = new ArrayList<>();
+            for (String iso : isos) (has.contains(iso) ? matched : missing).add(iso);
+            if (matched.isEmpty()) continue;
+            p.setMatched(matched);
+            p.setMissing(missing);
+            (missing.isEmpty() ? full : partial).add(p);
+        }
+        Comparator<WifiProductDto> cheap = Comparator.comparing(p -> p.getSaleKrw() == null ? Integer.MAX_VALUE : p.getSaleKrw());
+        full.sort(cheap);
+        partial.sort(Comparator.<WifiProductDto>comparingInt(p -> -p.getMatched().size()).thenComparing(cheap));
+        Map<String, Object> r = new LinkedHashMap<>();
+        r.put("full", full);
+        r.put("partial", full.isEmpty() ? partial.subList(0, Math.min(5, partial.size())) : new ArrayList<>());
+        return r;
     }
 
     @Override
@@ -229,6 +280,7 @@ public class WifiServiceImpl implements WifiService {
         pricing.fillPrices(p);         // prices[n-1] = n일(월) 총액
         p.setSettlementUsd(null);      // 원가 비노출
         p.setPopupJson(null);
+        p.setCountries(WifiCountries.of(p.getMcc(), p.getCountryOverride()));
         p.setMcc(null);
         return p;
     }
@@ -242,7 +294,7 @@ public class WifiServiceImpl implements WifiService {
     /* ===================== 주문 / 결제 ===================== */
 
     @Override
-    public Map<String, Object> createOrder(WifiMemberDto member, String sn, String productCode, int period, int usePoint) {
+    public Map<String, Object> createOrder(WifiMemberDto member, String sn, String productCode, int period, int usePoint, String startDate) {
         WifiDeviceDto device = ownDevice(member, sn);
         WifiProductDto product = productCode == null ? null : wifiMapper.findProduct(productCode);
         if (product == null || !isSellable(product, device)) throw new WifiException("판매 중인 상품이 아닙니다.");
@@ -257,6 +309,7 @@ public class WifiServiceImpl implements WifiService {
         }
         Integer price = pricing.price(product, period);
         if (price == null || price <= 0) throw new WifiException("판매 중인 상품이 아닙니다.");
+        String start = product.isDateStart() ? checkStartDate(product, startDate) : null;
         int total = price;
         int point = Math.max(0, Math.min(usePoint, Math.min(member.getPointBalance(), total)));
 
@@ -267,6 +320,8 @@ public class WifiServiceImpl implements WifiService {
         order.setProductCode(product.getProductCode());
         order.setProductName(productLabel(product, period));
         order.setOrderPeriod(period);
+        order.setStartDate(start);
+        if (start != null) order.setProductName(order.getProductName() + " (" + start.substring(5).replace('-', '/') + "부터)");
         order.setTotalKrw(total);
         order.setPointUsed(point);
         order.setPayKrw(total - point);
@@ -324,7 +379,7 @@ public class WifiServiceImpl implements WifiService {
             log.error("[WIFI] 결제금액 불일치 orderNo={} callback={} db={}", orderNo, amount, order.getPayKrw());
             wifiMapper.changePaymentStatus(order.getId(), "PAY_READY", "PAY_FAILED", transactionId);
             setTopup(order, "FAILED", "결제금액 불일치(" + amount + ")");
-            smsSender.alertAdmin("결제금액 불일치 " + orderNo);
+            smsSender.alertAdmin(WifiSmsSender.WF_ADM_AMOUNT, params("orderNo", orderNo), "결제금액 불일치 " + orderNo);
             return orderNo;
         }
 
@@ -345,6 +400,31 @@ public class WifiServiceImpl implements WifiService {
         }
         fulfill(order);
         return orderNo;
+    }
+
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
+
+    /** 날짜 지정 상품의 시작일 검사: 비우면 오늘, 오늘 ~ 개통 기한(validityPeriod) 안만 허용. 반환 yyyy-MM-dd */
+    static String checkStartDate(WifiProductDto product, String startDate) {
+        LocalDate today = LocalDate.now(KST);
+        LocalDate d;
+        try {
+            d = StringUtils.isBlank(startDate) ? today : LocalDate.parse(startDate.trim());
+        } catch (DateTimeParseException e) {
+            throw new WifiException("사용 시작일을 다시 골라주세요.");
+        }
+        LocalDate last = today.plusDays(product.startWithinDays() - 1);
+        if (d.isBefore(today) || d.isAfter(last)) {
+            throw new WifiException("사용 시작일은 오늘부터 " + last.getMonthValue() + "월 " + last.getDayOfMonth() + "일 사이로 골라주세요.");
+        }
+        return d.toString();
+    }
+
+    /** TUGE addOrder startDate: 날짜 지정 상품은 고른 날(이미 지났으면 오늘), 그 외는 지금(개통 시 다시 계산됨) */
+    static String tugeStartDate(String orderStartDate) {
+        if (orderStartDate == null) return TugeDeviceUtil.utcNow();
+        String today = LocalDate.now(KST).toString();
+        return TugeDeviceUtil.startDateOf(orderStartDate.compareTo(today) < 0 ? today : orderStartDate);
     }
 
     /** 원자적 포인트 차감 + 이력 */
@@ -374,7 +454,7 @@ public class WifiServiceImpl implements WifiService {
         }
 
         // 2) 주문 (requestId = orderNo → 재시도해도 중복 주문 없음)
-        Map<String, Object> res = tuge.addOrder(sn, order.getProductCode(), order.getOrderPeriod(), order.getOrderNo());
+        Map<String, Object> res = tuge.addOrder(sn, order.getProductCode(), order.getOrderPeriod(), tugeStartDate(order.getStartDate()), order.getOrderNo());
         if (!TugeDeviceUtil.isOk(res)) {
             onTugeFail(order, "주문", String.valueOf(res.get("code")), res.get("msg"));
             return;
@@ -391,7 +471,10 @@ public class WifiServiceImpl implements WifiService {
 
         WifiMemberDto member = wifiMapper.findMemberById(order.getMemberId());
         if (member != null && member.getTel() != null) {
-            smsSender.send(member.getTel(), "[이심시티] 포켓와이파이 충전 완료: " + StringUtils.abbreviate(order.getProductName(), 18));
+            smsSender.talk(member.getTel(), WifiSmsSender.WF_TOPUP_DONE,
+                params("deviceSn", smsSender.deviceLabel(sn), "productName", order.getProductName(), "payAmount", won(order.getPayKrw()),
+                    "usedPoint", won(order.getPointUsed()), "earnPoint", won(order.getEarnPoint())),
+                "[이심시티] 포켓와이파이 충전 완료: " + StringUtils.abbreviate(order.getProductName(), 18));
         }
     }
 
@@ -430,7 +513,7 @@ public class WifiServiceImpl implements WifiService {
             boolean ok = "SUCCESS".equals(cancel);
             wifiMapper.changePaymentStatus(order.getId(), "PAID", ok ? "REFUNDED" : "REFUND_FAILED", null);
             order.setPaymentStatus(ok ? "REFUNDED" : "REFUND_FAILED");
-            if (!ok) smsSender.alertAdmin("결제취소 실패 " + order.getOrderNo() + " 수동 환불 필요");
+            if (!ok) smsSender.alertAdmin(WifiSmsSender.WF_ADM_CANCEL_FAIL, params("orderNo", order.getOrderNo()), "결제취소 실패 " + order.getOrderNo() + " 수동 환불 필요");
         } else if ("POINT_ONLY".equals(ps)) {
             wifiMapper.changePaymentStatus(order.getId(), "POINT_ONLY", "REFUNDED", null);
             order.setPaymentStatus("REFUNDED");
@@ -443,9 +526,13 @@ public class WifiServiceImpl implements WifiService {
         }
         WifiMemberDto member = wifiMapper.findMemberById(order.getMemberId());
         if (member != null && member.getTel() != null) {
-            smsSender.send(member.getTel(), "[이심시티] 포켓와이파이 충전 실패로 결제가 취소되었습니다.");
+            smsSender.talk(member.getTel(), WifiSmsSender.WF_TOPUP_FAIL,
+                params("deviceSn", smsSender.deviceLabel(order.getDeviceSn()), "productName", order.getProductName(),
+                    "payAmount", won(order.getPayKrw()), "usedPoint", won(order.getPointUsed())),
+                "[이심시티] 포켓와이파이 충전 실패로 결제가 취소되었습니다.");
         }
-        smsSender.alertAdmin("충전 실패 " + order.getOrderNo() + " " + StringUtils.abbreviate(reason, 40));
+        smsSender.alertAdmin(WifiSmsSender.WF_ADM_TOPUP_FAIL, params("orderNo", order.getOrderNo(), "reason", StringUtils.abbreviate(reason, 100)),
+            "충전 실패 " + order.getOrderNo() + " " + StringUtils.abbreviate(reason, 40));
     }
 
     @Override
@@ -559,7 +646,9 @@ public class WifiServiceImpl implements WifiService {
         if (wifiMapper.requestRefund(o.getId(), member.getId(), r) == 0) {
             throw new WifiException(o.getRefundStatus() != null ? "이미 환불 신청한 주문입니다." : "충전이 완료된 주문만 환불 신청할 수 있어요.");
         }
-        smsSender.alertAdmin("포켓와이파이 환불 신청 " + orderNo);
+        smsSender.talk(member.getTel(), WifiSmsSender.WF_REFUND_REQ, params("orderNo", orderNo, "productName", o.getProductName()),
+            "[이심시티] 포켓와이파이 환불 신청이 접수되었습니다.");
+        smsSender.alertAdmin(WifiSmsSender.WF_ADM_REFUND_REQ, params("orderNo", orderNo, "reason", StringUtils.abbreviate(r, 100)), "포켓와이파이 환불 신청 " + orderNo);
     }
 
     @Override
@@ -614,7 +703,7 @@ public class WifiServiceImpl implements WifiService {
 
     private void alertOnce(String key, int minutes, String msg) {
         Boolean first = redisTemplate.opsForValue().setIfAbsent(key, "1", minutes, TimeUnit.MINUTES);
-        if (Boolean.TRUE.equals(first)) smsSender.alertAdmin(msg);
+        if (Boolean.TRUE.equals(first)) smsSender.alertAdmin(WifiSmsSender.WF_ADM_BALANCE, params("balance", "부족(충전 대기)"), msg);
     }
 
     private static class Cached {

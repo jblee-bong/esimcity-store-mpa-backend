@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -60,6 +61,26 @@ public class TugeDeviceUtil {
     private final Map<String, Object> locks = new ConcurrentHashMap<>();
     private final Map<String, Long> lastCall = new ConcurrentHashMap<>();
 
+    /** 서버 시작 시 어떤 설정을 읽었는지 기록 (키 값 자체는 안 남김) */
+    @javax.annotation.PostConstruct
+    void logConfig() {
+        log.info("[TUGE-DEVICE] 설정 configured={} accountId={} baseUrl={} 비어있음={}", isConfigured(), accountId, baseUrl, blankKeys());
+    }
+
+    private List<String> blankKeys() {
+        List<String> b = new ArrayList<>();
+        if (StringUtils.isBlank(accountId)) b.add("accountId");
+        if (StringUtils.isBlank(signKey)) b.add("signKey");
+        if (StringUtils.isBlank(secretKey)) b.add("secretKey");
+        if (StringUtils.isBlank(vector)) b.add("vector");
+        return b;
+    }
+
+    /** 로그용: 와이파이 비밀번호 가리기 */
+    private String masked(Object o) {
+        return gson.toJson(o).replaceAll("(\"(wifiPwd|currentPw)\":\")[^\"]*", "$1***");
+    }
+
     public boolean isConfigured() {
         return StringUtils.isNoneBlank(accountId, signKey, secretKey, vector);
     }
@@ -87,13 +108,17 @@ public class TugeDeviceUtil {
         return call("activeDevice", "api-publicappmodule/saleDeviceApi/activeDevice", deviceNo(sn), 1000);
     }
 
-    /** 3.4 요금제 주문. requestId 가 같으면 재시도로 처리됨(중복 주문 없음, TUGE 확인) */
-    public Map<String, Object> addOrder(String sn, String productCode, int orderPeriod, String otaOrderNo) {
+    /**
+     * 3.4 요금제 주문. requestId 가 같으면 재시도로 처리됨(중복 주문 없음, TUGE 확인)
+     * startDate: "yyyy-MM-dd HH:mm:ss"(GMT) 형식 필수. 날짜 지정 상품은 TUGE 가 이 시각을 한국 날짜로 바꿔 그날 00:00~23:59(KST)로 잡음
+     * (2026-11-18 샌드박스: 11-26 00:00 → KST 11/26, 11-27 20:00 → KST 11/28). 그 외 상품은 실제 개통 시점부터라 값 의미 없음
+     */
+    public Map<String, Object> addOrder(String sn, String productCode, int orderPeriod, String startDate, String otaOrderNo) {
         Map<String, Object> d = new HashMap<>();
         d.put("productCode", productCode);
         d.put("currency", "USD");
         d.put("orderPeriod", orderPeriod);
-        d.put("startDate", utcNow());
+        d.put("startDate", startDate);
         d.put("deviceNo", sn);
         d.put("lang", "en");
         d.put("otaOrderNo", otaOrderNo);
@@ -208,6 +233,11 @@ public class TugeDeviceUtil {
         return f.format(new Date());
     }
 
+    /** 고객이 고른 한국 날짜(yyyy-MM-dd) → addOrder startDate. 그날 00:00 GMT = 한국 09:00 이라 TUGE 가 같은 한국 날짜로 잡음 */
+    public static String startDateOf(String kstDate) {
+        return kstDate + " 00:00:00";
+    }
+
     /** TUGE UTC 문자열 → KST 문자열 (yyyy-MM-dd HH:mm). 파싱 실패 시 원본 */
     public static String utcToKst(Object utc) {
         if (utc == null || StringUtils.isBlank(utc.toString())) return null;
@@ -240,6 +270,7 @@ public class TugeDeviceUtil {
         if (!isConfigured()) {
             result.put("code", "NOT_CONFIGURED");
             result.put("msg", "api.tugeDevice 설정이 없습니다.");
+            log.warn("[TUGE-DEVICE] {} 호출 안 함: 설정 없음 비어있음={} (서버가 새 yml 을 읽었는지 확인)", serviceName, blankKeys());
             return result;
         }
         for (int attempt = 0; attempt < 2; attempt++) {
@@ -247,6 +278,7 @@ public class TugeDeviceUtil {
                 throttle(serviceName, minIntervalMs);
                 String requestTime = utcNow();
                 String body = encrypt(gson.toJson(data));
+                log.info("[TUGE-DEVICE] {} 요청 url={} data={}", serviceName, baseUrl + path, masked(data));
 
                 Map<String, Object> req = new HashMap<>();
                 req.put("requestTime", requestTime);
@@ -267,7 +299,8 @@ public class TugeDeviceUtil {
                 result.put("msg", raw.get("msg"));
                 result.put("total", raw.get("total"));
                 result.put("data", decodeData(raw.get("data")));
-                log.info("[TUGE-DEVICE] {} code={} msg={}", serviceName, result.get("code"), result.get("msg"));
+                log.info("[TUGE-DEVICE] {} 응답 http={} code={} msg={} data={}", serviceName, response.getStatusCodeValue(), result.get("code"), result.get("msg"),
+                    StringUtils.abbreviate(masked(result.get("data")), 3000));
 
                 // 1000 = 실패/호출 과다. 짧게 쉬고 1회 재시도 (addOrder 는 requestId 로 중복 방지됨)
                 if ("1000".equals(result.get("code")) && attempt == 0) {

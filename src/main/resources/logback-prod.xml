@@ -96,6 +96,20 @@
         <appender-ref ref="ROLLFILE"/>
     </logger>
 
+    <!-- 포켓와이파이: TUGE 디바이스 호출·충전·스케줄러 (운영 모니터링용 INFO) -->
+    <logger name="com.naver.naverspabackend.util.TugeDeviceUtil" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="com.naver.naverspabackend.service.wifi" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+    <logger name="com.naver.naverspabackend.batch.tasklet.WifiScheduler" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLFILE"/>
+    </logger>
+
     <!-- importNaverJob 1~6 + 검색광고 자동입찰 (운영 모니터링용 INFO) -->
     <logger name="com.naver.naverspabackend.batch.tasklet.NaverProductTasklet" level="info" additivity="false">
         <appender-ref ref="CONSOLE"/>

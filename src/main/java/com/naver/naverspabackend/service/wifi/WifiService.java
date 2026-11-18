@@ -39,8 +39,17 @@ public interface WifiService {
 
     WifiProductDto productDetail(WifiMemberDto member, String sn, String productCode);
 
+    /** 판매 중인 요금제로 갈 수 있는 나라 전체 [{iso, name}] (나라 검색·여러 나라 선택용) */
+    java.util.List<java.util.Map<String, String>> coverage(WifiMemberDto member, String sn);
+
+    /**
+     * 고른 나라(ISO)를 모두 쓸 수 있는 요금제(full)와, 다 되는 게 없을 때 가장 많이 되는 요금제(partial, 최대 5개).
+     * shortcut: 여러 요금제 조합 추천은 TUGE 다중 요금제 동작 확인 후 추가
+     */
+    java.util.Map<String, Object> productsByCountries(WifiMemberDto member, String sn, java.util.List<String> isos);
+
     /** 주문 생성. period = 일(월)수 (기간선택 상품만, 나머지는 1). 금액 = 판매가 x period. 포인트로 전액이면 바로 충전 */
-    Map<String, Object> createOrder(WifiMemberDto member, String sn, String productCode, int period, int usePoint);
+    Map<String, Object> createOrder(WifiMemberDto member, String sn, String productCode, int period, int usePoint, String startDate);
 
     /** PayUp 결제 완료 콜백 처리 */
     String capturePayment(String transactionId, String orderNo, String amount);

@@ -177,10 +177,10 @@
     <!-- 관리자 입력값(sale_yn, display_name, category_id...)은 건드리지 않음. cost_changed_yn 은 settlement_usd 갱신보다 먼저 평가 -->
     <insert id="upsertProductFromTuge" parameterType="com.naver.naverspabackend.dto.WifiProductDto">
         insert into TB_WIFI_PRODUCT (product_code, tuge_name, product_type, days, validity_period, data_limited, data_total, data_unit,
-                                     mcc, device_type, settlement_usd, popup_json, active_type, rule_desc, tuge_modified_dt,
+                                     mcc, device_type, settlement_usd, popup_json, active_type, rule_desc, tuge_modified_dt, daily_high_speed_mb,
                                      tuge_active, cost_changed_yn, sale_yn, regist_dt, modify_dt)
         values (#{productCode}, #{tugeName}, #{productType}, #{days}, #{validityPeriod}, #{dataLimited}, #{dataTotal}, #{dataUnit},
-                #{mcc}, #{deviceType}, #{settlementUsd}, #{popupJson}, #{activeType}, #{ruleDesc}, #{tugeModifiedDt},
+                #{mcc}, #{deviceType}, #{settlementUsd}, #{popupJson}, #{activeType}, #{ruleDesc}, #{tugeModifiedDt}, #{dailyHighSpeedMb},
                 'Y', 'N', 'N', now(), now())
         on duplicate key update
             cost_changed_yn = if(settlement_usd is not null and settlement_usd &lt;&gt; values(settlement_usd), 'Y', cost_changed_yn),
@@ -197,6 +197,7 @@
             popup_json = values(popup_json),
             active_type = values(active_type),
             rule_desc = values(rule_desc),
+            daily_high_speed_mb = coalesce(daily_high_speed_mb, values(daily_high_speed_mb)),
             tuge_modified_dt = values(tuge_modified_dt),
             tuge_active = 'Y'
     </insert>
@@ -226,7 +227,7 @@
 
     <select id="adminProductList" parameterType="map" resultType="com.naver.naverspabackend.dto.WifiProductDto">
         select p.product_code, p.tuge_name, p.product_type, p.days, p.validity_period, p.data_limited, p.data_total, p.data_unit,
-               p.daily_high_speed_mb, p.mcc, p.device_type, p.settlement_usd, p.popup_json, p.active_type, p.tuge_modified_dt,
+               p.daily_high_speed_mb, p.mcc, p.country_override, p.after_use, p.device_type, p.settlement_usd, p.popup_json, p.active_type, p.tuge_modified_dt,
                p.tuge_active, p.cost_changed_yn, p.sale_yn, p.category_id, p.min_period, p.max_period,
                p.display_name, p.thumbnail, p.sort, p.regist_dt, p.modify_dt
           from TB_WIFI_PRODUCT p
@@ -234,6 +235,34 @@
          order by p.sale_yn desc, p.sort asc, p.regist_dt desc
          limit #{offset}, #{size}
     </select>
+
+    <select id="activeProductMcc" resultType="com.naver.naverspabackend.dto.WifiProductDto">
+        select product_code, tuge_name, display_name, mcc from TB_WIFI_PRODUCT where tuge_active = 'Y' and mcc is not null
+    </select>
+
+    <!-- MCC 나라 표 -->
+    <select id="mccList" resultType="map">
+        select id, mcc, iso, name from TB_WIFI_MCC order by name, mcc
+    </select>
+    <!-- 같은 MCC 가 이미 있거나(mcc '-' 제외), 같은 (mcc, iso) 가 있으면 중복 -->
+    <select id="countMccDup" resultType="int">
+        select count(*) from TB_WIFI_MCC
+         where (#{id} is null or id &lt;&gt; #{id})
+           and ((mcc = #{mcc} and mcc &lt;&gt; '-') or (mcc = #{mcc} and iso = #{iso}))
+    </select>
+    <insert id="insertMcc">
+        insert into TB_WIFI_MCC (mcc, iso, name) values (#{mcc}, #{iso}, #{name})
+    </insert>
+    <update id="updateMcc">
+        update TB_WIFI_MCC set mcc = #{mcc}, iso = #{iso}, name = #{name} where id = #{id}
+    </update>
+    <!-- 같은 나라는 이름 하나로 (MCC 여러 개인 나라) -->
+    <update id="renameIso">
+        update TB_WIFI_MCC set name = #{name} where iso = #{iso}
+    </update>
+    <delete id="deleteMcc">
+        delete from TB_WIFI_MCC where id = #{id}
+    </delete>
 
     <select id="adminProductCount" parameterType="map" resultType="int">
         select count(*) from TB_WIFI_PRODUCT p <include refid="productWhere"/>
@@ -250,6 +279,8 @@
                thumbnail = #{thumbnail},
                detail_html = #{detailHtml},
                daily_high_speed_mb = #{dailyHighSpeedMb},
+               country_override = #{countryOverride},
+               after_use = #{afterUse},
                sort = #{sort},
                cost_changed_yn = 'N',
                modify_dt = now()
@@ -266,7 +297,7 @@
     <select id="userProductList" resultType="com.naver.naverspabackend.dto.WifiProductDto">
         select p.product_code, p.product_type, p.days, p.validity_period, p.data_limited, p.data_total, p.data_unit,
                p.daily_high_speed_mb, p.display_name, p.tuge_name, p.thumbnail, p.sort,
-               p.settlement_usd, p.category_id, p.min_period, p.max_period
+               p.settlement_usd, p.category_id, p.min_period, p.max_period, p.mcc, p.country_override, p.after_use, p.active_type
           from TB_WIFI_PRODUCT p
          where <include refid="sellable"/>
         <if test="categoryId != null"> and p.category_id = #{categoryId}</if>
@@ -323,11 +354,33 @@
     <!-- ===================== 주문 ===================== -->
 
     <insert id="insertOrder" parameterType="com.naver.naverspabackend.dto.WifiOrderDto" useGeneratedKeys="true" keyProperty="id">
-        insert into TB_WIFI_ORDER (order_no, member_id, device_sn, product_code, option_id, product_name, order_period,
+        insert into TB_WIFI_ORDER (order_no, member_id, device_sn, product_code, option_id, product_name, order_period, start_date,
                                    total_krw, point_used, pay_krw, settlement_usd, payment_status, topup_status, regist_dt, modify_dt)
-        values (#{orderNo}, #{memberId}, #{deviceSn}, #{productCode}, #{optionId}, #{productName}, #{orderPeriod},
+        values (#{orderNo}, #{memberId}, #{deviceSn}, #{productCode}, #{optionId}, #{productName}, #{orderPeriod}, #{startDate},
                 #{totalKrw}, #{pointUsed}, #{payKrw}, #{settlementUsd}, #{paymentStatus}, 'READY', now(), now())
     </insert>
+
+    <!-- 요금제 확인 대상: 충전 완료, 결제 유지, TUGE 취소 안 함, 최근 120일, 이미 끝난 것 제외 -->
+    <select id="planCheckTargets" resultType="com.naver.naverspabackend.dto.WifiOrderDto">
+        select * from TB_WIFI_ORDER
+         where topup_status = 'DONE' and payment_status in ('PAID', 'POINT_ONLY', 'PARTIAL_REFUNDED')
+           and tuge_cancel_dt is null and tuge_order_no is not null
+           and regist_dt &gt; date_sub(now(), interval 120 day)
+           and (plan_status is null or plan_status not in ('EXPIRED', 'GONE'))
+         order by device_sn, id
+    </select>
+
+    <update id="updatePlan">
+        update TB_WIFI_ORDER set plan_status = #{status}, plan_start_dt = #{start}, plan_end_dt = #{end} where id = #{id}
+    </update>
+
+    <update id="markExpireNotified">
+        update TB_WIFI_ORDER set expire_notified_dt = now() where id = #{id} and expire_notified_dt is null
+    </update>
+
+    <update id="markTugeCanceled">
+        update TB_WIFI_ORDER set tuge_cancel_dt = now(), modify_dt = now() where id = #{id} and tuge_cancel_dt is null
+    </update>
 
     <select id="findOrderByNo" resultType="com.naver.naverspabackend.dto.WifiOrderDto">
         select * from TB_WIFI_ORDER where order_no = #{orderNo}

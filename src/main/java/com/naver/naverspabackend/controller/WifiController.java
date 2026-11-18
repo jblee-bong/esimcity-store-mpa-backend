@@ -149,6 +149,17 @@ public class WifiController {
         return ApiResult.succeed(wifiService.products(authService.requireMember(req, res), sn, categoryId), null);
     }
 
+    @GetMapping("/devices/{sn}/countries")
+    public ApiResult<?> coverage(@PathVariable String sn, HttpServletRequest req, HttpServletResponse res) {
+        return ApiResult.succeed(wifiService.coverage(authService.requireMember(req, res), sn), null);
+    }
+
+    /** iso=FR,GB,ES */
+    @GetMapping("/devices/{sn}/products/by-countries")
+    public ApiResult<?> byCountries(@PathVariable String sn, @RequestParam String iso, HttpServletRequest req, HttpServletResponse res) {
+        return ApiResult.succeed(wifiService.productsByCountries(authService.requireMember(req, res), sn, java.util.Arrays.asList(iso.split(","))), null);
+    }
+
     /** productCode 에 '/' 가 들어있어 쿼리 파라미터로 받음 */
     @GetMapping("/devices/{sn}/product")
     public ApiResult<?> product(@PathVariable String sn, @RequestParam String code, HttpServletRequest req, HttpServletResponse res) {
@@ -162,7 +173,7 @@ public class WifiController {
         int period = body.get("period") == null ? 1 : (int) Double.parseDouble(body.get("period").toString());
         int usePoint = body.get("usePoint") == null ? 0 : (int) Double.parseDouble(body.get("usePoint").toString());
         return ApiResult.succeed(wifiService.createOrder(authService.requireMember(req, res), str(body.get("sn")),
-            str(body.get("productCode")), period, usePoint), null);
+            str(body.get("productCode")), period, usePoint, str(body.get("startDate"))), null);
     }
 
     @GetMapping("/orders/{orderNo}")

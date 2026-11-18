@@ -62,7 +62,7 @@ class WifiRefundTest {
     @Test
     void fullRefundCancelsPgReturnsPointsAndTakesBackEarn() {
         when(payUp.cancelPayment("PG1")).thenReturn("SUCCESS");
-        svc.processRefund("WF1", 10000, 2000, false, "미사용", "admin");
+        svc.processRefund("WF1", 10000, 2000, "미사용", "admin");
         verify(payUp).cancelPayment("PG1");
         verify(mapper).completeRefund(eq(1L), eq("PAID"), eq("REFUNDED"), eq(0), eq(0), eq(10000), eq(2000), anyString());
         verify(mapper).addPoint(7L, 2000);
@@ -72,14 +72,14 @@ class WifiRefundTest {
     @Test
     void partialRefundFailureChangesNothing() {
         when(payUp.partCancelPayment("PG1", 4000, "포켓와이파이 부분환불")).thenReturn(null);
-        assertThrows(WifiException.class, () -> svc.processRefund("WF1", 4000, 0, false, "100MB 사용", "admin"));
+        assertThrows(WifiException.class, () -> svc.processRefund("WF1", 4000, 0, "100MB 사용", "admin"));
         verify(mapper, never()).completeRefund(anyLong(), anyString(), anyString(), anyInt(), anyInt(), anyInt(), anyInt(), anyString());
     }
 
     @Test
     void partialRefundUsesPartCancelAndProportionalEarnTakeBack() {
         when(payUp.partCancelPayment("PG1", 4000, "포켓와이파이 부분환불")).thenReturn("P2");
-        svc.processRefund("WF1", 4000, 0, false, "100MB 사용, TUGE 협의", "admin");
+        svc.processRefund("WF1", 4000, 0, "100MB 사용, TUGE 협의", "admin");
         verify(payUp, never()).cancelPayment(anyString());
         verify(mapper).completeRefund(eq(1L), eq("PAID"), eq("PARTIAL_REFUNDED"), eq(0), eq(0), eq(4000), eq(0), anyString());
         verify(mapper).usePoint(7L, 120); // 300 x 4000/10000
@@ -90,7 +90,7 @@ class WifiRefundTest {
         order.setPaymentStatus("PARTIAL_REFUNDED");
         order.setRefundKrw(4000);
         when(payUp.partCancelPayment("PG1", 6000, "포켓와이파이 부분환불")).thenReturn("P3");
-        svc.processRefund("WF1", 6000, 2000, false, "나머지", "admin");
+        svc.processRefund("WF1", 6000, 2000, "나머지", "admin");
         verify(payUp, never()).cancelPayment(anyString()); // 이미 부분취소한 결제는 남은 금액도 부분취소
         verify(mapper).completeRefund(eq(1L), eq("PARTIAL_REFUNDED"), eq("REFUNDED"), eq(4000), eq(0), eq(10000), eq(2000), anyString());
     }
@@ -99,24 +99,40 @@ class WifiRefundTest {
     void refundOverRemainingRejected() {
         order.setPaymentStatus("PARTIAL_REFUNDED");
         order.setRefundKrw(4000);
-        assertThrows(WifiException.class, () -> svc.processRefund("WF1", 6001, 0, false, "", "admin"));
+        assertThrows(WifiException.class, () -> svc.processRefund("WF1", 6001, 0, "", "admin"));
         verify(payUp, never()).partCancelPayment(anyString(), anyInt(), anyString());
     }
 
     @Test
-    void tugeCancelFailureStopsBeforeMoneyMoves() {
+    void refundDoesNotTouchTuge() {
+        when(payUp.cancelPayment("PG1")).thenReturn("SUCCESS");
+        svc.processRefund("WF1", 10000, 2000, "미사용", "admin");
+        verify(tuge, never()).cancelOrder(anyString(), anyString());
+    }
+
+    @Test
+    void tugeCancelSeparateFromRefund() {
+        ReflectionTestUtils.setField(svc, "redisTemplate", mock(org.springframework.data.redis.core.RedisTemplate.class));
         Map<String, Object> fail = new HashMap<>();
         fail.put("code", "2004");
         when(tuge.cancelOrder("T1", "SN1")).thenReturn(fail);
-        assertThrows(WifiException.class, () -> svc.processRefund("WF1", 10000, 2000, true, "", "admin"));
+        assertThrows(WifiException.class, () -> svc.cancelTugeOrder("WF1", "admin"));
+        verify(mapper, never()).markTugeCanceled(anyLong());
+
+        Map<String, Object> ok = new HashMap<>();
+        ok.put("code", "0000");
+        when(tuge.cancelOrder("T1", "SN1")).thenReturn(ok);
+        svc.cancelTugeOrder("WF1", "admin");
+        verify(mapper).markTugeCanceled(1L);
         verify(payUp, never()).cancelPayment(anyString());
-        verify(payUp, never()).partCancelPayment(anyString(), anyInt(), anyString());
-        verify(mapper, never()).addPoint(anyLong(), anyInt());
+
+        order.setTugeCancelDt(new java.util.Date());
+        assertThrows(WifiException.class, () -> svc.cancelTugeOrder("WF1", "admin")); // 두 번은 안 됨
     }
 
     @Test
     void refundOverPaidAmountRejected() {
-        assertThrows(WifiException.class, () -> svc.processRefund("WF1", 10001, 0, false, "", "admin"));
+        assertThrows(WifiException.class, () -> svc.processRefund("WF1", 10001, 0, "", "admin"));
         verify(mapper, never()).completeRefund(anyLong(), anyString(), anyString(), anyInt(), anyInt(), anyInt(), anyInt(), any());
     }
 }

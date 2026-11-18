@@ -52,6 +52,15 @@ public interface WifiMapper {
     int markMissingProductsInactive(@Param("codes") List<String> codes);
     List<WifiProductDto> adminProductList(Map<String, Object> param);
     int adminProductCount(Map<String, Object> param);
+    List<WifiProductDto> activeProductMcc();
+
+    /* ---------- MCC 나라 표 ---------- */
+    List<Map<String, Object>> mccList();
+    int countMccDup(@Param("id") Long id, @Param("mcc") String mcc, @Param("iso") String iso);
+    int insertMcc(@Param("mcc") String mcc, @Param("iso") String iso, @Param("name") String name);
+    int updateMcc(@Param("id") Long id, @Param("mcc") String mcc, @Param("iso") String iso, @Param("name") String name);
+    int renameIso(@Param("iso") String iso, @Param("name") String name);
+    int deleteMcc(Long id);
     int updateProductSale(WifiProductDto dto);
     List<WifiProductDto> userProductList(@Param("categoryId") Long categoryId, @Param("deviceType") String deviceType);
 
@@ -78,6 +87,14 @@ public interface WifiMapper {
     List<WifiOrderDto> myOrders(Long memberId);
     int requestRefund(@Param("id") Long id, @Param("memberId") Long memberId, @Param("reason") String reason);
     /** 누적 환불액 갱신. prev 값이 그대로일 때만 (동시 처리 방지) */
+    int markTugeCanceled(@Param("id") Long id);
+
+    List<WifiOrderDto> planCheckTargets();
+
+    int updatePlan(@Param("id") Long id, @Param("status") String status, @Param("start") String start, @Param("end") String end);
+
+    int markExpireNotified(@Param("id") Long id);
+
     int completeRefund(@Param("id") Long id, @Param("from") String from, @Param("to") String to,
                        @Param("prevKrw") int prevKrw, @Param("prevPoint") int prevPoint,
                        @Param("refundKrw") int refundKrw, @Param("refundPoint") int refundPoint, @Param("memo") String memo);

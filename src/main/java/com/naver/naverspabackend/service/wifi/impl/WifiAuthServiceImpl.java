@@ -109,7 +109,7 @@ public class WifiAuthServiceImpl implements WifiAuthService {
         redisTemplate.opsForValue().set(prefix + tel, code, OTP_TTL_SEC, TimeUnit.SECONDS);
         redisTemplate.delete(prefix + "try:" + tel);
         try {
-            smsSender.sendOrThrow(tel, "[이심시티] 인증번호 [" + code + "]를 입력해주세요.");
+            smsSender.sendOtp(tel, code);
         } catch (Exception e) {
             log.error("[WIFI] OTP 발송 실패: {}", e.getMessage());
             throw new WifiException("인증번호 발송에 실패했습니다. 잠시 후 다시 시도해주세요.");
