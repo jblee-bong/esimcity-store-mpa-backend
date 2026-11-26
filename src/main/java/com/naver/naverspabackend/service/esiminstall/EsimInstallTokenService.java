@@ -64,7 +64,8 @@ public class EsimInstallTokenService {
         esimInstallTokenMapper.insert(insert);
 
         params.put("installToken", token);
-        params.put("installUrl", serverOrigin + "/external/esim/install?token=" + token);
+        // 운영 nginx 는 /api/* 만 백엔드로 넘김 (/external 직접은 404). 알림톡 버튼 링크와 같은 주소
+        params.put("installUrl", serverOrigin + "/api/external/esim/install?token=" + token);
     }
 
     public Map<String, Object> findPayloadByToken(String token) {
@@ -99,6 +100,7 @@ public class EsimInstallTokenService {
         put(payload, params, "eSimResetInfo");
         put(payload, params, "eSimApnInfo");
         put(payload, params, "eSimChargeInfo");
+        put(payload, params, "installStartsPeriod");
 
         String activation = Objects.toString(params.get("activation_code"), "");
         String lpa = Objects.toString(params.get("lpaCode"), "");

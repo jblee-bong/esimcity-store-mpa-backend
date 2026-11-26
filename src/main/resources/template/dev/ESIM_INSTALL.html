@@ -46,6 +46,7 @@
     .warn { color: var(--danger); font-size: 0.9rem; }
     .warn li { margin: 6px 0 6px 18px; }
     .qr-box { text-align: center; }
+    .now-warn { margin: 0 0 12px; padding: 12px 14px; border: 2px solid #dc2626; border-radius: 10px; background: #fef2f2; color: #dc2626; font-size: 0.95rem; font-weight: 600; line-height: 1.5; text-align: left; }
     .qr-box img { width: min(240px, 70vw); height: auto; border-radius: 8px; background: #fff; }
     .btns {
       display: grid;
@@ -165,7 +166,8 @@
       <li>eSIM 설치 후 인터넷에 접속해 사용이 시작되면 취소/환불이 불가합니다.</li>
       <li>설치한 eSIM 프로파일은 삭제하지 마세요.</li>
       <li>QR 수신 후 30일 이내에 설치해 주세요.</li>
-      <li>사용 시작은 현지 네트워크 접속 시점부터입니다.</li>
+      <li th:unless="${installStartsPeriod == 'true'}">사용 시작은 현지 네트워크 접속 시점부터입니다.</li>
+      <li th:if="${installStartsPeriod == 'true'}"><b>이 상품은 설치하는 순간부터 사용 기간이 시작됩니다. 여행지 도착 후 설치해 주세요.</b></li>
       <li>설치 후 데이터가 안 되면 전원을 2~3회 재부팅해 주세요.</li>
     </ul>
     <p class="tip" th:if="${eSimMResetInfo != null and !#strings.isEmpty(eSimMResetInfo)}" th:text="${eSimMResetInfo}"></p>
@@ -175,6 +177,7 @@
 
   <div class="card">
     <h2>3. 원클릭 설치</h2>
+    <div class="now-warn" th:if="${installStartsPeriod == 'true'}">⚠️ 이 상품은 <b>설치하는 순간 사용 기간이 시작</b>돼요.<br>꼭 <b>여행지에 도착한 뒤</b> 설치해 주세요.</div>
     <p class="tip">Wi-Fi 등 인터넷 연결 상태에서만 가능합니다. 안 되면 아래 QR/수동 설치를 이용하세요.</p>
     <div class="btns">
       <a class="btn btn-primary" id="iosBtn"
@@ -188,12 +191,14 @@
 
   <div class="card qr-box">
     <h2>4. QR 코드 설치 (권장)</h2>
+    <div class="now-warn" th:if="${installStartsPeriod == 'true'}">⚠️ 이 상품은 <b>설치하는 순간 사용 기간이 시작</b>돼요.<br>꼭 <b>여행지에 도착한 뒤</b> 설치해 주세요.</div>
     <img th:if="${qrImageUrl != null and !#strings.isEmpty(qrImageUrl)}" th:src="${qrImageUrl}" alt="eSIM QR">
     <p class="tip" th:if="${qrImageUrl == null or #strings.isEmpty(qrImageUrl)}">QR 이미지를 불러오지 못했습니다.</p>
   </div>
 
   <div class="card">
     <h2>5. 수동 설치 정보</h2>
+    <div class="now-warn" th:if="${installStartsPeriod == 'true'}">⚠️ 이 상품은 <b>설치하는 순간 사용 기간이 시작</b>돼요.<br>꼭 <b>여행지에 도착한 뒤</b> 설치해 주세요.</div>
     <div class="row"><span class="label">SM-DP+</span><span class="value" th:text="${smdp}">-</span></div>
     <div style="margin: 10px 0;">
       <div class="label">아이폰 활성화 코드 <button class="copy-btn" type="button" onclick="copyText('ipCode')">복사</button></div>
@@ -235,7 +240,8 @@
 
     <div class="faq-item">
       <div class="faq-q"><span>Q.</span>한국에서 미리 등록해도 되나요?</div>
-      <div class="faq-a">네. 출국 전 미리 QR을 스캔해 등록해 두시는 것을 권장합니다. 한국에서는 현지 네트워크가 연결되지 않으므로, 방문국 도착 후 eSIM 데이터를 켜고 데이터 로밍을 ON 하면 사용이 시작됩니다.</div>
+      <div class="faq-a" th:if="${installStartsPeriod == 'true'}">아니요. 이 상품은 설치하는 순간 사용 기간이 시작되므로, 여행지에 도착한 뒤 설치해 주세요.</div>
+      <div class="faq-a" th:unless="${installStartsPeriod == 'true'}">네. 출국 전 미리 QR을 스캔해 등록해 두시는 것을 권장합니다. 한국에서는 현지 네트워크가 연결되지 않으므로, 방문국 도착 후 eSIM 데이터를 켜고 데이터 로밍을 ON 하면 사용이 시작됩니다.</div>
     </div>
 
     <div class="faq-item">

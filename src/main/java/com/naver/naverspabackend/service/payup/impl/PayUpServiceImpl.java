@@ -106,6 +106,7 @@ public class PayUpServiceImpl implements PayUpService {
 
         Gson gson = new Gson();
         Double krwPrice = null;
+        Double costKrw = null; // 원가: 환율만 적용한 실제 구매가 (관리자 충전 목록 순익용)
         if(type.equals(ApiType.TSIM.name())){
             //아래2개 티심용
             String apiPurchaseItemProcutId = params.get("apiPurchaseItemProcutId").toString(); //충전상품ID
@@ -123,6 +124,7 @@ public class PayUpServiceImpl implements PayUpService {
             }
             topupOrderDto.setProductOption(apiPurchaseItemDto.getApiPurchaseItemDays() +"일 " + apiPurchaseItemDto.getApiPurchaseDataTotal() + " 저속 무제한");
             krwPrice = Double.valueOf(apiPurchaseItemDto.getApiPurchaseKrwPrice());
+            if (apiPurchaseItemDto.getApiPurchaseOriginKrwPrice() != null) costKrw = Double.valueOf(apiPurchaseItemDto.getApiPurchaseOriginKrwPrice());
         }else
         if(type.equals(ApiType.TUGE.name())){
             //아래2개 티심용
@@ -146,6 +148,7 @@ public class PayUpServiceImpl implements PayUpService {
                     )
             );
             krwPrice = Double.valueOf(apiPurchaseItemDto.getApiPurchaseKrwPrice());
+            if (apiPurchaseItemDto.getApiPurchaseOriginKrwPrice() != null) costKrw = Double.valueOf(apiPurchaseItemDto.getApiPurchaseOriginKrwPrice());
         }else
         if(type.equals(ApiType.ESIMACCESS.name())){
             //아래2개 티심용
@@ -181,6 +184,7 @@ public class PayUpServiceImpl implements PayUpService {
 
 
             krwPrice = echangeRate *(Double.parseDouble(price)/10000); //만을나누는이유는 esimaccess는 달러에 10000 곱해서 줌
+            costKrw = esimPriceDto.getExchangeRate() *(Double.parseDouble(price)/10000);
         }
 
         EsimPriceDto esimPriceParam = new EsimPriceDto();
@@ -215,6 +219,7 @@ public class PayUpServiceImpl implements PayUpService {
         Double usdAmount = (price / echangeRate); //5프로할인 (충전의경우)
         double amount = Math.round(usdAmount * 100.0) / 100.0;
         topupOrderDto.setTopupUsdprice(amount+"");
+        if (costKrw != null) topupOrderDto.setTopupCostKrw((int) Math.round(costKrw));
 
         // 1. Order ID 추출
         String token =orderDto.getOrderId()+ UUID.randomUUID().toString().substring(0,5) + new SimpleDateFormat("yyyyMMddHHmmssSSSS").format(new Date());

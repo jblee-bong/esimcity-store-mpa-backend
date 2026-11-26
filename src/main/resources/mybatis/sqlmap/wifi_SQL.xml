@@ -178,9 +178,11 @@
     <insert id="upsertProductFromTuge" parameterType="com.naver.naverspabackend.dto.WifiProductDto">
         insert into TB_WIFI_PRODUCT (product_code, tuge_name, product_type, days, validity_period, data_limited, data_total, data_unit,
                                      mcc, device_type, settlement_usd, popup_json, active_type, rule_desc, tuge_modified_dt, daily_high_speed_mb,
+                                     high_speed, limit_speed, show_grade_number, country_code_list, period_type, is_contract, min_order_cycle, first_order_price, raw_json,
                                      tuge_active, cost_changed_yn, sale_yn, regist_dt, modify_dt)
         values (#{productCode}, #{tugeName}, #{productType}, #{days}, #{validityPeriod}, #{dataLimited}, #{dataTotal}, #{dataUnit},
                 #{mcc}, #{deviceType}, #{settlementUsd}, #{popupJson}, #{activeType}, #{ruleDesc}, #{tugeModifiedDt}, #{dailyHighSpeedMb},
+                #{highSpeed}, #{limitSpeed}, #{showGradeNumber}, #{countryCodeList}, #{periodType}, #{isContract}, #{minOrderCycle}, #{firstOrderPrice}, #{rawJson},
                 'Y', 'N', 'N', now(), now())
         on duplicate key update
             cost_changed_yn = if(settlement_usd is not null and settlement_usd &lt;&gt; values(settlement_usd), 'Y', cost_changed_yn),
@@ -197,6 +199,15 @@
             popup_json = values(popup_json),
             active_type = values(active_type),
             rule_desc = values(rule_desc),
+            high_speed = values(high_speed),
+            limit_speed = values(limit_speed),
+            show_grade_number = values(show_grade_number),
+            country_code_list = values(country_code_list),
+            period_type = values(period_type),
+            is_contract = values(is_contract),
+            min_order_cycle = values(min_order_cycle),
+            first_order_price = values(first_order_price),
+            raw_json = values(raw_json),
             daily_high_speed_mb = coalesce(daily_high_speed_mb, values(daily_high_speed_mb)),
             tuge_modified_dt = values(tuge_modified_dt),
             tuge_active = 'Y'
@@ -227,17 +238,29 @@
 
     <select id="adminProductList" parameterType="map" resultType="com.naver.naverspabackend.dto.WifiProductDto">
         select p.product_code, p.tuge_name, p.product_type, p.days, p.validity_period, p.data_limited, p.data_total, p.data_unit,
-               p.daily_high_speed_mb, p.mcc, p.country_override, p.after_use, p.device_type, p.settlement_usd, p.popup_json, p.active_type, p.tuge_modified_dt,
+               p.daily_high_speed_mb, p.mcc, p.country_override, p.country_code_list, p.after_use, p.device_type, p.settlement_usd, p.popup_json, p.active_type, p.tuge_modified_dt,
                p.tuge_active, p.cost_changed_yn, p.sale_yn, p.category_id, p.min_period, p.max_period,
                p.display_name, p.thumbnail, p.sort, p.regist_dt, p.modify_dt
           from TB_WIFI_PRODUCT p
         <include refid="productWhere"/>
-         order by p.sale_yn desc, p.sort asc, p.regist_dt desc
+         order by
+        <!-- 관리자 표 머리 클릭 정렬. 값은 아래 목록만 (그 외는 기본 순서) -->
+        <choose>
+            <when test='sortBy == "country"'>
+                (select min(m.name) from TB_WIFI_MCC m
+                  where m.iso = substring_index(coalesce(nullif(p.country_override, ''), p.country_code_list), ',', 1))
+                <if test='sortDir == "desc"'>desc</if>,
+                length(coalesce(nullif(p.country_override, ''), p.country_code_list)),
+            </when>
+            <when test='sortBy == "type"'>p.product_type <if test='sortDir == "desc"'>desc</if>, p.days,</when>
+            <when test='sortBy == "price"'>p.settlement_usd <if test='sortDir == "desc"'>desc</if>,</when>
+        </choose>
+               p.sale_yn desc, p.sort asc, p.regist_dt desc
          limit #{offset}, #{size}
     </select>
 
     <select id="activeProductMcc" resultType="com.naver.naverspabackend.dto.WifiProductDto">
-        select product_code, tuge_name, display_name, mcc from TB_WIFI_PRODUCT where tuge_active = 'Y' and mcc is not null
+        select product_code, tuge_name, display_name, mcc, country_code_list from TB_WIFI_PRODUCT where tuge_active = 'Y' and mcc is not null
     </select>
 
     <!-- MCC 나라 표 -->
@@ -290,14 +313,14 @@
     <sql id="sellable">
         p.sale_yn = 'Y' and p.tuge_active = 'Y' and p.category_id is not null and p.settlement_usd is not null
         and (p.device_type is null or p.device_type = ''
-             <if test='deviceType != null and deviceType != ""'> or find_in_set(#{deviceType}, replace(p.device_type, ' ', '')) > 0</if>)
+             <if test='deviceType != null and deviceType != ""'> or find_in_set(replace(#{deviceType}, ' ', ''), replace(p.device_type, ' ', '')) > 0</if>)
     </sql>
 
     <!-- 판매가는 서버(WifiPricing)가 나라 가격정책으로 계산 -->
     <select id="userProductList" resultType="com.naver.naverspabackend.dto.WifiProductDto">
         select p.product_code, p.product_type, p.days, p.validity_period, p.data_limited, p.data_total, p.data_unit,
                p.daily_high_speed_mb, p.display_name, p.tuge_name, p.thumbnail, p.sort,
-               p.settlement_usd, p.category_id, p.min_period, p.max_period, p.mcc, p.country_override, p.after_use, p.active_type
+               p.settlement_usd, p.category_id, p.min_period, p.max_period, p.mcc, p.country_override, p.country_code_list, p.after_use, p.active_type, p.limit_speed
           from TB_WIFI_PRODUCT p
          where <include refid="sellable"/>
         <if test="categoryId != null"> and p.category_id = #{categoryId}</if>

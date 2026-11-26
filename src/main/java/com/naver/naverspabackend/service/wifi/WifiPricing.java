@@ -117,7 +117,7 @@ public class WifiPricing {
             for (Map<String, Object> r : list) {
                 int from = ((Number) r.get("from")).intValue();
                 double rate = ((Number) r.get("rate")).doubleValue();
-                if (from >= 2 && rate >= 0) m.put(from, rate);
+                if (from >= 1 && rate >= 0) m.put(from, rate); // from 1 = 데일리 전용 마진 (30일 등 고정 상품은 기본 마진율 그대로)
             }
         } catch (Exception ignored) {
             // 저장 시 검증하므로 여기선 무시
@@ -138,7 +138,19 @@ public class WifiPricing {
         return (int) (Math.floor(payKrw * rate / 100 / 10 + 1e-9) * 10);
     }
 
+    /** 공통코드(WIFI RATE·MARGIN) 60초 캐시: 목록 계산 때 상품마다 DB 를 치지 않게 (상품 674개 → 3초+) */
+    private final Map<String, double[]> codeCache = new java.util.concurrent.ConcurrentHashMap<>(); // cd → [값, 읽은 시각]
+
     private double code(String cd, double def) {
+        double[] hit = codeCache.get(cd);
+        long now = System.currentTimeMillis();
+        if (hit != null && now - hit[1] < 60_000) return hit[0];
+        double v = fetchCode(cd, def);
+        codeCache.put(cd, new double[] {v, now});
+        return v;
+    }
+
+    private double fetchCode(String cd, double def) {
         Map<String, Object> q = new HashMap<>();
         q.put("codeGroup", "WIFI");
         q.put("codeCd", cd);

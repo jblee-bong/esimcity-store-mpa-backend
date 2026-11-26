@@ -368,10 +368,8 @@ public class ApiPurchaseListScheduler {
             for(int j=0;j<itemList.size();j++){
                 Map<String,Object> item = itemList.get(j);
 
-                int activeType  = (int) item.get("activeType");//언제부터 요금제 카운트 시작 1. 휴대폰설치시점 2. 최초네트워크접속시점 브라질과 아르헨티나는 받음 최저가떄문.
-                if(activeType!=2 && !item.get("location").toString().equals("BR") && !item.get("location").toString().equals("AR")){ // 최초네트워크접속시점만 판매함
-                    continue;
-                }
+                // 언제부터 기간이 시작되는지 1: 휴대폰 설치 시점, 2: 현지 첫 네트워크 접속 시점. 둘 다 저장하고 관리자가 보고 고름
+                apiPurchaseItemDto.setApiPurchaseActiveType(item.get("activeType") == null ? null : ((Number) item.get("activeType")).intValue());
                 apiPurchaseItemDto.setApiPurchaseExportDomainCode(item.get("ipExport").toString());
                 apiPurchaseItemDto.setApiPurchaseItemProcutId(item.get("packageCode").toString());
                 apiPurchaseItemDto.setApiPurchaseItemDescription(item.get("name").toString());

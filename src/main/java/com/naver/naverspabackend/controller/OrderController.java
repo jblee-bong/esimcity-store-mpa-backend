@@ -9,7 +9,10 @@ import com.naver.naverspabackend.dto.ProductOptionDto;
 import com.naver.naverspabackend.dto.UserDto;
 import com.naver.naverspabackend.response.ApiResult;
 import com.naver.naverspabackend.service.order.OrderService;
+import com.naver.naverspabackend.dto.TopupOrderDto;
 import com.naver.naverspabackend.service.product.ProductService;
+import com.naver.naverspabackend.service.topupOrder.TopupOrderService;
+import org.springframework.beans.factory.annotation.Value;
 import com.naver.naverspabackend.util.PagingUtil;
 import java.io.OutputStream;
 import java.util.List;
@@ -28,6 +31,13 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private TopupOrderService topupOrderService;
+
+    /** 페이업 수수료 1.8% + 수수료 부가세 10% = 1.98% (2026-11 정산서 기준) */
+    @Value("${payup.feeRate:0.0198}")
+    private double payupFeeRate;
 
     @RequestMapping("/order/fetchList")
     public ApiResult<List<OrderDto>> fetchOrderList(@RequestBody Map<String, Object> map, @TokenUser UserDto userDto1, @PageResolver PagingUtil pagingUtil) {
@@ -92,5 +102,22 @@ public class OrderController {
     @RequestMapping("/order/updateOrderKakaoReTrans")
     public ApiResult<Void> updateOrderKakaoReTrans(@RequestBody Map<String, Object> paramMap) throws Exception {
         return orderService.updateOrderKakaoReTrans(paramMap);
+    }
+
+    /** eSIM 충전 목록 (TB_TOPUP_ORDER) */
+    @RequestMapping("/order/fetchTopupList")
+    public ApiResult<List<TopupOrderDto>> fetchTopupList(@RequestBody Map<String, Object> map, @TokenUser UserDto userDto1, @PageResolver PagingUtil pagingUtil) {
+        map.put("email",userDto1.getEmail());
+        map.put("userAuthority",userDto1.getUserAuthority().name());
+        map.put("feeRate",payupFeeRate);
+        return topupOrderService.fetchTopupList(map, pagingUtil);
+    }
+
+    @RequestMapping("/order/fetchTopupStatic")
+    public ApiResult<?> fetchTopupStatic(@RequestBody Map<String, Object> map, @TokenUser UserDto userDto1) {
+        map.put("email",userDto1.getEmail());
+        map.put("userAuthority",userDto1.getUserAuthority().name());
+        map.put("feeRate",payupFeeRate);
+        return topupOrderService.fetchTopupStatic(map);
     }
 }

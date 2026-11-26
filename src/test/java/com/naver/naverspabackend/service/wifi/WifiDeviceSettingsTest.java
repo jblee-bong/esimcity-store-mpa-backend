@@ -69,8 +69,8 @@ class WifiDeviceSettingsTest {
 
     @Test
     void languageOnlyResendsCurrentPassword() {
-        svc.updateDeviceSettings(member, "SN123456", "", "KR", null, "123456");
-        verify(tuge).updateIndividualDeviceInfo("SN123456", "oldpass12", "KR", "A", "Y");
+        svc.updateDeviceSettings(member, "SN123456", "", "US", null, "123456");
+        verify(tuge).updateIndividualDeviceInfo("SN123456", "oldpass12", "US", "A", "Y");
     }
 
     @Test

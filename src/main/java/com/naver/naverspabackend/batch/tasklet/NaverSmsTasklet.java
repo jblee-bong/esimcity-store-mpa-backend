@@ -687,6 +687,9 @@ else if(matchInfoDto.getEsimType().equals("05"))
 
 
 
+                            // esimaccess activeType 1 = 설치하는 순간 기간 시작 → 설치 페이지에서 "현지 도착 후 설치" 경고
+                            esimMap.put("installStartsPeriod", apiPurchaseItem != null && Integer.valueOf(1).equals(apiPurchaseItem.getApiPurchaseActiveType()));
+
                             if(apiPurchaseItem!=null){
                                 esimMap.put("eSimResetInfo",MakeResetTimeUtil.makeResetInfoText(apiPurchaseItem,apiCardTypeDto));
                                 esimMap.put("eSimMResetInfo",MakeResetTimeUtil.makeMResetInfoText(apiPurchaseItem,apiCardTypeDto));
@@ -711,6 +714,7 @@ else if(matchInfoDto.getEsimType().equals("05"))
                 }
 
                 try {
+                    sendMap.put("orderTitle", orderDto.getProductName()); // 설치 페이지 "상품명" — 토큰 만들기 전에 넣어야 페이지에 나옴
                     // 메일/알림톡 공통 설치 랜딩 URL
                     esimInstallTokenService.attachInstallToken(sendMap, orderDto);
                 } catch (Exception e) {

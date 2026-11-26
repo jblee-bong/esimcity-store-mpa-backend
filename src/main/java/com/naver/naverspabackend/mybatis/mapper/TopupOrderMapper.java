@@ -5,6 +5,7 @@ import com.naver.naverspabackend.dto.TopupOrderDto;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface TopupOrderMapper {
@@ -27,4 +28,10 @@ public interface TopupOrderMapper {
     void updateTransactionId(TopupOrderDto topupOrderDto);
 
     TopupOrderDto findByIccidForMaxTopupId(TopupOrderDto topupOrderDtoParam);
+
+    List<TopupOrderDto> adSelectTopupList(Map<String, Object> map);
+
+    int adSelectTopupListCnt(Map<String, Object> map);
+
+    Map<String, Object> adSelectTopupStatic(Map<String, Object> map);
 }

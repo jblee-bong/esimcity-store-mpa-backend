@@ -26,6 +26,15 @@ public class WifiProductDto {
     private String activeType;
     private String ruleDesc;
     private String tugeModifiedDt;
+    private String highSpeed;        // TUGE highSpeed "2048(M)"
+    private String limitSpeed;       // TUGE limitSpeed "2000(K)"
+    private String showGradeNumber;
+    private String countryCodeList;  // TUGE countryCodeList (ISO)
+    private String periodType;       // BYDAY / BYMONTH
+    private String isContract;
+    private Integer minOrderCycle;
+    private BigDecimal firstOrderPrice; // TUGE firstOrderPrice (첫 주문가, 보통 null)
+    private String rawJson;          // TUGE 상품 원본
     private String tugeActive;
     private String costChangedYn;
     private String saleYn;

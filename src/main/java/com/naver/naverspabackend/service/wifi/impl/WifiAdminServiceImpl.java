@@ -134,8 +134,8 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         Map<Long, WifiCategoryDto> cats = pricing.categories();
         for (WifiProductDto p : list) {
             pricing.fillUnitPrice(p, cats); // 나라 정책으로 계산한 1일(고정) 판매가
-            p.setCountries(com.naver.naverspabackend.service.wifi.WifiCountries.of(p.getMcc(), p.getCountryOverride()));
-            p.setUnknownMcc(com.naver.naverspabackend.service.wifi.WifiCountries.unknown(p.getMcc()));
+            p.setCountries(com.naver.naverspabackend.service.wifi.WifiCountries.of(p.getMcc(), p.getCountryOverride(), p.getCountryCodeList()));
+            p.setUnknownMcc(com.naver.naverspabackend.service.wifi.WifiCountries.unknown(p.getMcc(), p.getCountryCodeList()));
         }
         Map<String, Object> r = new HashMap<>();
         r.put("list", list);
@@ -144,7 +144,7 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         // 전체 상품에서 MCC 표에 없는 번호 → 그 번호를 쓰는 상품들 (화면 위 경고)
         Map<String, List<String>> unknown = new java.util.TreeMap<>();
         for (WifiProductDto p : wifiMapper.activeProductMcc()) {
-            for (String code : com.naver.naverspabackend.service.wifi.WifiCountries.unknown(p.getMcc())) {
+            for (String code : com.naver.naverspabackend.service.wifi.WifiCountries.unknown(p.getMcc(), p.getCountryCodeList())) {
                 unknown.computeIfAbsent(code, k -> new ArrayList<>()).add(p.getDisplayName() != null ? p.getDisplayName() : p.getProductCode());
             }
         }
@@ -169,7 +169,6 @@ public class WifiAdminServiceImpl implements WifiAdminService {
             for (Object o : (Collection<?>) res.get("data")) {
                 if (!(o instanceof Map)) continue;
                 seen++;
-                log.info("[WIFI] TUGE 상품 원본 {}", gson.toJson(o)); // shortcut: 실제 응답(dataTotal 등) 확인용, 확인 끝나면 지우기
                 WifiProductDto p = fromTuge((Map<?, ?>) o);
                 if (p.getProductCode() == null) continue;
                 wifiMapper.upsertProductFromTuge(p);
@@ -196,7 +195,7 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         Integer dataTotal = intOrNull(m.get("dataTotal"));
         p.setDataTotal(dataTotal == null ? str(m.get("dataTotal")) : String.valueOf(dataTotal));
         p.setDataUnit(str(m.get("dataUnit")));
-        p.setMcc(StringUtils.abbreviate(str(m.get("mcc")), 1000));
+        p.setMcc(str(m.get("mcc"))); // TEXT 칸이라 자르지 않음 (잘리면 나라 판별이 틀어짐)
         p.setDeviceType(str(m.get("deviceType")));
         p.setSettlementUsd(m.get("settlementPrice") == null ? null : new BigDecimal(m.get("settlementPrice").toString()));
         Object popup = m.get("popupList") != null ? m.get("popupList") : m.get("refuelingPackage"); // 문서는 popupList, 실제 응답은 refuelingPackage
@@ -204,13 +203,38 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         p.setActiveType(str(m.get("activeType")));
         p.setRuleDesc(str(m.get("ruleDesc")));
         p.setTugeModifiedDt(str(m.get("lastModifiedTime")));
+        // 운영 응답에만 있는 필드 (문서 V1.23 에 없음) + 원본 전체
+        p.setHighSpeed(str(m.get("highSpeed")));
+        p.setLimitSpeed(str(m.get("limitSpeed")));
+        p.setShowGradeNumber(str(m.get("showGradeNumber")));
+        p.setCountryCodeList(str(m.get("countryCodeList")));
+        p.setPeriodType(str(m.get("periodType")));
+        p.setIsContract(str(m.get("isContract")));
+        p.setMinOrderCycle(intOrNull(m.get("minOrderCycle")));
+        p.setFirstOrderPrice(m.get("firstOrderPrice") == null ? null : new BigDecimal(m.get("firstOrderPrice").toString()));
+        p.setRawJson(new com.google.gson.GsonBuilder().serializeNulls().create().toJson(m)); // null 필드도 남김
         // 데일리는 dataTotal 이 "unlimited" 로 와서 하루 고속 용량을 규칙/이름에서 읽음 (관리자가 넣은 값이 있으면 SQL 에서 그 값 유지)
-        if ("DAILY".equals(p.getProductType())) p.setDailyHighSpeedMb(dailyMbOf(p.getRuleDesc(), p.getTugeName()));
+        // 운영 응답엔 ruleDesc 가 없고 highSpeed("2048(M)") 가 옴 → 그걸 먼저, 없으면 이름에서 추측
+        if ("DAILY".equals(p.getProductType())) {
+            Integer hs = highSpeedMb(str(m.get("highSpeed")));
+            p.setDailyHighSpeedMb(hs != null ? hs : dailyMbOf(p.getRuleDesc(), p.getTugeName()));
+        }
         return p;
     }
 
     // "5G 망" 같은 통신 세대는 용량으로 읽지 않게, G/M 단독은 코드 형식(1G(ZD))만
     private static final java.util.regex.Pattern DATA_SIZE = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)?)\\s*(GB|MB|G(?=[(/\\-]|$)|M(?=[(/\\-]|$))", java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    /** TUGE highSpeed "2048(M)" / "2(G)" / "500(K)" → MB. 못 읽으면 null */
+    static Integer highSpeedMb(String v) {
+        if (v == null) return null;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)?)\\s*\\(([GMK])\\)", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(v);
+        if (!m.find()) return null;
+        double n = Double.parseDouble(m.group(1));
+        String u = m.group(2).toUpperCase();
+        int mb = (int) Math.round(u.equals("G") ? n * 1024 : u.equals("K") ? n / 1024 : n);
+        return mb > 0 ? mb : null;
+    }
 
     /** "1GB of high-speed data per day" / "D-003-S-D-1G(ZD)" → 1024. 못 찾으면 null */
     static Integer dailyMbOf(String... texts) {
@@ -230,7 +254,7 @@ public class WifiAdminServiceImpl implements WifiAdminService {
         WifiProductDto p = wifiMapper.findProduct(productCode);
         if (p == null) throw new WifiException("상품이 없습니다.");
         pricing.fillPrices(p); // 화면에서 1일/7일/30일 예시 가격 표시
-        p.setCountries(com.naver.naverspabackend.service.wifi.WifiCountries.of(p.getMcc(), p.getCountryOverride()));
+        p.setCountries(com.naver.naverspabackend.service.wifi.WifiCountries.of(p.getMcc(), p.getCountryOverride(), p.getCountryCodeList()));
         return p;
     }
 

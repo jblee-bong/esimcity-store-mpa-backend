@@ -226,7 +226,7 @@ public class WifiServiceImpl implements WifiService {
         for (WifiProductDto p : list) {
             pricing.fillUnitPrice(p, cats);
             p.setSettlementUsd(null); // 원가 비노출
-            p.setCountries(WifiCountries.of(p.getMcc(), p.getCountryOverride()));
+            p.setCountries(WifiCountries.of(p.getMcc(), p.getCountryOverride(), p.getCountryCodeList()));
             p.setMcc(null);
             p.setCountryOverride(null);
         }
@@ -237,7 +237,7 @@ public class WifiServiceImpl implements WifiService {
     public List<Map<String, String>> coverage(WifiMemberDto member, String sn) {
         Map<String, Map<String, String>> byIso = new HashMap<>();
         for (WifiProductDto p : wifiMapper.userProductList(null, ownDevice(member, sn).getDeviceType())) {
-            for (Map<String, String> c : WifiCountries.of(p.getMcc(), p.getCountryOverride())) byIso.putIfAbsent(c.get("iso"), c);
+            for (Map<String, String> c : WifiCountries.of(p.getMcc(), p.getCountryOverride(), p.getCountryCodeList())) byIso.putIfAbsent(c.get("iso"), c);
         }
         List<Map<String, String>> list = new ArrayList<>(byIso.values());
         list.sort((a, b) -> a.get("name").compareTo(b.get("name")));
@@ -268,7 +268,7 @@ public class WifiServiceImpl implements WifiService {
         partial.sort(Comparator.<WifiProductDto>comparingInt(p -> -p.getMatched().size()).thenComparing(cheap));
         Map<String, Object> r = new LinkedHashMap<>();
         r.put("full", full);
-        r.put("partial", full.isEmpty() ? partial.subList(0, Math.min(5, partial.size())) : new ArrayList<>());
+        r.put("partial", partial); // 다 되는 요금제가 있어도 "나눠서 사기"(유럽 + 네팔 따로) 선택지로 보여 줌
         return r;
     }
 
@@ -280,7 +280,7 @@ public class WifiServiceImpl implements WifiService {
         pricing.fillPrices(p);         // prices[n-1] = n일(월) 총액
         p.setSettlementUsd(null);      // 원가 비노출
         p.setPopupJson(null);
-        p.setCountries(WifiCountries.of(p.getMcc(), p.getCountryOverride()));
+        p.setCountries(WifiCountries.of(p.getMcc(), p.getCountryOverride(), p.getCountryCodeList()));
         p.setMcc(null);
         return p;
     }
@@ -288,7 +288,7 @@ public class WifiServiceImpl implements WifiService {
     private boolean isSellable(WifiProductDto p, WifiDeviceDto device) {
         if (!"Y".equals(p.getSaleYn()) || !"Y".equals(p.getTugeActive()) || p.getCategoryId() == null || p.getSettlementUsd() == null) return false;
         if (StringUtils.isBlank(p.getDeviceType()) || StringUtils.isBlank(device.getDeviceType())) return true;
-        return Arrays.asList(p.getDeviceType().replace(" ", "").split(",")).contains(device.getDeviceType());
+        return Arrays.asList(p.getDeviceType().replace(" ", "").split(",")).contains(device.getDeviceType().replace(" ", ""));
     }
 
     /* ===================== 주문 / 결제 ===================== */
@@ -562,7 +562,7 @@ public class WifiServiceImpl implements WifiService {
         return wifiMapper.myOrders(member.getId());
     }
 
-    static final java.util.Set<String> DEVICE_LANGS = new java.util.HashSet<>(java.util.Arrays.asList("KR", "US", "JP", "CN", "TW", "VN"));
+    static final java.util.Set<String> DEVICE_LANGS = new java.util.HashSet<>(java.util.Arrays.asList("US", "JP", "CN")); // T8 화면 언어: 영·일·중만
 
     @Override
     public Map<String, Object> deviceSettings(WifiMemberDto member, String sn) {

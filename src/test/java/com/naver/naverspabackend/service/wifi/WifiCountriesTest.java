@@ -63,6 +63,25 @@ class WifiCountriesTest {
         assertTrue(WifiCountries.all().size() > 200);
     }
 
+    @Test
+    void tugeCountryCodeListBeatsSharedMcc() {
+        List<String[]> rows = Arrays.asList(new String[] {"310", "US", "미국"}, new String[] {"310", "GU", "괌"},
+                new String[] {"535", "GU", "괌"});
+        List<String[]> before = WifiCountries.tsvRows();
+        try {
+            WifiCountries.reload(rows);
+            assertEquals(2, WifiCountries.of("310").size());                       // 같이 쓰는 번호는 둘 다
+            List<Map<String, String>> c = WifiCountries.of("310,535", null, "GU");  // TUGE 가 괌이라고 하면 괌만
+            assertEquals(1, c.size());
+            assertEquals("GU", c.get(0).get("iso"));
+            assertEquals("US", WifiCountries.of("310", "us", "GU").get(0).get("iso")); // 관리자 지정이 최우선
+            assertEquals(2, WifiCountries.of("310", null, "").size());              // countryCodeList 없으면 MCC
+            assertEquals("KG,CN,ABC", WifiCountries.alpha2("KGZ, cn,ABC"));        // TUGE 가 3자리로 주는 경우
+        } finally {
+            WifiCountries.reload(before);
+        }
+    }
+
     private static WifiProductDto product(String code, String mcc, int price) {
         WifiProductDto p = new WifiProductDto();
         p.setProductCode(code);

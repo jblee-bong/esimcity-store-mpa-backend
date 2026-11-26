@@ -114,4 +114,17 @@ public interface OrderMapper {
     void updateTotalOriginAmount(OrderDto orderDto);
 
     List<OrderDto> selectListOrderAllList();
+
+    /** esimaccess 데일리 사용량 이력 (TB_ESIMACCESS_USAGE_HIST) */
+    List<OrderDto> selectEsimAccessDailyUsageTargets();
+
+    void insertEsimAccessUsageHist(Map<String, Object> map);
+
+    Long selectEsimAccessUsageBefore(Map<String, Object> map);
+
+    void deleteOldEsimAccessUsageHist();
+
+    List<String> selectEsimAccessUsageDoneTranNos();
+
+    void insertEsimAccessUsageDone(Map<String, Object> map);
 }

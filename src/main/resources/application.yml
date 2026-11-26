@@ -86,7 +86,7 @@ wifi:
   publicUrl: https://www.esimcity.co.kr/api   # 브라우저 기준 백엔드 주소 (결제 페이지). 개발: http://내PC_IP:5173/api
   appUrl: https://www.esimcity.co.kr/wifi     # React 앱 주소 (pm2). 결제 후 결과화면·QR 에 사용. 개발: http://내PC_IP:5173/wifi
   pointValidDays: 365
-  balanceAlertUsd: 100
+  balanceAlertUsd: 0     # 채널(BASIC) 잔액이 이 USD 미만이면 관리자 문자(6시간에 1번). 0 = 알림 끔. 잔액 충전 후 100 으로 되돌리기
   balanceAccountType: BASIC
   payupSdkUrl: https://standard.payup.co.kr/assets/js/payup_standard-1.0.js
 #api:

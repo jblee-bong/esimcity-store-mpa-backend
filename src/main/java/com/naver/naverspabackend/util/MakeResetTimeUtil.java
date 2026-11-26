@@ -314,7 +314,8 @@ public class MakeResetTimeUtil {
         String result = "";
         try{
             if(apiPurchaseItem!=null && apiPurchaseItem.isApiPurchaseItemIsDaily()){
-                result = "데이터 충전: 00:00(현지 시간)<br/>이용 일수: 활성화 시점부터 24시간";
+                // esimaccess 답변(2026-11): 리셋은 현지 0시가 아니라 활성화 시점부터 24시간마다
+                result = "데이터 충전: 활성화 시점부터 24시간마다<br/>이용 일수: 활성화 시점부터 24시간";
             }else{
                 result = "이용 일수: 활성화 시점부터 24시간";
             }

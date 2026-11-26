@@ -17,4 +17,13 @@ class WifiDailyMbTest {
         assertEquals(2048, WifiAdminServiceImpl.dailyMbOf(null, "Japan 5G 2GB/day")); // 5G 는 통신 세대
         assertNull(WifiAdminServiceImpl.dailyMbOf("4G LTE unlimited", "Korea 5G daily"));
     }
+
+    @Test
+    void 운영_highSpeed_필드_읽기() {
+        assertEquals(2048, WifiAdminServiceImpl.highSpeedMb("2048(M)"));
+        assertEquals(3072, WifiAdminServiceImpl.highSpeedMb("3(G)"));
+        assertEquals(500, WifiAdminServiceImpl.highSpeedMb("512000(K)"));
+        assertNull(WifiAdminServiceImpl.highSpeedMb(""));
+        assertNull(WifiAdminServiceImpl.highSpeedMb("unlimited"));
+    }
 }

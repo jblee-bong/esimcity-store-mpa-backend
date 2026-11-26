@@ -51,6 +51,7 @@ public class ApiPurchaseItemDto extends BaseDto {
 
     private String apiPurchaseItemCardType; // 카드타입
     private Integer apiPurchaseItemPeriodType; // 일자계산타입 0: 활성화후 24시간, 1: 카드타입별 타임존 00시
+    private Integer apiPurchaseActiveType; // esimaccess 개통 시작 기준 1: 휴대폰 설치 시, 2: 현지 첫 네트워크 접속 시
 
     public ApiPurchaseItemDto(String apiPurchaseItemType, String searchKey) {
         super();

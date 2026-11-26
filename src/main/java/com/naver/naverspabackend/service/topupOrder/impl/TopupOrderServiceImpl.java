@@ -9,7 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import com.naver.naverspabackend.response.ApiResult;
+import com.naver.naverspabackend.util.CommonUtil;
+import com.naver.naverspabackend.util.PagingUtil;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TopupOrderServiceImpl implements TopupOrderService {
@@ -61,5 +65,16 @@ public class TopupOrderServiceImpl implements TopupOrderService {
     @Override
     public TopupOrderDto findByIccidForMaxTopupId(TopupOrderDto topupOrderDtoParam) {
         return topupOrderMapper.findByIccidForMaxTopupId(topupOrderDtoParam);
+    }
+
+    @Override
+    public ApiResult<List<TopupOrderDto>> fetchTopupList(Map<String, Object> map, PagingUtil pagingUtil) {
+        CommonUtil.setPageIntoMap(map, pagingUtil, topupOrderMapper.adSelectTopupListCnt(map));
+        return ApiResult.succeed(topupOrderMapper.adSelectTopupList(map), pagingUtil);
+    }
+
+    @Override
+    public ApiResult<?> fetchTopupStatic(Map<String, Object> map) {
+        return ApiResult.succeed(topupOrderMapper.adSelectTopupStatic(map), null);
     }
 }

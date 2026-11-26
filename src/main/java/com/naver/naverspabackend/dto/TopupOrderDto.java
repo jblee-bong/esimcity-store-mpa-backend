@@ -29,6 +29,12 @@ public class TopupOrderDto extends BaseDto {
 
     private String topupUsdprice; // 충전달러가격
     private String topupKrwprice; // 충전한국가격
+    private Integer topupCostKrw; // 충전 원가(원, 결제 시점)
+
+    // 관리자 충전 목록 조회용 (DB 컬럼 아님)
+    private String productOrderId;
+    private Integer feeKrw;
+    private Integer profitKrw;
 
 
     private String shippingMail; //이심 업체

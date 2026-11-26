@@ -51,6 +51,6 @@ class WifiPricingTest {
     @Test
     void badRulesAreIgnored() {
         assertEquals(0, WifiPricing.parseRules("oops").size());
-        assertEquals(1, WifiPricing.parseRules("[{\"from\":1,\"rate\":5},{\"from\":7,\"rate\":25}]").size()); // from 1 은 기본마진과 겹쳐 무시
+        assertEquals(2, WifiPricing.parseRules("[{\"from\":1,\"rate\":5},{\"from\":7,\"rate\":25}]").size()); // from 1 = 데일리 전용 마진
     }
 }

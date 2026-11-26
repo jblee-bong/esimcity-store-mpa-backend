@@ -137,6 +137,37 @@ public class EsimAccessUtil {
                 //현재 시간과 비교하여 만료 여부 확인 (옵션)
                 boolean isEnded = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).isAfter(endKst);
                 model.addAttribute("end", isEnded);
+
+                // 데일리 리셋 = activateTime + 24시간 × N (esimaccess 확인, 예외 없음)
+                if (isDaily && !isEnded) {
+                    long hours = java.time.Duration.between(kstTime, ZonedDateTime.now(ZoneId.of("Asia/Seoul"))).toHours();
+                    ZonedDateTime nextReset = kstTime.plusDays(hours / 24 + 1);
+                    if (nextReset.isBefore(endKst)) {
+                        model.addAttribute("resetTxt", model.getAttribute("resetTxt")
+                                + "<br/>다음 충전: " + nextReset.format(DateTimeFormatter.ofPattern("MM/dd HH:mm")) + " (한국 시간)");
+                    }
+
+                    // 오늘 사용량 = 현재 누적 - 이번 주기 시작 직전 누적 (EsimAccessUsageScheduler 가 매시간 쌓음). 첫 24시간은 누적이 곧 오늘
+                    ZonedDateTime cycleStart = kstTime.plusDays(hours / 24);
+                    Long before = null;
+                    if (hours < 24) {
+                        before = 0L;
+                    } else if (esimTranNo != null) {
+                        Map<String, Object> q = new HashMap<>();
+                        q.put("esimTranNo", esimTranNo);
+                        q.put("before", cycleStart.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime());
+                        before = orderMapper.selectEsimAccessUsageBefore(q);
+                    }
+                    long dailyBytes = 0;
+                    try { dailyBytes = Long.parseLong(apiPurchaseItemDto.getApiPurchaseDataTotal()); } catch (Exception ignore) {}
+                    if (before != null && dailyBytes > 0) {
+                        double todayMb = Math.round(Math.max(0, usageBytes - before) / (1024.0 * 1024.0) * 100.0) / 100.0;
+                        // shortcut: 정산이 1시간 단위라 리셋 직전 최대 1시간치가 오늘로 잡힘, esimaccess 가 일별 API 주면 교체
+                        model.addAttribute("totalUsage", dailyBytes / (1024.0 * 1024.0));
+                        model.addAttribute("usage", todayMb);
+                        model.addAttribute("dailyUsageKnown", true);
+                    }
+                }
             }
 
 
@@ -333,167 +364,6 @@ public class EsimAccessUtil {
 
     }
 
-    public static void contextLoads4UsageUse(String esimTranNo,String realOrderId, String iccid, Model model) throws Exception {
-        //TODO usage 사용
-
-        System.setProperty("https.protocols","TLSv1.2");
-        HashMap result = getEsimStatus(esimTranNo);
-        HashMap resultStatus = getEsimPurchaseStatus2(iccid);
-
-        if((Boolean) result.get("success") && (Boolean) resultStatus.get("success")){
-            Map<String, Object> resultStatusObj = (Map<String, Object>) resultStatus.get("obj");
-            List<HashMap> esimList = (List<HashMap>) resultStatusObj.get("esimList");
-            HashMap esimStatus = null;
-            if(esimList.size()>0){
-                esimStatus = esimList.get(0);
-            }else{
-                throw new Exception();
-            }
-
-            Map<String, Object> obj = (Map<String, Object>) result.get("obj");
-            List<Map<String,Object>> esimUsageList = (List<Map<String, Object>>) obj.get("esimUsageList");
-
-            if(esimUsageList.size()==0){
-                throw new Exception();
-            }
-            Map<String, Object> paramMap = new HashMap<>();
-            paramMap.put("id",realOrderId);
-            OrderDto esimaccessOrder = orderMapper.findById(paramMap);
-            if(esimaccessOrder==null){
-                throw new Exception();
-            }
-            ApiPurchaseItemDto param = new ApiPurchaseItemDto();
-            param.setApiPurchaseItemProcutId(esimaccessOrder.getEsimProductId());
-            param.setApiPurchaseItemType(ApiType.ESIMACCESS.name());
-            ApiPurchaseItemDto apiPurchaseItemDto = apiPurchaseItemService.findById(param);
-            if(apiPurchaseItemDto==null){
-                throw new Exception();
-            }
-
-            Map<String,Object> esimUsage = esimUsageList.get(0);
-            DateTimeFormatter newDtFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-            // String 타입을 Date 타입으로 변환
-            Calendar cal = Calendar.getInstance();
-            int dataType = (int) esimStatus.get("dataType");
-            boolean isDaily = dataType!=1;
-            String totalData = esimUsage.get("totalData").toString();
-
-            // String을 long으로 변환 (Convert String to long)
-            long bytes = Long.parseLong(totalData);
-            double totalDataMb = bytes / (1024.0 * 1024.0);
-            //전체용량
-            model.addAttribute("totalUsage",totalDataMb);
-            //사용량
-            String dataUsage = esimUsage.get("dataUsage").toString();
-            long usageBytes = Long.parseLong(dataUsage);
-            double dataUsageMb = usageBytes / (1024.0 * 1024.0);
-            model.addAttribute("usage",dataUsageMb);
-            model.addAttribute("iccid",iccid);
-            model.addAttribute("isDaily",isDaily);//매일데이터 리셋 유부
-            if(isDaily){
-                model.addAttribute("resetAt","");//종료일 - 매일일경우 리셋일
-                model.addAttribute("resetTxt",MakeResetTimeUtil.makeTsimEsimAccessText(apiPurchaseItemDto));//종료일 - 매일일경우 리셋일
-            }
-            if(esimStatus.get("activeType").toString().equals("2") && esimStatus.get("activateTime")!=null && !esimStatus.get("activateTime").toString().equals("")){
-
-                // 1. 문자열을 ZonedDateTime 객체로 파싱
-                ZonedDateTime utcTime = ZonedDateTime.parse(esimStatus.get("activateTime").toString(), newDtFormat);
-                // 2. 한국 시간대(Asia/Seoul)로 변환
-                ZonedDateTime kstTime = utcTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-                // 3. 원하는 출력 형식 지정 (yyyy-MM-dd HH:mm)
-                DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-                // 6. 결과 출력
-                model.addAttribute("useStartDate",kstTime.format(outputFormatter));//활성화시작일
-
-                //몇일동안쓸수 있는지,
-                Integer totalDuration = (Integer) esimStatus.get("totalDuration");
-                ZonedDateTime endKst = kstTime.plusDays(totalDuration);
-                model.addAttribute("useEndDate", endKst.format(outputFormatter));     // 7일 후 종료일
-
-                //현재 시간과 비교하여 만료 여부 확인 (옵션)
-                boolean isEnded = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).isAfter(endKst);
-                model.addAttribute("end", isEnded);
-            }
-
-
-            //이거아무래 expiredTime이 chage 종료시간같은데,, 현재 사이클 종료시간은 따로없는거같긴한데 확인 필요 TODO
-            if(esimStatus.get("expiredTime")!=null && !esimStatus.get("expiredTime").toString().equals("")){
-                // 1. 문자열을 ZonedDateTime 객체로 파싱
-                ZonedDateTime utcTime = ZonedDateTime.parse(esimStatus.get("expiredTime").toString(), newDtFormat);
-                // 2. 한국 시간대(Asia/Seoul)로 변환
-                ZonedDateTime kstTime = utcTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-                // 3. 원하는 출력 형식 지정 (yyyy-MM-dd HH:mm)
-                DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-                // 6. 결과 출력
-                model.addAttribute("useEndDate",kstTime.format(outputFormatter));//활성화시작일
-
-                ZonedDateTime nowKst = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
-                model.addAttribute("end", nowKst.isAfter(kstTime));
-
-                if(apiPurchaseItemDto.isApiPurchaseIsCharge()){
-                    List<Map<String,String>> apiPurchaseItemList = new ArrayList<>();
-                    model.addAttribute("apiPurchaseItemList",apiPurchaseItemList);//충전 가능리스트
-
-                    // 현재 시간과의 차이 계산
-                    long limitTimeMillis = kstTime.toInstant().toEpochMilli(); // 이제 이 시간은 '진짜 만료' 10분 전 시간입니다.
-                    long currentTimeMillis = System.currentTimeMillis();
-                    long diffMillis = limitTimeMillis - currentTimeMillis;
-
-                    if (diffMillis > 0) {
-                        // 10분 전 시점까지 아직 시간이 남은 경우
-                        long days = diffMillis / (24 * 60 * 60 * 1000);
-                        long hours = (diffMillis % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000);
-                        long minutes = (diffMillis % (60 * 60 * 1000)) / (60 * 1000);
-                        String displayTime = null;
-                        if (days > 0) {
-                            // 1일 이상 남았을 때: "1일 5시간 남음"
-                            displayTime = String.format("%d일 %d시간", days, hours);
-                        } else if (hours > 0) {
-                            // 1일 미만, 1시간 이상: "5시간 30분 남음"
-                            displayTime = String.format("%d시간 %d분", hours, minutes);
-                        } else {
-                            // 1시간 미만: "25분 남음"
-                            displayTime = String.format("%d분", minutes);
-                        }
-
-                        model.addAttribute("chargeBtnTxt","충전하기 (남은 시간: " + displayTime + ")");//충전버튼
-                        model.addAttribute("chargeYN","Y");//충전가능
-                        //model.addAttribute("deviceId",deviceId);//충전파라미터
-
-
-                    } else {
-                        model.addAttribute("chargeYN","N");//충전불가
-                    }
-                }
-            }
-
-        }else{
-            throw new Exception();
-        }
-    }
-    private static HashMap getEsimStatus(String esimTransNo) {
-        String url = baseUrl + "/v1/open/esim/usage/query";
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectionRequestTimeout(5000); // 커넥션풀에서 사용 가능한 연결을 가져오기 위해 대기하는 최대 시간
-        factory.setConnectTimeout(5000); // 커넥션 최대 시간
-        factory.setReadTimeout(45000); // 읽기 최대 시간
-        RestTemplate restTemplate = new RestTemplate(factory);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.add("RT-AccessCode",clientId);
-        List<String> esimTranNoList = new ArrayList<>();
-        esimTranNoList.add(esimTransNo);
-        Map<String,Object> jsonObject = new HashMap<>();
-        jsonObject.put("esimTranNoList",esimTranNoList);
-
-        HttpEntity<String> entity = new HttpEntity<String>(new Gson().toJson(jsonObject), headers);
-        ResponseEntity<HashMap> response = restTemplate.exchange(url, HttpMethod.POST, entity, HashMap.class);
-
-        return response.getBody();
-    }
-
     private static HashMap getEsimPurchaseStatus(String activationRequestId, Long orderId) {
         esimApiIngStepLogsService.insert(EsimApiIngSteLogsType.STATUS.getExplain(), orderId);
 
@@ -527,6 +397,45 @@ public class EsimAccessUtil {
         return response.getBody();
     }
 
+
+    /** /esim/usage/query: 최대 10개 esimTranNo 의 누적 사용량. accessCode 를 직접 받음 (static clientId 는 다른 스토어 요청이 덮어쓸 수 있음) */
+    public static List<Map<String, Object>> queryUsage(String accessCode, List<String> esimTranNoList) {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("RT-AccessCode", accessCode);
+        Map<String, Object> body = new HashMap<>();
+        body.put("esimTranNoList", esimTranNoList);
+        ResponseEntity<HashMap> response = restTemplate.exchange(EsimUtil.esimAccessBaseUrl + "/v1/open/esim/usage/query",
+                HttpMethod.POST, new HttpEntity<>(new Gson().toJson(body), headers), HashMap.class);
+        HashMap res = response.getBody();
+        if (res == null || !Boolean.TRUE.equals(res.get("success"))) return Collections.emptyList();
+        Object obj = res.get("obj");
+        if (obj instanceof List) return (List<Map<String, Object>>) obj;
+        // 문서에 obj 안 목록 키 이름이 안 나와 있어서 첫 번째 목록을 씀 (실제 응답 보고 키 고정하면 좋음)
+        if (obj instanceof Map) for (Object v : ((Map) obj).values()) if (v instanceof List) return (List<Map<String, Object>>) v;
+        return Collections.emptyList();
+    }
+
+    /** /esim/query 로 esimTranNo 하나의 esimStatus (IN_USE, USED_EXPIRED ...). 못 읽으면 null */
+    public static String queryStatus(String accessCode, String esimTranNo) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("RT-AccessCode", accessCode);
+        Map<String, Object> pager = new HashMap<>();
+        pager.put("pageSize", 5);
+        pager.put("pageNum", 1);
+        Map<String, Object> body = new HashMap<>();
+        body.put("esimTranNo", esimTranNo);
+        body.put("pager", pager);
+        HashMap res = new RestTemplate().exchange(EsimUtil.esimAccessBaseUrl + "/v1/open/esim/query",
+                HttpMethod.POST, new HttpEntity<>(new Gson().toJson(body), headers), HashMap.class).getBody();
+        if (res == null || !Boolean.TRUE.equals(res.get("success")) || !(res.get("obj") instanceof Map)) return null;
+        Object list = ((Map) res.get("obj")).get("esimList");
+        if (!(list instanceof List) || ((List) list).isEmpty()) return null;
+        Object status = ((Map) ((List) list).get(0)).get("esimStatus");
+        return status == null ? null : status.toString();
+    }
 
     private static HashMap getEsimPurchaseStatus2(String iccid) {
 

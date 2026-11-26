@@ -473,7 +473,12 @@
 
 
     <select id="adSelectOrderStatic" parameterType="map" resultType="map">
-        select COUNT(1) as cnt, SUM(total_payment_amount) as totalPaymentAmountSum
+        <!-- 수수료 = 판매가 - 정산예정금액(네이버가 줌). 순익은 저장된 total_net_profit_amount 합계 -->
+        <!-- shortcut: 쿠팡은 정산예정금액이 없어 순익이 -원가로 저장될 수 있음, 쿠팡 주문 받기 시작하면 수정 -->
+        select COUNT(1) as cnt, SUM(total_payment_amount) as totalPaymentAmountSum,
+               IFNULL(SUM(CAST(NULLIF(total_origin_amount,'') AS DECIMAL(15,2))),0) as costSum,
+               IFNULL(SUM(CAST(total_payment_amount AS DECIMAL(15,2)) - CAST(NULLIF(expected_settlement_amount,'') AS DECIMAL(15,2))),0) as feeSum,
+               IFNULL(SUM(CAST(NULLIF(total_net_profit_amount,'') AS DECIMAL(15,2))),0) as profitSum
         from (<include refid="common.existTbOrder"></include>) o
         where o.del_yn = 'N' AND send_status NOT IN (4,5,6,7) <!--취소하지않은것만 -->
         <if test='tab != null and tab != "all"'>
@@ -709,6 +714,43 @@
             order_price_currency = #{orderPriceCurrency}
         where id = #{id}
     </update>
+
+    <!-- esimaccess 데일리 주문 중 발송 180일 이내. 끝난 eSIM(TB_ESIMACCESS_USAGE_DONE)은 배치에서 tranNo 단위로 뺌 -->
+    <select id="selectEsimAccessDailyUsageTargets" resultType="orderDto">
+        select o.id, o.store_id, o.esim_tran_no
+        from (<include refid="common.existTbOrder"></include>) o
+        inner join TB_API_PURCHASE_ITEM a
+            on a.api_purchase_item_procut_id = o.esim_product_id and a.api_purchase_item_type = 'ESIMACCESS'
+        where o.esim_corp = 'ESIMACCESS'
+          and a.api_purchase_item_is_daily = 1
+          and o.esim_tran_no is not null and o.esim_tran_no != ''
+          and o.send_date_time > date_sub(now(), interval 180 day)
+    </select>
+
+    <select id="selectEsimAccessUsageDoneTranNos" resultType="string">
+        select d.esim_tran_no from TB_ESIMACCESS_USAGE_DONE d
+        where d.regist_dt > date_sub(now(), interval 200 day)
+    </select>
+
+    <insert id="insertEsimAccessUsageDone" parameterType="map">
+        insert ignore into TB_ESIMACCESS_USAGE_DONE (esim_tran_no, esim_status) values (#{esimTranNo}, #{esimStatus})
+    </insert>
+
+    <insert id="insertEsimAccessUsageHist" parameterType="map">
+        insert ignore into TB_ESIMACCESS_USAGE_HIST (esim_tran_no, order_id, data_usage, total_data, last_update_time)
+        values (#{esimTranNo}, #{orderId}, #{dataUsage}, #{totalData}, #{lastUpdateTime})
+    </insert>
+
+    <!-- 이번 주기 시작(리셋) 시각 이전의 마지막 누적값 -->
+    <select id="selectEsimAccessUsageBefore" parameterType="map" resultType="long">
+        select data_usage from TB_ESIMACCESS_USAGE_HIST
+        where esim_tran_no = #{esimTranNo} and last_update_time &lt;= #{before}
+        order by last_update_time desc limit 1
+    </select>
+
+    <delete id="deleteOldEsimAccessUsageHist">
+        delete from TB_ESIMACCESS_USAGE_HIST where last_update_time &lt; date_sub(now(), interval 400 day)
+    </delete>
 
 
 </mapper>
